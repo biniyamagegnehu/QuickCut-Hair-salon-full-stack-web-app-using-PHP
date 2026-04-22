@@ -1,3 +1,49 @@
+<?php
+session_start();
+
+// Handle backend POST request for login
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    require_once 'db.php';
+    header('Content-Type: application/json');
+    
+    $input = json_decode(file_get_contents('php://input'), true);
+    $email = isset($input['email']) ? trim($input['email']) : (isset($_POST['email']) ? trim($_POST['email']) : '');
+    $password = isset($input['password']) ? $input['password'] : (isset($_POST['password']) ? $_POST['password'] : '');
+    
+    if (empty($email) || empty($password)) {
+        echo json_encode(["success" => false, "message" => "Email and password are required."]);
+        exit;
+    }
+    
+    try {
+        $stmt = $pdo->prepare("SELECT id, name, password, role FROM Users WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+        
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['role'] = $user['role'];
+            $_SESSION['name'] = $user['name'];
+            
+            // Redirect based on role
+            $redirect = ($user['role'] === 'admin') ? 'admin_dashboard.php' : 'welcome.php'; // changed admin redirect to admin/dashboard string placeholder
+            
+            echo json_encode([
+                "success" => true, 
+                "message" => "Login successful.", 
+                "redirect" => $redirect,
+                "role" => $user['role'],
+                "name" => $user['name']
+            ]);
+        } else {
+            echo json_encode(["success" => false, "message" => "Invalid email or password."]);
+        }
+    } catch (PDOException $e) {
+        echo json_encode(["success" => false, "message" => "Database error: " . $e->getMessage()]);
+    }
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -58,7 +104,7 @@
                             <p class="text-muted" id="login-subtitle">Log in to manage your appointments</p>
                         </div>
                         
-                        <form action="bookappointment.html" method="get" id="login-form">
+                        <form action="#" method="get" id="login-form">
                             <div class="mb-3">
                                 <label for="email" class="form-label fw-semibold">Email Address</label>
                                 <div class="input-group">

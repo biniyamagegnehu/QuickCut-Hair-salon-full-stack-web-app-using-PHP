@@ -58,7 +58,7 @@
                             <p class="text-muted" id="create-subtitle">Create your account in just a few steps</p>
                         </div>
                         
-                        <form action="bookappointment.html" method="get" id="create-form">
+                        <form action="#" method="get" id="create-form">
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
                                     <label for="firstName" class="form-label fw-semibold">First Name</label>

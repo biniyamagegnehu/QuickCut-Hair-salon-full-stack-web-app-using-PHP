@@ -419,55 +419,68 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Account...';
         submitBtn.disabled = true;
         
-        // Get form data
-        const userData = {
-            id: Date.now().toString(),
-            firstName: firstNameInput.value.trim(),
-            lastName: lastNameInput.value.trim(),
-            fullName: `${firstNameInput.value.trim()} ${lastNameInput.value.trim()}`,
-            email: emailInput.value.trim().toLowerCase(),
-            phone: phoneInput.value.trim(),
-            password: passwordInput.value, // Note: Now stored as 6-digit number
-            marketingOptIn: document.getElementById('create-marketing-check').checked,
-            createdAt: new Date().toISOString(),
-            lastLogin: null,
-            bookings: []
-        };
+        const fullName = `${firstNameInput.value.trim()} ${lastNameInput.value.trim()}`;
+        const email = emailInput.value.trim().toLowerCase();
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
         
-        // Simulate API call delay
-        setTimeout(() => {
-            // Save user to localStorage
-            const users = JSON.parse(localStorage.getItem('quickcutUsers') || '[]');
-            users.push(userData);
-            localStorage.setItem('quickcutUsers', JSON.stringify(users));
-            
-            // Save current user session
-            sessionStorage.setItem('quickcutCurrentUser', JSON.stringify(userData));
-            
-            // Show success message
+        // API call to registration endpoint
+        fetch('register.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: fullName,
+                email: email,
+                password: password,
+                confirm_password: confirmPassword
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                createMessage.innerHTML = `
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        ${data.message} Redirecting to login...
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                
+                createMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                showToast('Welcome to QuickCut!', 'Your account has been created successfully.', 'success');
+                
+                // Redirect to login page after delay
+                setTimeout(() => {
+                    window.location.href = 'login.php';
+                }, 2000);
+            } else {
+                // Show error message
+                createMessage.innerHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                submitBtn.innerHTML = originalHTML;
+                submitBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
             createMessage.innerHTML = `
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle me-2"></i>
-                    Account created successfully! Welcome to QuickCut. Redirecting...
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    An error occurred during registration. Please try again.
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             `;
-            
-            // Scroll to success message
-            createMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // Show welcome notification
-            showToast('Welcome to QuickCut!', 'Your account has been created successfully.', 'success');
-            
-            // Redirect to booking page after delay
-            setTimeout(() => {
-                window.location.href = 'bookappointment.html';
-            }, 2000);
-            
-            // Reset button (just in case)
             submitBtn.innerHTML = originalHTML;
             submitBtn.disabled = false;
-        }, 1500);
+        });
     }
     
     // ========== BACK TO TOP BUTTON ==========
@@ -552,7 +565,7 @@ document.addEventListener('DOMContentLoaded', function() {
             link.classList.remove('active');
             
             if (link.getAttribute('href') === currentPage || 
-                (currentPage === 'create.html' && link.getAttribute('href') === 'create.html')) {
+                (currentPage === 'create.php' && link.getAttribute('href') === 'create.php')) {
                 link.classList.add('active');
             }
         });
