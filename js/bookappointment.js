@@ -1280,29 +1280,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
                 submitBtn.disabled = true;
                 
-                setTimeout(() => {
-                    saveBookingData();
-                    // Attach payment info to last booking
-                    try {
-                        const last = JSON.parse(localStorage.getItem('quickcutLastBooking') || '{}');
-                        if (last && paymentInfo) {
-                            last.payment = paymentInfo;
-                            localStorage.setItem('quickcutLastBooking', JSON.stringify(last));
-                        }
-                    } catch (e) {}
+                const selectedTime12 = dateConfig.getSelectedTime12();
+                const bookingPayload = {
+                    service: document.querySelector('input[name="service"]:checked')?.value,
+                    date: dateConfig.selectedDate.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+                    time: selectedTime12,
+                    barber: document.querySelector('input[name="barber"]:checked')?.value
+                };
 
-                    // Mark that user just booked so queue page can show confirmation,
-                    // then navigate to the queue page (no local confirmation toast here).
-                    try {
-                        sessionStorage.setItem('justBooked', '1');
-                    } catch (e) {}
+                fetch('book_appointment.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bookingPayload)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        saveBookingData();
+                        try {
+                            const last = JSON.parse(localStorage.getItem('quickcutLastBooking') || '{}');
+                            if (last && paymentInfo) {
+                                last.payment = paymentInfo;
+                                last.backend_id = data.appointment_id;
+                                localStorage.setItem('quickcutLastBooking', JSON.stringify(last));
+                            }
+                        } catch (e) {}
 
-                    // Redirect to queue status immediately after saving booking
-                    window.location.href = 'queuestatus.html';
+                        try {
+                            sessionStorage.setItem('justBooked', '1');
+                        } catch (e) {}
 
+                        window.location.href = 'queuestatus.php';
+                    } else {
+                        showToast('Booking Failed', data.message || 'Server error occurred', 'error');
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Booking Error', 'Could not connect to the server.', 'error');
                     submitBtn.innerHTML = originalText;
                     submitBtn.disabled = false;
-                }, 1500);
+                });
             } else {
                 const errorMessage = errorMessages[0] || 'Please complete all required fields';
                 showToast('Booking Failed', errorMessage, 'error');
