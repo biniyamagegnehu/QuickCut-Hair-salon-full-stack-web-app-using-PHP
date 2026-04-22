@@ -684,37 +684,44 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         fetchQueueFromServer() {
-            fetch('get_queue.php')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        this.totalQueue = data.total_in_queue;
-                        if (data.user_queue_info) {
-                            const newPosition = data.user_queue_info.position;
-                            if (this.currentPosition !== newPosition) {
-                                this.peopleAhead = newPosition > 0 ? newPosition - 1 : 0;
-                                this.currentPosition = newPosition;
-                                this.estimatedWait = data.user_queue_info.estimated_wait_time_minutes;
-                                
-                                if (this.notificationManager && this.peopleAhead < 3 && newPosition > 0) {
-                                    this.notificationManager.sendQueueNotification(
-                                        'Position Updated',
-                                        `You're now #${this.currentPosition} in line. Estimated wait: ${this.estimatedWait} minutes`,
-                                        this.currentPosition
-                                    );
-                                }
-                            }
-                        } else {
-                            // User might not have a booking or it was completed
-                            if (this.currentPosition > 0 && this.totalQueue > 0) {
-                                // Maybe keep local if server doesn't know about session 
+            // Fetch total queue and user position in parallel
+            Promise.all([
+                fetch('get_queue.php').then(res => res.json()),
+                fetch('get_position.php').then(res => res.json())
+            ])
+            .then(([queueData, positionData]) => {
+                if (queueData.success) {
+                    this.totalQueue = queueData.queue.length;
+                    
+                    if (positionData.success) {
+                        const newPosition = positionData.position;
+                        if (this.currentPosition !== newPosition) {
+                            this.peopleAhead = positionData.people_ahead;
+                            this.currentPosition = newPosition;
+                            this.estimatedWait = positionData.estimated_wait_time_minutes;
+                            
+                            if (this.notificationManager && this.peopleAhead < 3 && newPosition > 0) {
+                                this.notificationManager.sendQueueNotification(
+                                    'Position Updated',
+                                    `You're now #${this.currentPosition} in line. Estimated wait: ${this.estimatedWait} minutes`,
+                                    this.currentPosition
+                                );
                             }
                         }
-                        this.updateDisplay();
-                        this.saveCurrentState();
+                    } else {
+                        // User might not have a booking or it was completed
+                        // Reset if server explicitly states user is not in queue
+                        if (positionData.message === 'User is not currently waiting in the queue.') {
+                            this.currentPosition = 0;
+                            this.peopleAhead = 0;
+                            this.estimatedWait = 0;
+                        }
                     }
-                })
-                .catch(err => console.error('Queue fetch error:', err));
+                    this.updateDisplay();
+                    this.saveCurrentState();
+                }
+            })
+            .catch(err => console.error('Queue fetch error:', err));
         }
         
         loadSavedData() {
