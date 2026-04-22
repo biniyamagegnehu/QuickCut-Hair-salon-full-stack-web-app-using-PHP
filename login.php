@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['name'] = $user['name'];
             
             // Redirect based on role
-            $redirect = ($user['role'] === 'admin') ? 'admin_dashboard.php' : 'welcome.php'; // changed admin redirect to admin/dashboard string placeholder
+            $redirect = ($user['role'] === 'admin') ? 'admin/dashboard.php' : 'welcome.php';
             
             echo json_encode([
                 "success" => true, 
