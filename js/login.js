@@ -211,6 +211,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }));
                 sessionStorage.setItem('lastLogin', new Date().toISOString());
                 
+                if (data.role === 'admin') {
+                    localStorage.setItem('quickcut-admin-loggedin', 'true');
+                }
+                
                 setupAutoLogout();
                 
                 // Redirect based on backend response
