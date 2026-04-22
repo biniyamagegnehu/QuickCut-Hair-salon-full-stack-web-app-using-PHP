@@ -1,13 +1,9 @@
 <?php
-session_start();
+require_once 'admin_auth.php';
 require_once '../db.php';
+check_admin();
 
 header('Content-Type: application/json');
-
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    exit;
-}
 
 $data = json_decode(file_get_contents('php://input'), true);
 $appointment_id = $data['appointment_id'] ?? null;

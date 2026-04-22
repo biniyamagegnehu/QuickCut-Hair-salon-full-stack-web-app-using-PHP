@@ -36,69 +36,92 @@ function populateBarberFilter() {
 }
 
 // Load appointments
-function loadAppointments() {
+function loadAppointments(dateFilter = '', statusFilter = '') {
     const tbody = document.getElementById('appointments-list');
     if (!tbody) return;
     
-    // Sort appointments by date (newest first)
-    const sortedAppointments = [...appointments].sort((a, b) => 
-        new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time)
-    );
+    let url = 'get_appointments.php?';
+    if (dateFilter) url += `date=${encodeURIComponent(dateFilter)}&`;
+    if (statusFilter) url += `status=${encodeURIComponent(statusFilter)}`;
     
-    if (sortedAppointments.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="9" class="text-center py-4">
-                    <div class="empty-state">
-                        <i class="fas fa-calendar-times"></i>
-                        <h4>No Appointments Found</h4>
-                        <p>Start by adding your first appointment</p>
-                    </div>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    tbody.innerHTML = '';
-    
-    sortedAppointments.forEach(appointment => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${appointment.id}</td>
-            <td><strong>${appointment.customer}</strong></td>
-            <td><span class="phone-display">${appointment.phone}</span></td>
-            <td>${appointment.service}</td>
-            <td>${appointment.barber}</td>
-            <td>${appointment.date}<br><small>${appointment.time}</small></td>
-            <td><span class="currency">${appointment.amount}</span></td>
-            <td>
-                <select class="status-dropdown ${appointment.status}" 
-                        data-id="${appointment.id}"
-                        onchange="updateAppointmentStatus(${appointment.id}, this.value)">
-                    <option value="scheduled" ${appointment.status === 'scheduled' ? 'selected' : ''}>Scheduled</option>
-                    <option value="confirmed" ${appointment.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
-                    <option value="in-progress" ${appointment.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
-                    <option value="completed" ${appointment.status === 'completed' ? 'selected' : ''}>Completed</option>
-                    <option value="cancelled" ${appointment.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-                </select>
-            </td>
-            <td>
-                <div class="action-buttons">
-                    <button class="action-btn edit" onclick="editAppointment(${appointment.id})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="action-btn delete" onclick="deleteAppointment(${appointment.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                    <button class="action-btn view" onclick="viewAppointment(${appointment.id})">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                console.error(data.message);
+                return;
+            }
+            
+            const fetchedAppointments = data.appointments;
+            
+            if (fetchedAppointments.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center py-4">
+                            <div class="empty-state">
+                                <i class="fas fa-calendar-times"></i>
+                                <h4>No Appointments Found</h4>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = '';
+            fetchedAppointments.forEach(appointment => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${appointment.id}</td>
+                    <td><strong>${appointment.customer_name}</strong></td>
+                    <td><span class="phone-display">-</span></td>
+                    <td>${appointment.service_name}</td>
+                    <td>-</td>
+                    <td>${appointment.appointment_date}<br><small>${appointment.appointment_time}</small></td>
+                    <td><span class="currency">-</span></td>
+                    <td>
+                        <select class="status-dropdown ${appointment.status}" 
+                                data-id="${appointment.id}"
+                                onchange="updateAppointmentStatusAPI(${appointment.id}, this.value)">
+                            <option value="waiting" ${appointment.status === 'waiting' ? 'selected' : ''}>Waiting</option>
+                            <option value="in_progress" ${appointment.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="completed" ${appointment.status === 'completed' ? 'selected' : ''}>Completed</option>
+                            <option value="cancelled" ${appointment.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <!-- Backend edit not implemented yet, just visual -->
+                            <button class="action-btn edit" disabled><i class="fas fa-edit"></i></button>
+                            <button class="action-btn delete" disabled><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        })
+        .catch(err => console.error(err));
+}
+
+function updateAppointmentStatusAPI(id, newStatus) {
+    fetch('update_status.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointment_id: id, status: newStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            loadAppointments(
+                document.getElementById('filter-date')?.value || '', 
+                document.getElementById('filter-status')?.value || ''
+            );
+        } else {
+            showNotification(data.message, 'danger');
+        }
+    })
+    .catch(err => console.error(err));
 }
 
 // Setup appointment event listeners
@@ -132,66 +155,9 @@ function setupAppointmentEventListeners() {
 function filterAppointments() {
     const dateFilter = document.getElementById('filter-date')?.value || '';
     const statusFilter = document.getElementById('filter-status')?.value || '';
-    const barberFilter = document.getElementById('filter-barber')?.value || '';
     
-    let filtered = appointments;
-    
-    if (dateFilter) {
-        filtered = filtered.filter(a => a.date === dateFilter);
-    }
-    
-    if (statusFilter) {
-        filtered = filtered.filter(a => a.status === statusFilter);
-    }
-    
-    if (barberFilter) {
-        filtered = filtered.filter(a => {
-            const barber = barbers.find(b => b.id === parseInt(barberFilter));
-            return barber && a.barber === `${barber.firstName} ${barber.lastName}`;
-        });
-    }
-    
-    // Update table
-    const tbody = document.getElementById('appointments-list');
-    tbody.innerHTML = '';
-    
-    filtered.forEach(appointment => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${appointment.id}</td>
-            <td><strong>${appointment.customer}</strong></td>
-            <td><span class="phone-display">${appointment.phone}</span></td>
-            <td>${appointment.service}</td>
-            <td>${appointment.barber}</td>
-            <td>${appointment.date}<br><small>${appointment.time}</small></td>
-            <td><span class="currency">${appointment.amount}</span></td>
-            <td>
-                <select class="status-dropdown ${appointment.status}" 
-                        data-id="${appointment.id}"
-                        onchange="updateAppointmentStatus(${appointment.id}, this.value)">
-                    <option value="scheduled" ${appointment.status === 'scheduled' ? 'selected' : ''}>Scheduled</option>
-                    <option value="confirmed" ${appointment.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
-                    <option value="in-progress" ${appointment.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
-                    <option value="completed" ${appointment.status === 'completed' ? 'selected' : ''}>Completed</option>
-                    <option value="cancelled" ${appointment.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-                </select>
-            </td>
-            <td>
-                <div class="action-buttons">
-                    <button class="action-btn edit" onclick="editAppointment(${appointment.id})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="action-btn delete" onclick="deleteAppointment(${appointment.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                    <button class="action-btn view" onclick="viewAppointment(${appointment.id})">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
+    // Barber filter not currently supported natively by API unless we update get_appointments.php, ignoring for now.
+    loadAppointments(dateFilter, statusFilter);
 }
 
 // Clear filters
