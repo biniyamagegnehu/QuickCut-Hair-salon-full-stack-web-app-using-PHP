@@ -14,14 +14,14 @@ let currentPage = window.location.pathname.split('/').pop().replace('.html', '')
 // Initialize common features
 function initCommonFeatures() {
     // Skip authentication check for login page
-    if (window.location.pathname.includes('login.html')) {
+    if (window.location.pathname.includes('login.php') || window.location.pathname.includes('login.html')) {
         return;
     }
     
     // Check if user is logged in
     const isLoggedIn = localStorage.getItem('quickcut-admin-loggedin') === 'true';
     if (!isLoggedIn) {
-        window.location.href = 'login.html';
+        window.location.href = '../login.php';
         return;
     }
     
