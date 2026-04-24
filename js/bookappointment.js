@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Generate slots from OPEN_HOUR to CLOSE_HOUR (6:00 AM to 6:00 PM)
             for (let hour = BUSINESS_HOURS.OPEN_HOUR; hour < BUSINESS_HOURS.CLOSE_HOUR; hour++) {
-                for (let minute = 0; minute < 60; minute += 30) {
+                for (let minute = 0; minute < 60; minute += 1) {
                     const slotTotalMinutes = hour * 60 + minute;
                     
                     // Skip slots before opening time or after closing time
@@ -518,8 +518,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <label for="time-minute" class="form-label">Minute</label>
                                 <select id="time-minute" class="form-select time-select" required>
                                     <option value="">Minute</option>
-                                    <option value="00">00</option>
-                                    <option value="30">30</option>
+                                    ${this.generateMinuteOptions()}
                                 </select>
                             </div>
                         </div>
@@ -555,27 +554,22 @@ document.addEventListener('DOMContentLoaded', function() {
         generateHourOptions() {
             let options = '';
             
-            // Generate hours from 6 AM to 6 PM
-            const hours = [
-                { value: 1, display: '1' },
-                { value: 2, display: '2' },
-                { value: 3, display: '3' },
-                { value: 4, display: '4' },
-                { value: 5, display: '5' },
-                { value: 6, display: '6' },
-                { value: 7, display: '7' },
-                { value: 8, display: '8' },
-                { value: 9, display: '9' },
-                { value: 10, display: '10' },
-                { value: 11, display: '11' },
-                { value: 12, display: '12' }
-               
-            ];
+            // Generate hours from 1 to 12
+            const hours = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
             
             hours.forEach(hour => {
-                options += `<option value="${hour.value}">${hour.display}</option>`;
+                options += `<option value="${hour}">${hour}</option>`;
             });
             
+            return options;
+        }
+
+        generateMinuteOptions() {
+            let options = '';
+            for (let i = 0; i < 60; i++) {
+                const min = i.toString().padStart(2, '0');
+                options += `<option value="${min}">${min}</option>`;
+            }
             return options;
         }
         
@@ -677,10 +671,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             suggestedTimes.innerHTML = '';
             
-            // Get available time slots for the selected date
+            // Get available time slots for the selected date (only 30-minute intervals for suggestions)
             const availableSlots = this.selectedDate.timeSlots
-                .filter(slot => slot.isAvailable)
-                .slice(0, 6); // Take first 6 available slots
+                .filter(slot => slot.isAvailable && slot.minute % 30 === 0)
+                .slice(0, 6); // Take first 6 available 30-min slots
             
             if (availableSlots.length === 0) {
                 suggestedTimes.innerHTML = '<div class="text-muted w-100"><small><i class="fas fa-info-circle"></i> No available time slots for this date</small></div>';
@@ -1282,6 +1276,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const selectedTime12 = dateConfig.getSelectedTime12();
                 const bookingPayload = {
+                    fullName: document.getElementById('booking-full-name').value,
+                    phone: document.getElementById('booking-phone').value,
+                    email: document.getElementById('booking-email').value,
                     service: document.querySelector('input[name="service"]:checked')?.value,
                     date: dateConfig.selectedDate.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
                     time: selectedTime12,

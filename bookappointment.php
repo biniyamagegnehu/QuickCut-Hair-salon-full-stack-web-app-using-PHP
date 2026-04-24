@@ -1,3 +1,23 @@
+<?php
+session_start();
+require_once 'db.php';
+
+$is_logged_in = isset($_SESSION['user_id']);
+$user_name = '';
+$user_email = '';
+$user_phone = '';
+
+if ($is_logged_in) {
+    $stmt = $pdo->prepare("SELECT name, email, phone FROM users WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $user = $stmt->fetch();
+    if ($user) {
+        $user_name = $user['name'] ?? '';
+        $user_email = $user['email'] ?? '';
+        $user_phone = $user['phone'] ?? '';
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -158,14 +178,17 @@
 
                         <!-- Personal Info -->
                         <form action="queuestatus.html" method="get" id="booking-form">
-                            <div class="form-section" id="personal-info-section">
+                            <?php 
+                            $hide_personal_info = $is_logged_in && !empty($user_name) && !empty($user_email) && !empty($user_phone);
+                            ?>
+                            <div class="form-section" id="personal-info-section" <?php echo $hide_personal_info ? 'style="display: none;"' : ''; ?>>
                                 <h3><i class="fas fa-user me-2 text-primary"></i>Personal Information</h3>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Full Name *</label>
                                         <div class="input-with-icon">
                                             <i class="fas fa-user"></i>
-                                            <input type="text" class="form-control" id="booking-full-name" placeholder="Enter your full name" required>
+                                            <input type="text" class="form-control" id="booking-full-name" placeholder="Enter your full name" required value="<?php echo htmlspecialchars($user_name); ?>">
                                         </div>
                                         <div class="invalid-feedback" id="name-error"></div>
                                     </div>
@@ -173,7 +196,7 @@
                                         <label class="form-label">Phone Number *</label>
                                         <div class="input-with-icon">
                                             <i class="fas fa-phone"></i>
-                                            <input type="tel" class="form-control" id="booking-phone" placeholder="0912345678" required>
+                                            <input type="tel" class="form-control" id="booking-phone" placeholder="0912345678" required value="<?php echo htmlspecialchars($user_phone); ?>">
                                         </div>
                                         <div class="invalid-feedback" id="phone-error"></div>
                                     </div>
@@ -181,7 +204,7 @@
                                         <label class="form-label">Email Address *</label>
                                         <div class="input-with-icon">
                                             <i class="fas fa-envelope"></i>
-                                            <input type="email" class="form-control" id="booking-email" placeholder="your@email.com" required>
+                                            <input type="email" class="form-control" id="booking-email" placeholder="your@email.com" required value="<?php echo htmlspecialchars($user_email); ?>">
                                         </div>
                                         <div class="invalid-feedback" id="email-error"></div>
                                     </div>
