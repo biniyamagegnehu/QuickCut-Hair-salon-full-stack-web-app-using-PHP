@@ -33,8 +33,30 @@ if (!empty($phone)) {
 $time_24 = date("H:i", strtotime($time));
 $date_sql = date("Y-m-d", strtotime($date));
 
-if (!$time_24 || !$date_sql) {
-    echo json_encode(['success' => false, 'message' => 'Invalid date or time format.']);
+// 1. Get day of week for the requested date
+$day_of_week = date('l', strtotime($date_sql));
+
+// 2. Fetch working hours for that day
+$stmt = $pdo->prepare("SELECT * FROM working_hours WHERE day_of_week = ?");
+$stmt->execute([$day_of_week]);
+$working_hours = $stmt->fetch();
+
+if (!$working_hours) {
+    echo json_encode(['success' => false, 'message' => 'Working hours not configured for this day.']);
+    exit;
+}
+
+if ($working_hours['is_closed']) {
+    echo json_encode(['success' => false, 'message' => "The salon is closed on $day_of_week."]);
+    exit;
+}
+
+$open_time = $working_hours['open_time'];
+$close_time = $working_hours['close_time'];
+
+// Check if selected time is within range
+if ($time_24 < $open_time || $time_24 >= $close_time) {
+    echo json_encode(['success' => false, 'message' => "Selected time is outside working hours ($open_time - $close_time)."]);
     exit;
 }
 

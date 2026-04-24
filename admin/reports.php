@@ -52,6 +52,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="working_hours.php">
+                        <i class="fas fa-clock"></i>
+                        Working Hours
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="customers.php">
                         <i class="fas fa-users"></i>
                         Customers

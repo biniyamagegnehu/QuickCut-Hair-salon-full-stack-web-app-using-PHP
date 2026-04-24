@@ -6,12 +6,26 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Booking page initialized');
     
     // ========== BUSINESS HOURS CONFIG ==========
-    const BUSINESS_HOURS = {
-        OPEN_HOUR: 6,    // 6:00 AM
-        CLOSE_HOUR: 18,  // 6:00 PM (18:00 in 24-hour format)
-        OPEN_MINUTE: 0,
-        CLOSE_MINUTE: 0
-    };
+    let BUSINESS_HOURS_DATA = [];
+    
+    // Fetch working hours from backend
+    fetch('get_working_hours.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                BUSINESS_HOURS_DATA = data.working_hours;
+                // Re-initialize DateConfig with real data
+                window.dateConfig = new DateConfig();
+            } else {
+                console.error('Failed to load working hours:', data.message);
+                // Fallback or handle error
+                window.dateConfig = new DateConfig();
+            }
+        })
+        .catch(err => {
+            console.error('Error fetching working hours:', err);
+            window.dateConfig = new DateConfig();
+        });
     
     // ========== DATE CONFIGURATION ==========
     class DateConfig {
@@ -69,12 +83,32 @@ document.addEventListener('DOMContentLoaded', function() {
             return `${dayNames[date.getDay()]}, ${monthNames[date.getMonth()]} ${date.getDate()}`;
         }
         
-        getDayName(date) {
+        getHoursForDay(date) {
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            return days[date.getDay()];
+            const dayName = days[date.getDay()];
+            const hours = BUSINESS_HOURS_DATA.find(h => h.day_of_week === dayName);
+            
+            if (!hours) {
+                // Fallback
+                return { open_hour: 9, close_hour: 20, is_closed: 0 };
+            }
+            
+            const [openH, openM] = hours.open_time.split(':').map(Number);
+            const [closeH, closeM] = hours.close_time.split(':').map(Number);
+            
+            return {
+                open_hour: openH,
+                open_minute: openM,
+                close_hour: closeH,
+                close_minute: closeM,
+                is_closed: parseInt(hours.is_closed)
+            };
         }
         
         isDateAvailable(date, isToday) {
+            const hours = this.getHoursForDay(date);
+            if (hours.is_closed) return false;
+
             const now = new Date();
             const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
             const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -90,50 +124,45 @@ document.addEventListener('DOMContentLoaded', function() {
                 const currentMinute = now.getMinutes();
                 const currentTotalMinutes = currentHour * 60 + currentMinute;
                 
-                const openTimeMinutes = BUSINESS_HOURS.OPEN_HOUR * 60 + BUSINESS_HOURS.OPEN_MINUTE;
-                const closeTimeMinutes = BUSINESS_HOURS.CLOSE_HOUR * 60 + BUSINESS_HOURS.CLOSE_MINUTE;
+                const openTimeMinutes = hours.open_hour * 60 + hours.open_minute;
+                const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
                 
-                // Check if current time is before closing time and after/at opening time
-                return currentTotalMinutes >= openTimeMinutes && currentTotalMinutes < closeTimeMinutes;
+                // Check if current time is before closing time
+                return currentTotalMinutes < closeTimeMinutes;
             }
             
-            // For future dates: Always available (they're not in the past)
             return true;
         }
         
         generateTimeSlots(date, isToday) {
             const slots = [];
+            const hours = this.getHoursForDay(date);
+            if (hours.is_closed) return [];
+
             const now = new Date();
             const currentHour = now.getHours();
             const currentMinute = now.getMinutes();
             const currentTotalMinutes = currentHour * 60 + currentMinute;
             
-            const openTimeMinutes = BUSINESS_HOURS.OPEN_HOUR * 60 + BUSINESS_HOURS.OPEN_MINUTE;
-            const closeTimeMinutes = BUSINESS_HOURS.CLOSE_HOUR * 60 + BUSINESS_HOURS.CLOSE_MINUTE;
+            const openTimeMinutes = hours.open_hour * 60 + hours.open_minute;
+            const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
             
-            // Generate slots from OPEN_HOUR to CLOSE_HOUR (6:00 AM to 6:00 PM)
-            for (let hour = BUSINESS_HOURS.OPEN_HOUR; hour < BUSINESS_HOURS.CLOSE_HOUR; hour++) {
-                for (let minute = 0; minute < 60; minute += 1) {
-                    const slotTotalMinutes = hour * 60 + minute;
+            // Generate slots
+            for (let h = hours.open_hour; h <= hours.close_hour; h++) {
+                for (let minute = 0; minute < 60; minute += 15) { // 15 min intervals for more precision
+                    const slotTotalMinutes = h * 60 + minute;
                     
-                    // Skip slots before opening time or after closing time
                     if (slotTotalMinutes < openTimeMinutes || slotTotalMinutes >= closeTimeMinutes) {
                         continue;
                     }
                     
-                    const time24 = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                    const time24 = `${h.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
                     
-                    // Check if slot is available
                     let isAvailable = true;
-                    
-                    // For today, check if time has passed
-                    if (isToday) {
-                        if (slotTotalMinutes < currentTotalMinutes) {
-                            isAvailable = false;
-                        }
+                    if (isToday && slotTotalMinutes < currentTotalMinutes + 30) { // 30 min buffer for today
+                        isAvailable = false;
                     }
                     
-                    // Check if slot is booked (simulated)
                     const isBooked = this.isTimeBooked(date, time24);
                     
                     slots.push({
@@ -142,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         isAvailable: isAvailable && !isBooked,
                         isBooked: isBooked,
                         isPassed: isToday && slotTotalMinutes < currentTotalMinutes,
-                        hour: hour,
+                        hour: h,
                         minute: minute,
                         totalMinutes: slotTotalMinutes
                     });
@@ -262,64 +291,29 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!statusDiv) return;
             
             const now = new Date();
+            const hours = this.getHoursForDay(now);
+            
             const currentHour = now.getHours();
             const currentMinute = now.getMinutes();
             const currentTotalMinutes = currentHour * 60 + currentMinute;
             
-            const openTimeMinutes = BUSINESS_HOURS.OPEN_HOUR * 60 + BUSINESS_HOURS.OPEN_MINUTE;
-            const closeTimeMinutes = BUSINESS_HOURS.CLOSE_HOUR * 60 + BUSINESS_HOURS.CLOSE_MINUTE;
+            const openTimeMinutes = hours.open_hour * 60 + hours.open_minute;
+            const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
             
             let statusText = '';
             let statusClass = '';
             
-            if (currentTotalMinutes < openTimeMinutes) {
-                // Before opening time (before 6:00 AM)
-                const minutesUntilOpen = openTimeMinutes - currentTotalMinutes;
-                const hoursUntilOpen = Math.floor(minutesUntilOpen / 60);
-                const minutesLeft = minutesUntilOpen % 60;
-                
-                let timeUntilText = '';
-                if (hoursUntilOpen > 0) {
-                    timeUntilText = `${hoursUntilOpen}h ${minutesLeft}m`;
-                } else {
-                    timeUntilText = `${minutesLeft}m`;
-                }
-                
-                statusText = `<span class="text-warning"><i class="fas fa-clock"></i> Opens at 6:00 AM (in ${timeUntilText})</span>`;
+            if (hours.is_closed) {
+                statusText = `<span class="text-danger"><i class="fas fa-times-circle"></i> Closed for today.</span>`;
+                statusClass = 'status-closed';
+            } else if (currentTotalMinutes < openTimeMinutes) {
+                statusText = `<span class="text-warning"><i class="fas fa-clock"></i> Opens at ${this.format24to12(hours.open_time || hours.open_hour + ':00')}</span>`;
                 statusClass = 'status-closed';
             } else if (currentTotalMinutes >= closeTimeMinutes) {
-                // After closing time (after 6:00 PM)
-                const nextDay = new Date(now);
-                nextDay.setDate(nextDay.getDate() + 1);
-                nextDay.setHours(BUSINESS_HOURS.OPEN_HOUR, BUSINESS_HOURS.OPEN_MINUTE, 0, 0);
-                
-                const timeUntilTomorrow = nextDay.getTime() - now.getTime();
-                const hoursUntilTomorrow = Math.floor(timeUntilTomorrow / (1000 * 60 * 60));
-                const minutesUntilTomorrow = Math.floor((timeUntilTomorrow % (1000 * 60 * 60)) / (1000 * 60));
-                
-                let timeUntilText = '';
-                if (hoursUntilTomorrow > 0) {
-                    timeUntilText = `${hoursUntilTomorrow}h ${minutesUntilTomorrow}m`;
-                } else {
-                    timeUntilText = `${minutesUntilTomorrow}m`;
-                }
-                
-                statusText = `<span class="text-danger"><i class="fas fa-exclamation-circle"></i> Closed for today. Opens tomorrow at 6:00 AM (in ${timeUntilText})</span>`;
+                statusText = `<span class="text-danger"><i class="fas fa-exclamation-circle"></i> Closed for today.</span>`;
                 statusClass = 'status-closed';
             } else {
-                // Within working hours (6:00 AM to 6:00 PM)
-                const minutesUntilClose = closeTimeMinutes - currentTotalMinutes;
-                const hoursLeft = Math.floor(minutesUntilClose / 60);
-                const minutesLeft = minutesUntilClose % 60;
-                
-                let timeLeftText = '';
-                if (hoursLeft > 0) {
-                    timeLeftText = `${hoursLeft}h ${minutesLeft}m left`;
-                } else {
-                    timeLeftText = `${minutesLeft}m left`;
-                }
-                
-                statusText = `<span class="text-success"><i class="fas fa-clock"></i> Open now! Closes at 6:00 PM (${timeLeftText})</span>`;
+                statusText = `<span class="text-success"><i class="fas fa-clock"></i> Open now! Closes at ${this.format24to12(hours.close_time || hours.close_hour + ':00')}</span>`;
                 statusClass = 'status-open';
             }
             
@@ -429,25 +423,29 @@ document.addEventListener('DOMContentLoaded', function() {
             const availableSlots = this.selectedDate.timeSlots.filter(slot => slot.isAvailable).length;
             const totalSlots = this.selectedDate.timeSlots.length;
             
+            const hours = this.getHoursForDay(date);
+            const open12 = this.format24to12(`${hours.open_hour.toString().padStart(2, '0')}:${hours.open_minute.toString().padStart(2, '0')}`);
+            const close12 = this.format24to12(`${hours.close_hour.toString().padStart(2, '0')}:${hours.close_minute.toString().padStart(2, '0')}`);
+            
             let availabilityText = '';
             if (this.selectedDate.isToday) {
                 const now = new Date();
                 const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
-                const closeTimeMinutes = BUSINESS_HOURS.CLOSE_HOUR * 60 + BUSINESS_HOURS.CLOSE_MINUTE;
+                const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
                 
                 if (currentTotalMinutes >= closeTimeMinutes) {
-                    availabilityText = '<div class="text-danger mt-2"><small><i class="fas fa-exclamation-circle"></i> Today is closed after 6:00 PM</small></div>';
-                } else if (currentTotalMinutes < BUSINESS_HOURS.OPEN_HOUR * 60) {
-                    availabilityText = '<div class="text-warning mt-2"><small><i class="fas fa-clock"></i> Opens at 6:00 AM</small></div>';
+                    availabilityText = `<div class="text-danger mt-2"><small><i class="fas fa-exclamation-circle"></i> Today is closed after ${close12}</small></div>`;
+                } else if (currentTotalMinutes < hours.open_hour * 60 + hours.open_minute) {
+                    availabilityText = `<div class="text-warning mt-2"><small><i class="fas fa-clock"></i> Opens at ${open12}</small></div>`;
                 } else {
                     const minutesLeft = closeTimeMinutes - currentTotalMinutes;
                     const hoursLeft = Math.floor(minutesLeft / 60);
                     const minutesRemaining = minutesLeft % 60;
                     
                     if (hoursLeft > 0) {
-                        availabilityText = `<div class="text-warning mt-2"><small><i class="fas fa-clock"></i> Today closes at 6:00 PM (${hoursLeft}h ${minutesRemaining}m left)</small></div>`;
+                        availabilityText = `<div class="text-warning mt-2"><small><i class="fas fa-clock"></i> Today closes at ${close12} (${hoursLeft}h ${minutesRemaining}m left)</small></div>`;
                     } else {
-                        availabilityText = `<div class="text-warning mt-2"><small><i class="fas fa-clock"></i> Today closes at 6:00 PM (${minutesRemaining}m left)</small></div>`;
+                        availabilityText = `<div class="text-warning mt-2"><small><i class="fas fa-clock"></i> Today closes at ${close12} (${minutesRemaining}m left)</small></div>`;
                     }
                 }
             }
@@ -465,7 +463,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                     <div class="mt-2">
-                        <small class="text-muted"><i class="fas fa-clock me-1"></i> Working hours: 6:00 AM - 6:00 PM</small>
+                        <small class="text-muted"><i class="fas fa-clock me-1"></i> Working hours: ${open12} - ${close12}</small>
                     </div>
                     ${availabilityText}
                 </div>
@@ -500,7 +498,7 @@ document.addEventListener('DOMContentLoaded', function() {
             timeInputContainer.innerHTML = `
                 <div class="time-input-header mb-3">
                     <h5><i class="fas fa-clock me-2"></i>Select Time</h5>
-                    <p class="text-muted mb-0"><small>Choose your preferred time between 6:00 AM and 6:00 PM</small></p>
+                    <p class="text-muted mb-0"><small>Choose your preferred time within working hours</small></p>
                 </div>
                 <div class="time-input-group">
                     <div class="row g-3">
@@ -612,13 +610,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (period === 'PM' && hour24 !== 12) hour24 += 12;
                 if (period === 'AM' && hour24 === 12) hour24 = 0;
                 
-                // Validate time range (must be between 6:00 AM and 6:00 PM)
-                const slotTotalMinutes = hour24 * 60 + parseInt(minute);
-                const openTimeMinutes = BUSINESS_HOURS.OPEN_HOUR * 60 + BUSINESS_HOURS.OPEN_MINUTE;
-                const closeTimeMinutes = BUSINESS_HOURS.CLOSE_HOUR * 60 + BUSINESS_HOURS.CLOSE_MINUTE;
+                const hours = this.getHoursForDay(this.selectedDate.date);
+                const openTimeMinutes = hours.open_hour * 60 + hours.open_minute;
+                const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
                 
                 if (slotTotalMinutes < openTimeMinutes || slotTotalMinutes >= closeTimeMinutes) {
-                    timeValidation.innerHTML = '<div class="text-danger"><small><i class="fas fa-times-circle"></i> Time must be between 6:00 AM and 6:00 PM</small></div>';
+                    const open12 = this.format24to12(`${hours.open_hour.toString().padStart(2, '0')}:${hours.open_minute.toString().padStart(2, '0')}`);
+                    const close12 = this.format24to12(`${hours.close_hour.toString().padStart(2, '0')}:${hours.close_minute.toString().padStart(2, '0')}`);
+                    timeValidation.innerHTML = `<div class="text-danger"><small><i class="fas fa-times-circle"></i> Time must be between ${open12} and ${close12}</small></div>`;
                     return false;
                 }
                 
@@ -770,8 +769,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 const currentDate = now.getDate();
                 const lastUpdateDate = this.currentDate.getDate();
                 
-                const openTimeMinutes = BUSINESS_HOURS.OPEN_HOUR * 60 + BUSINESS_HOURS.OPEN_MINUTE;
-                const closeTimeMinutes = BUSINESS_HOURS.CLOSE_HOUR * 60 + BUSINESS_HOURS.CLOSE_MINUTE;
+                const hours = this.getHoursForDay(now);
+                const openTimeMinutes = hours.open_hour * 60 + hours.open_minute;
+                const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
                 
                 // Check if we need to update today's availability
                 const today = this.dates[0];
@@ -861,8 +861,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Initialize Date Config
-    const dateConfig = new DateConfig();
+
     
     // ========== NAVBAR SCROLL EFFECT ==========
     const navbar = document.querySelector('#booking-nav');
@@ -1045,11 +1044,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ========== BOOKING SUMMARY UPDATER ==========
-    const servicePrices = {
-        'haircut': '250 Birr',
-        'beard': '150 Birr',
-        'premium': '350 Birr'
-    };
+
     
     const barberInfo = {
         'john': {
@@ -1082,7 +1077,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('summary-service').textContent = serviceLabel;
             document.getElementById('summary-service').className = '';
             
-            const price = servicePrices[service.value] || '0 Birr';
+            const price = service.dataset.price || '0 Birr';
             document.getElementById('summary-price').textContent = price;
         } else {
             document.getElementById('summary-service').textContent = 'Select service';
