@@ -8,4 +8,11 @@ function check_admin() {
         exit;
     }
 }
+
+function check_admin_page() {
+    if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+        header("Location: login.php");
+        exit;
+    }
+}
 ?>

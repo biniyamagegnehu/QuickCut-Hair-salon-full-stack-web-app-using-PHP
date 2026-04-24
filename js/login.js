@@ -260,28 +260,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ========== CHECK LOGIN STATUS ==========
     function checkLoginStatus() {
+        // We let PHP handle redirects now for security and consistency
         const currentUser = sessionStorage.getItem('quickcutCurrentUser');
         const currentPage = window.location.pathname.split('/').pop();
-        
-        // If user is on login page but already logged in, redirect to appointment page
-        if (currentUser && currentPage === 'login.php') {
-            setTimeout(() => {
-                window.location.href = 'bookappointment.php';
-            }, 100);
-            return;
-        }
-        
-        // If user is not logged in but trying to access protected pages
-        const protectedPages = ['bookappointment.php', 'profile.php', 'dashboard.php', 'appointments.php'];
-        
-        if (!currentUser && protectedPages.includes(currentPage)) {
-            // Redirect to login page
-            showToast('Access Denied', 'Please login to continue', 'error');
-            setTimeout(() => {
-                window.location.href = 'login.php';
-            }, 1500);
-            return;
-        }
         
         // Add logout button if user is logged in (for pages other than login)
         if (currentUser && currentPage !== 'login.php') {

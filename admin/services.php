@@ -1,3 +1,7 @@
+<?php
+require_once 'admin_auth.php';
+check_admin_page();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -79,7 +83,7 @@
                     <h6 class="mb-0">Admin User</h6>
                     <small class="text-muted">Administrator</small>
                 </div>
-                <a href="welcome.php" class="logout-btn ms-auto" title="Logout">
+                <a href="../logout.php" class="logout-btn ms-auto" title="Logout" id="nav-logout">
                     <i class="fas fa-sign-out-alt"></i>
                 </a>
             </div>
@@ -212,6 +216,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- JavaScript Files -->
+    <script src="../js/auth.js"></script>
     <script src="js/common.js"></script>
     <script src="js/services.js"></script>
 </body>

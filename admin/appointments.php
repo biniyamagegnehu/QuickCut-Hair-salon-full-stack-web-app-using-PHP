@@ -1,3 +1,7 @@
+<?php
+require_once 'admin_auth.php';
+check_admin_page();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -254,6 +258,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- JavaScript Files -->
+    <script src="../js/auth.js"></script>
     <script src="js/common.js"></script>
     <script src="js/appointments.js"></script>
 </body>

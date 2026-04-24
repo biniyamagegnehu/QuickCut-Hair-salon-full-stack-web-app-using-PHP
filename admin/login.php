@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'admin') {
+    header("Location: dashboard.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -108,6 +115,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Login JavaScript -->
+    <script src="../js/auth.js"></script>
     <script src="js/login.js"></script>
 </body>
 </html>

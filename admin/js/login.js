@@ -49,12 +49,7 @@ function loadSavedCredentials() {
 
 // Check if user is already logged in
 function checkLoginStatus() {
-    const isLoggedIn = localStorage.getItem('quickcut-admin-loggedin') === 'true';
-    
-    if (isLoggedIn) {
-        // Redirect to dashboard if already logged in
-        window.location.href = 'dashboard.html';
-    }
+    // Redirects are now handled by PHP to prevent loops between localStorage and session
 }
 
 // Toggle password visibility
@@ -98,7 +93,7 @@ function handleLogin(e) {
         localStorage.setItem('quickcut-admin-logintime', new Date().toISOString());
         
         // Redirect to dashboard
-        window.location.href = 'dashboard.html';
+        window.location.href = 'dashboard.php';
     } else {
         showError('Invalid username or password');
     }
@@ -185,7 +180,7 @@ function logout() {
     localStorage.removeItem('quickcut-admin-loggedin');
     localStorage.removeItem('quickcut-admin-username');
     localStorage.removeItem('quickcut-admin-lastactivity');
-    window.location.href = 'login.html';
+    window.location.href = 'login.php';
 }
 
 // Make functions available globally

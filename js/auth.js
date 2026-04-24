@@ -7,9 +7,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!href) return;
 
         // Check for logout link by ID
-        if (anchor.id === 'nav-logout') {
+        if (anchor.id === 'nav-logout' || href.includes('logout.php')) {
             try {
                 sessionStorage.removeItem('quickcutCurrentUser');
+                sessionStorage.removeItem('currentBooking');
+                localStorage.removeItem('quickcut-admin-loggedin');
+                localStorage.removeItem('quickcut-admin-username');
                 // The browser will then follow the href to logout.php
             } catch (err) {
                 console.warn('Failed clearing session on logout', err);
