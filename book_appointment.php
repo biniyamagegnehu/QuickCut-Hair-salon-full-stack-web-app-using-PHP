@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once 'db.php';
+require_once 'create_notification.php';
 
 header('Content-Type: application/json');
 
@@ -15,10 +16,17 @@ $data = json_decode(file_get_contents('php://input'), true);
 $service_name = $data['service'] ?? '';
 $date = $data['date'] ?? '';
 $time = $data['time'] ?? '';
+$phone = $data['phone'] ?? '';
 
 if (empty($service_name) || empty($date) || empty($time)) {
     echo json_encode(['success' => false, 'message' => 'Missing required fields.']);
     exit;
+}
+
+// Update user phone if provided and not already set
+if (!empty($phone)) {
+    $stmt = $pdo->prepare("UPDATE users SET phone = ? WHERE id = ? AND (phone IS NULL OR phone = '')");
+    $stmt->execute([$phone, $user_id]);
 }
 
 // Convert 12-hour time format back to 24-hour if needed
@@ -48,6 +56,9 @@ try {
     $stmt->execute([$user_id, $service_id, $date_sql, $time_24]);
     
     $appointment_id = $pdo->lastInsertId();
+    
+    // Create a notification
+    create_notification($pdo, $user_id, "Your appointment has been booked for $date_sql at $time_24.", "booking");
     
     echo json_encode([
         'success' => true, 

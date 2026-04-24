@@ -1,3 +1,23 @@
+<?php
+session_start();
+require_once 'db.php';
+
+$is_logged_in = isset($_SESSION['user_id']);
+$user_name = '';
+$user_email = '';
+$user_phone = '';
+
+if ($is_logged_in) {
+    $stmt = $pdo->prepare("SELECT name, email, phone FROM users WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $user = $stmt->fetch();
+    if ($user) {
+        $user_name = $user['name'] ?? '';
+        $user_email = $user['email'] ?? '';
+        $user_phone = $user['phone'] ?? '';
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -81,6 +101,16 @@
                     <li class="nav-item">
                         <a class="nav-link" href="welcome.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
                     </li>
+                    <li class="nav-item dropdown notification-dropdown">
+                        <a class="nav-link" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge bg-danger notification-badge rounded-pill" id="notification-count" style="display:none; position:absolute; top:0; right:0; font-size: 0.6rem;">0</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="notificationDropdown" id="notification-list" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                            <li><h6 class="dropdown-header">Notifications</h6></li>
+                            <li id="no-notifications"><a class="dropdown-item text-muted text-center py-3" href="#">No notifications</a></li>
+                        </ul>
+                    </li>
                 </ul>
                 <a href="bookappointment.php" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="booking-book-now">
                     <i class="fas fa-scissors me-1"></i>Book Appointment
@@ -148,14 +178,17 @@
 
                         <!-- Personal Info -->
                         <form action="queuestatus.html" method="get" id="booking-form">
-                            <div class="form-section" id="personal-info-section">
+                            <?php 
+                            $hide_personal_info = $is_logged_in && !empty($user_name) && !empty($user_email) && !empty($user_phone);
+                            ?>
+                            <div class="form-section" id="personal-info-section" <?php echo $hide_personal_info ? 'style="display: none;"' : ''; ?>>
                                 <h3><i class="fas fa-user me-2 text-primary"></i>Personal Information</h3>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Full Name *</label>
                                         <div class="input-with-icon">
                                             <i class="fas fa-user"></i>
-                                            <input type="text" class="form-control" id="booking-full-name" placeholder="Enter your full name" required>
+                                            <input type="text" class="form-control" id="booking-full-name" placeholder="Enter your full name" required value="<?php echo htmlspecialchars($user_name); ?>">
                                         </div>
                                         <div class="invalid-feedback" id="name-error"></div>
                                     </div>
@@ -163,7 +196,7 @@
                                         <label class="form-label">Phone Number *</label>
                                         <div class="input-with-icon">
                                             <i class="fas fa-phone"></i>
-                                            <input type="tel" class="form-control" id="booking-phone" placeholder="0912345678" required>
+                                            <input type="tel" class="form-control" id="booking-phone" placeholder="0912345678" required value="<?php echo htmlspecialchars($user_phone); ?>">
                                         </div>
                                         <div class="invalid-feedback" id="phone-error"></div>
                                     </div>
@@ -171,7 +204,7 @@
                                         <label class="form-label">Email Address *</label>
                                         <div class="input-with-icon">
                                             <i class="fas fa-envelope"></i>
-                                            <input type="email" class="form-control" id="booking-email" placeholder="your@email.com" required>
+                                            <input type="email" class="form-control" id="booking-email" placeholder="your@email.com" required value="<?php echo htmlspecialchars($user_email); ?>">
                                         </div>
                                         <div class="invalid-feedback" id="email-error"></div>
                                     </div>
@@ -590,5 +623,7 @@
     <script src="js/auth.js"></script>
     <!-- Custom JavaScript -->
     <script src="js/bookappointment.js"></script>
+    <!-- Notifications -->
+    <script src="js/notifications.js"></script>
 </body>
 </html>
