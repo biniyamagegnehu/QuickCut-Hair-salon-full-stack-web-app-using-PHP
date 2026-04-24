@@ -137,51 +137,55 @@ document.addEventListener('DOMContentLoaded', function() {
         generateTimeSlots(date, isToday) {
             const slots = [];
             const hours = this.getHoursForDay(date);
-            if (hours.is_closed) return [];
-
+            
             const now = new Date();
-            const currentHour = now.getHours();
-            const currentMinute = now.getMinutes();
-            const currentTotalMinutes = currentHour * 60 + currentMinute;
+            const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
             
-            const openTimeMinutes = hours.open_hour * 60 + hours.open_minute;
-            const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
+            const openTimeMinutes = hours.is_closed ? -1 : hours.open_hour * 60 + hours.open_minute;
+            const closeTimeMinutes = hours.is_closed ? -1 : hours.close_hour * 60 + hours.close_minute;
             
-            // Generate slots
-            for (let h = hours.open_hour; h <= hours.close_hour; h++) {
-                for (let minute = 0; minute < 60; minute += 15) { // 15 min intervals for more precision
+            // Generate slots for a fixed range (e.g., 6:00 AM to 10:00 PM)
+            for (let h = 6; h <= 22; h++) {
+                for (let minute = 0; minute < 60; minute += 15) {
                     const slotTotalMinutes = h * 60 + minute;
-                    
-                    if (slotTotalMinutes < openTimeMinutes || slotTotalMinutes >= closeTimeMinutes) {
-                        continue;
-                    }
-                    
                     const time24 = `${h.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                    const time12 = this.format24to12(time24);
                     
-                    let isAvailable = true;
-                    if (isToday && slotTotalMinutes < currentTotalMinutes + 30) { // 30 min buffer for today
-                        isAvailable = false;
-                    }
+                    // A slot is available only if:
+                    // 1. Shop is open that day
+                    // 2. Time is within working hours
+                    // 3. Time is not in the past (if today)
+                    // 4. Time is not already booked
                     
-                    const isBooked = this.isTimeBooked(date, time24);
+                    let isWithinWorkingHours = !hours.is_closed && slotTotalMinutes >= openTimeMinutes && slotTotalMinutes < closeTimeMinutes;
+                    let isPassed = isToday && slotTotalMinutes < currentTotalMinutes + 15; // 15 min buffer
+                    
+                    // Real booked check will happen later via async fetch, but we can set a flag
+                    const isBooked = this.isTimeBookedLocally(date, time12);
                     
                     slots.push({
                         time24: time24,
-                        time12: this.format24to12(time24),
-                        isAvailable: isAvailable && !isBooked,
+                        time12: time12,
+                        isAvailable: isWithinWorkingHours && !isPassed && !isBooked,
                         isBooked: isBooked,
-                        isPassed: isToday && slotTotalMinutes < currentTotalMinutes,
-                        hour: h,
-                        minute: minute,
+                        isWithinWorkingHours: isWithinWorkingHours,
+                        isPassed: isPassed,
                         totalMinutes: slotTotalMinutes
                     });
                 }
             }
-            
-            // Sort slots by time
-            slots.sort((a, b) => a.totalMinutes - b.totalMinutes);
-            
             return slots;
+        }
+        
+        // Check if time is booked from our locally cached data
+        isTimeBookedLocally(date, time12) {
+            const dateStr = date.toISOString().split('T')[0];
+            if (this.bookedSlots && this.bookedSlots[dateStr]) {
+                // The DB stores time as '9:00 AM' or '09:00 AM' or '21:00'? 
+                // Let's assume it matches the formatted time12 for simplicity or we should normalize.
+                return this.bookedSlots[dateStr].includes(time12);
+            }
+            return false;
         }
         
         isTimeBooked(date, time24) {
@@ -360,8 +364,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (dateInfo.isTomorrow) {
                 availabilityBadge = '<span class="date-badge tomorrow"><i class="fas fa-calendar-plus"></i> Tomorrow</span>';
             } else {
-                const availableSlots = dateInfo.timeSlots.filter(slot => slot.isAvailable).length;
-                availabilityBadge = `<span class="date-badge available"><i class="fas fa-check-circle"></i> ${availableSlots} slots</span>`;
+                availabilityBadge = '<span class="date-badge available"><i class="fas fa-check-circle"></i> Available</span>';
             }
             
             dateItem.innerHTML = `
@@ -388,6 +391,24 @@ document.addEventListener('DOMContentLoaded', function() {
         
         selectDate(dateInfo) {
             this.selectedDate = dateInfo;
+            
+            // Fetch real booked slots for this date
+            const dateStr = dateInfo.date.toISOString().split('T')[0];
+            fetch(`get_booked_slots.php?date=${dateStr}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        if (!this.bookedSlots) this.bookedSlots = {};
+                        this.bookedSlots[dateStr] = data.booked_slots;
+                        
+                        // Re-generate time slots with real booked data
+                        dateInfo.timeSlots = this.generateTimeSlots(dateInfo.date, dateInfo.isToday);
+                        
+                        this.updateSelectedDateUI();
+                        this.renderTimeInput();
+                    }
+                });
+
             this.updateSelectedDateUI();
             this.renderTimeInput();
             updateProgress();
@@ -458,8 +479,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <span class="text-primary">${formattedDate}</span>
                         </div>
                         <div class="text-end">
-                            <small class="text-muted">Available slots:</small><br>
-                            <span class="badge ${availableSlots > 0 ? 'bg-success' : 'bg-danger'}">${availableSlots}/${totalSlots}</span>
+                            <span class="badge ${availableSlots > 0 ? 'bg-success' : 'bg-danger'}">${availableSlots > 0 ? 'Available' : 'Fully Booked'}</span>
                         </div>
                     </div>
                     <div class="mt-2">
@@ -486,10 +506,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const datetimeSection = document.querySelector('#datetime-section');
             if (!datetimeSection) return;
             
-            // Remove existing time slots if any
-            const timeSlotsContainer = datetimeSection.querySelector('.time-slots');
-            if (timeSlotsContainer) {
-                timeSlotsContainer.remove();
+            // Remove existing time input container if present
+            const oldContainer = datetimeSection.querySelector('.time-input-container');
+            if (oldContainer) {
+                oldContainer.remove();
             }
             
             // Create time input container
@@ -498,236 +518,111 @@ document.addEventListener('DOMContentLoaded', function() {
             timeInputContainer.innerHTML = `
                 <div class="time-input-header mb-3">
                     <h5><i class="fas fa-clock me-2"></i>Select Time</h5>
-                    <p class="text-muted mb-0"><small>Choose your preferred time within working hours</small></p>
+                    <p class="text-muted mb-0"><small>Choose your preferred time. Only working hours are activated.</small></p>
                 </div>
-                <div class="time-input-group">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="time-hour" class="form-label">Hour</label>
-                                <select id="time-hour" class="form-select time-select" required>
-                                    <option value="">Hour</option>
-                                    ${this.generateHourOptions()}
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="time-minute" class="form-label">Minute</label>
-                                <select id="time-minute" class="form-select time-select" required>
-                                    <option value="">Minute</option>
-                                    ${this.generateMinuteOptions()}
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="time-period" class="form-label">AM/PM</label>
-                                <select id="time-period" class="form-select time-select" required>
-                                    <option value="">--</option>
-                                    <option value="AM">AM</option>
-                                    <option value="PM">PM</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="time-validation mt-3" id="time-validation">
-                        <div class="text-muted"><small>Select hour, minute, and AM/PM</small></div>
-                    </div>
-                    <div class="time-suggestions mt-3">
-                        <div class="mb-2"><small><strong>Quick Select:</strong></small></div>
-                        <div class="suggested-times d-flex flex-wrap gap-2" id="suggested-times"></div>
-                    </div>
+                <div class="time-slots-grid" id="time-slots-grid">
+                    <!-- Time slots rendered here -->
                 </div>
+                <div class="time-validation mt-3" id="time-validation" style="display: none;"></div>
                 <div class="time-info mt-3" id="time-info" style="display: none;"></div>
+                
+                <style>
+                    .time-slots-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                        gap: 10px;
+                        max-height: 300px;
+                        overflow-y: auto;
+                        padding: 10px;
+                        background: rgba(255, 255, 255, 0.05);
+                        border-radius: 12px;
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                    }
+                    .time-slot-btn {
+                        padding: 10px 5px;
+                        border-radius: 8px;
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        background: transparent;
+                        color: #ccc;
+                        font-size: 0.85rem;
+                        transition: all 0.2s ease;
+                        cursor: pointer;
+                        text-align: center;
+                    }
+                    .time-slot-btn:hover:not(:disabled) {
+                        border-color: var(--primary-color);
+                        color: var(--primary-color);
+                        background: rgba(var(--primary-rgb), 0.1);
+                    }
+                    .time-slot-btn.active {
+                        background: var(--primary-color);
+                        color: white;
+                        border-color: var(--primary-color);
+                        box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.4);
+                    }
+                    .time-slot-btn:disabled {
+                        opacity: 0.3;
+                        cursor: not-allowed;
+                        background: rgba(255, 255, 255, 0.02);
+                    }
+                    .time-slot-btn.booked {
+                        text-decoration: line-through;
+                        opacity: 0.4;
+                    }
+                </style>
             `;
             
             datetimeSection.appendChild(timeInputContainer);
-            
-            // Add event listeners
-            this.addTimeInputEventListeners();
             this.updateTimeInput();
         }
         
-        generateHourOptions() {
-            let options = '';
-            
-            // Generate hours from 1 to 12
-            const hours = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-            
-            hours.forEach(hour => {
-                options += `<option value="${hour}">${hour}</option>`;
-            });
-            
-            return options;
+        getSelectedTime12() {
+            return this.selectedTime || null;
         }
 
-        generateMinuteOptions() {
-            let options = '';
-            for (let i = 0; i < 60; i++) {
-                const min = i.toString().padStart(2, '0');
-                options += `<option value="${min}">${min}</option>`;
-            }
-            return options;
-        }
-        
         updateTimeInput() {
             if (!this.selectedDate) return;
             
-            const timeHour = document.getElementById('time-hour');
-            const timeMinute = document.getElementById('time-minute');
-            const timePeriod = document.getElementById('time-period');
-            const timeValidation = document.getElementById('time-validation');
-            const suggestedTimes = document.getElementById('suggested-times');
+            const grid = document.getElementById('time-slots-grid');
+            if (!grid) return;
             
-            if (!timeHour || !timeMinute || !timePeriod || !timeValidation || !suggestedTimes) return;
+            grid.innerHTML = '';
             
-            // Reset inputs
-            timeHour.value = '';
-            timeMinute.value = '';
-            timePeriod.value = '';
-            
-            // Clear validation
-            timeValidation.innerHTML = '<div class="text-muted"><small>Select hour, minute, and AM/PM</small></div>';
-            timeValidation.className = 'time-validation';
-            
-            // Generate suggested times
-            this.generateTimeSuggestions();
-            
-            // Add real-time validation
-            const validateTime = () => {
-                const hour = timeHour.value;
-                const minute = timeMinute.value;
-                const period = timePeriod.value;
+            this.selectedDate.timeSlots.forEach(slot => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `time-slot-btn ${slot.isBooked ? 'booked' : ''}`;
+                btn.textContent = slot.time12;
                 
-                if (!hour || !minute || !period) {
-                    timeValidation.innerHTML = '<div class="text-muted"><small>Select hour, minute, and AM/PM</small></div>';
-                    return false;
+                if (!slot.isAvailable) {
+                    btn.disabled = true;
+                    if (slot.isBooked) btn.title = 'Already booked';
+                    else if (slot.isPassed) btn.title = 'Time has passed';
+                    else btn.title = 'Outside working hours';
                 }
                 
-                // Convert to 24-hour format
-                let hour24 = parseInt(hour);
-                if (period === 'PM' && hour24 !== 12) hour24 += 12;
-                if (period === 'AM' && hour24 === 12) hour24 = 0;
-                
-                const hours = this.getHoursForDay(this.selectedDate.date);
-                const openTimeMinutes = hours.open_hour * 60 + hours.open_minute;
-                const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
-                
-                if (slotTotalMinutes < openTimeMinutes || slotTotalMinutes >= closeTimeMinutes) {
-                    const open12 = this.format24to12(`${hours.open_hour.toString().padStart(2, '0')}:${hours.open_minute.toString().padStart(2, '0')}`);
-                    const close12 = this.format24to12(`${hours.close_hour.toString().padStart(2, '0')}:${hours.close_minute.toString().padStart(2, '0')}`);
-                    timeValidation.innerHTML = `<div class="text-danger"><small><i class="fas fa-times-circle"></i> Time must be between ${open12} and ${close12}</small></div>`;
-                    return false;
-                }
-                
-                const time24 = `${hour24.toString().padStart(2, '0')}:${minute}`;
-                
-                // Check if time is available in the selected date's slots
-                const timeSlot = this.selectedDate.timeSlots.find(slot => slot.time24 === time24);
-                if (!timeSlot) {
-                    timeValidation.innerHTML = '<div class="text-danger"><small><i class="fas fa-times-circle"></i> Invalid time format</small></div>';
-                    return false;
-                }
-                
-                if (timeSlot.isPassed) {
-                    timeValidation.innerHTML = '<div class="text-danger"><small><i class="fas fa-times-circle"></i> This time has already passed</small></div>';
-                    return false;
-                }
-                
-                if (timeSlot.isBooked) {
-                    timeValidation.innerHTML = '<div class="text-danger"><small><i class="fas fa-times-circle"></i> This time slot is already booked</small></div>';
-                    return false;
-                }
-                
-                if (!timeSlot.isAvailable) {
-                    timeValidation.innerHTML = '<div class="text-danger"><small><i class="fas fa-times-circle"></i> This time slot is not available</small></div>';
-                    return false;
-                }
-                
-                // Valid time
-                const time12 = timeSlot.time12;
-                timeValidation.innerHTML = `<div class="text-success"><small><i class="fas fa-check-circle"></i> ${time12} is available</small></div>`;
-                
-                // Update time info
-                this.updateTimeInfo(time12);
-                
-                return true;
-            };
-            
-            // Add event listeners for real-time validation
-            timeHour.addEventListener('change', validateTime);
-            timeMinute.addEventListener('change', validateTime);
-            timePeriod.addEventListener('change', validateTime);
-            
-            // Initial validation
-            setTimeout(validateTime, 100);
-        }
-        
-        generateTimeSuggestions() {
-            const suggestedTimes = document.getElementById('suggested-times');
-            if (!suggestedTimes || !this.selectedDate) return;
-            
-            suggestedTimes.innerHTML = '';
-            
-            // Get available time slots for the selected date (only 30-minute intervals for suggestions)
-            const availableSlots = this.selectedDate.timeSlots
-                .filter(slot => slot.isAvailable && slot.minute % 30 === 0)
-                .slice(0, 6); // Take first 6 available 30-min slots
-            
-            if (availableSlots.length === 0) {
-                suggestedTimes.innerHTML = '<div class="text-muted w-100"><small><i class="fas fa-info-circle"></i> No available time slots for this date</small></div>';
-                return;
-            }
-            
-            availableSlots.forEach(slot => {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'btn btn-outline-primary btn-sm time-suggestion';
-                button.textContent = slot.time12;
-                button.dataset.time24 = slot.time24;
-                
-                button.addEventListener('click', () => {
-                    // Parse time24 to set dropdowns
-                    const [hour24, minute] = slot.time24.split(':');
-                    const hour24Num = parseInt(hour24);
+                btn.addEventListener('click', () => {
+                    // Deselect others
+                    grid.querySelectorAll('.time-slot-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
                     
-                    let hour12 = hour24Num;
-                    let period = 'AM';
+                    // Set selected time
+                    this.selectedTime = slot.time12;
+                    this.selectedTime24 = slot.time24;
                     
-                    if (hour24Num === 0) {
-                        hour12 = 12;
-                        period = 'AM';
-                    } else if (hour24Num < 12) {
-                        hour12 = hour24Num;
-                        period = 'AM';
-                    } else if (hour24Num === 12) {
-                        hour12 = 12;
-                        period = 'PM';
-                    } else {
-                        hour12 = hour24Num - 12;
-                        period = 'PM';
+                    // Update validation and summary
+                    const timeValidation = document.getElementById('time-validation');
+                    if (timeValidation) {
+                        timeValidation.innerHTML = `<div class="text-success"><small><i class="fas fa-check-circle"></i> ${slot.time12} selected</small></div>`;
+                        timeValidation.style.display = 'block';
                     }
                     
-                    document.getElementById('time-hour').value = hour12;
-                    document.getElementById('time-minute').value = minute;
-                    document.getElementById('time-period').value = period;
-                    
-                    // Trigger validation
-                    const event = new Event('change');
-                    document.getElementById('time-hour').dispatchEvent(event);
-                    
-                    // Update time info
                     this.updateTimeInfo(slot.time12);
-                    
-                    // Add visual feedback
-                    button.classList.add('active');
-                    setTimeout(() => {
-                        button.classList.remove('active');
-                    }, 500);
+                    updateProgress();
+                    updateBookingSummary();
                 });
                 
-                suggestedTimes.appendChild(button);
+                grid.appendChild(btn);
             });
         }
         
@@ -749,15 +644,7 @@ document.addEventListener('DOMContentLoaded', function() {
             timeInfo.style.display = 'block';
         }
         
-        addTimeInputEventListeners() {
-            const timeSelects = document.querySelectorAll('.time-select');
-            timeSelects.forEach(select => {
-                select.addEventListener('change', () => {
-                    updateProgress();
-                    updateBookingSummary();
-                });
-            });
-        }
+
         
         startDailyUpdate() {
             // Update every minute
@@ -811,53 +698,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.initializeDates();
                 }
                 
-                // Update time suggestions for selected date if it's today
+                // Update today's slots if it's today
                 if (this.selectedDate && this.selectedDate.isToday) {
                     this.selectedDate.timeSlots = this.generateTimeSlots(this.selectedDate.date, true);
-                    this.generateTimeSuggestions();
+                    this.updateTimeInput();
                 }
             }, 60000); // Check every minute
-        }
-        
-        getSelectedTime() {
-            const timeHour = document.getElementById('time-hour');
-            const timeMinute = document.getElementById('time-minute');
-            const timePeriod = document.getElementById('time-period');
-            
-            if (!timeHour || !timeMinute || !timePeriod || 
-                !timeHour.value || !timeMinute.value || !timePeriod.value) {
-                return null;
-            }
-            
-            let hour24 = parseInt(timeHour.value);
-            if (timePeriod.value === 'PM' && hour24 !== 12) hour24 += 12;
-            if (timePeriod.value === 'AM' && hour24 === 12) hour24 = 0;
-            
-            return `${hour24.toString().padStart(2, '0')}:${timeMinute.value}`;
-        }
-        
-        getSelectedTime12() {
-            const time24 = this.getSelectedTime();
-            if (!time24) return null;
-            
-            const [hours, minutes] = time24.split(':').map(Number);
-            let period = 'AM';
-            let hour12 = hours;
-            
-            if (hours === 0) {
-                hour12 = 12; // 12:00 AM
-            } else if (hours < 12) {
-                hour12 = hours;
-                period = 'AM';
-            } else if (hours === 12) {
-                hour12 = 12;
-                period = 'PM';
-            } else if (hours > 12) {
-                hour12 = hours - 12;
-                period = 'PM';
-            }
-            
-            return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
         }
     }
     
@@ -1046,7 +892,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========== BOOKING SUMMARY UPDATER ==========
 
     
-    const barberInfo = {
     // Barber info is now dynamic from data attributes
     const barberInfo = {};
     
