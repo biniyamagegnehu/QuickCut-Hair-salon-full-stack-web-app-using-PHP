@@ -80,6 +80,16 @@
                     <li class="nav-item">
                         <a class="nav-link" href="welcome.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
                     </li>
+                    <li class="nav-item dropdown notification-dropdown">
+                        <a class="nav-link" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge bg-danger notification-badge rounded-pill" id="notification-count" style="display:none; position:absolute; top:0; right:0; font-size: 0.6rem;">0</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="notificationDropdown" id="notification-list" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                            <li><h6 class="dropdown-header">Notifications</h6></li>
+                            <li id="no-notifications"><a class="dropdown-item text-muted text-center py-3" href="#">No notifications</a></li>
+                        </ul>
+                    </li>
                 </ul>
                 <a href="bookappointment.php" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="queue-book-now">
                     <i class="fas fa-scissors me-1"></i>Book Now
@@ -489,5 +499,7 @@
     <script src="js/auth.js"></script>
     <!-- Custom JavaScript -->
     <script src="js/queuestatus.js"></script>
+    <!-- Notifications -->
+    <script src="js/notifications.js"></script>
 </body>
 </html>

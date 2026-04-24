@@ -40,6 +40,14 @@ try {
     }
     
     if ($found_user) {
+        if ($position <= 2) {
+            $check_stmt = $pdo->prepare("SELECT id FROM Notifications WHERE user_id = ? AND type = 'queue' AND DATE(created_at) = CURDATE()");
+            $check_stmt->execute([$user_id]);
+            if ($check_stmt->rowCount() == 0) {
+                require_once 'create_notification.php';
+                create_notification($pdo, $user_id, "You are next. Please get ready.", "queue");
+            }
+        }
         echo json_encode([
             'success' => true,
             'position' => $position,
