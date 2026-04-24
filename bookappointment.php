@@ -24,6 +24,10 @@ if ($user) {
 // Fetch services
 $stmt = $pdo->query("SELECT id, name, duration, price FROM services ORDER BY name ASC");
 $services = $stmt->fetchAll();
+
+// Fetch active barbers
+$stmt = $pdo->query("SELECT id, first_name, last_name, specialty, rating FROM barbers WHERE status = 'active' ORDER BY first_name ASC");
+$barbers = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -260,60 +264,33 @@ $services = $stmt->fetchAll();
                                 </div>
                             </div>
 
-                            <!-- Barber Selection -->
                             <div class="form-section" id="barber-selection-section">
-                                <h3><i class="fas fa-user-tie me-2 text-primary"></i>Select Barber </h3>
+                                <h3><i class="fas fa-user-tie me-2 text-primary"></i>Select Barber *</h3>
                                 <div class="barber-options" id="barber-options">
-                                    <div class="barber-option" id="barber-option-1">
-                                        <input type="radio" name="barber" id="barber1" value="john" required>
-                                        <label for="barber1">
+                                    <?php foreach ($barbers as $barber): 
+                                        $full_name = $barber['first_name'] . ' ' . $barber['last_name'];
+                                    ?>
+                                    <div class="barber-option" id="barber-option-<?php echo $barber['id']; ?>">
+                                        <input type="radio" name="barber" id="barber<?php echo $barber['id']; ?>" 
+                                               value="<?php echo htmlspecialchars($full_name); ?>" 
+                                               data-specialty="<?php echo htmlspecialchars($barber['specialty']); ?>"
+                                               data-rating="<?php echo $barber['rating']; ?>"
+                                               required>
+                                        <label for="barber<?php echo $barber['id']; ?>">
                                             <div class="barber-avatar">
-                                                <i class="fas fa-user"></i>
+                                                <i class="fas fa-user-tie"></i>
                                             </div>
-                                            <div class="barber-details">
-                                                <h5 id="barber-1-name">John Master</h5>
-                                                
-                                                
-                                            </div>
-                                            <div class="barber-status available">
-                                                <i class="fas fa-circle"></i>
+                                            <div class="barber-info">
+                                                <h5 id="barber-<?php echo $barber['id']; ?>-name"><?php echo htmlspecialchars($full_name); ?></h5>
+                                                <p id="barber-<?php echo $barber['id']; ?>-specialty"><?php echo htmlspecialchars($barber['specialty']); ?></p>
+                                                <div class="rating">
+                                                    <i class="fas fa-star text-warning"></i>
+                                                    <span id="barber-<?php echo $barber['id']; ?>-rating"><?php echo $barber['rating']; ?></span>
+                                                </div>
                                             </div>
                                         </label>
                                     </div>
-
-                                    <div class="barber-option" id="barber-option-2">
-                                        <input type="radio" name="barber" id="barber2" value="mike" required>
-                                        <label for="barber2">
-                                            <div class="barber-avatar">
-                                                <i class="fas fa-user"></i>
-                                            </div>
-                                            <div class="barber-details">
-                                                <h5 id="barber-2-name">Mike Style</h5>
-                                              
-                                             
-                                            </div>
-                                            <div class="barber-status available">
-                                                <i class="fas fa-circle"></i>
-                                            </div>
-                                        </label>
-                                    </div>
-
-                                    <div class="barber-option" id="barber-option-3">
-                                        <input type="radio" name="barber" id="barber3" value="alex" disabled>
-                                        <label for="barber3">
-                                            <div class="barber-avatar">
-                                                <i class="fas fa-user"></i>
-                                            </div>
-                                            <div class="barber-details">
-                                                <h5 id="barber-3-name">Alex Cut</h5>
-                                                <p class="barber-specialty" id="barber-3-specialty">Modern Styles</p>
-                                              
-                                            </div>
-                                            <div class="barber-status busy">
-                                                <i class="fas fa-circle"></i> 
-                                            </div>
-                                        </label>
-                                    </div>
+                                    <?php endforeach; ?>
                                 </div>
                             </div>
 

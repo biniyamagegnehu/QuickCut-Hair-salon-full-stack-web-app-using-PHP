@@ -1047,25 +1047,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     
     const barberInfo = {
-        'john': {
-            name: 'John Master',
-            specialty: 'Haircut Specialist',
-            experience: '12+ years experience',
-            rating: '4.9 (120 reviews)'
-        },
-        'mike': {
-            name: 'Mike Style',
-            specialty: 'Beard Specialist',
-            experience: '8+ years experience',
-            rating: '4.7 (95 reviews)'
-        },
-        'alex': {
-            name: 'Alex Cut',
-            specialty: 'Modern Styles',
-            experience: '10+ years experience',
-            rating: '5.0 (150 reviews)'
-        }
-    };
+    // Barber info is now dynamic from data attributes
+    const barberInfo = {};
     
     function updateBookingSummary() {
         const service = document.querySelector('input[name="service"]:checked');
@@ -1086,9 +1069,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Barber
-        if (barber && barber.value !== 'alex' && !barber.disabled) {
-            const barberLabel = barber.closest('.barber-option').querySelector('h5').textContent;
-            document.getElementById('summary-barber').textContent = barberLabel;
+        if (barber && !barber.disabled) {
+            document.getElementById('summary-barber').textContent = barber.value;
             document.getElementById('summary-barber').className = '';
         } else {
             document.getElementById('summary-barber').textContent = 'Select barber';
@@ -1119,12 +1101,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const barber = document.querySelector('input[name="barber"]:checked');
         const infoCard = document.getElementById('selected-barber-info');
         
-        if (barber && barber.value !== 'alex' && !barber.disabled) {
-            const info = barberInfo[barber.value];
-            if (info && infoCard) {
-                document.getElementById('selected-barber-name').textContent = info.name;
-                document.getElementById('selected-barber-specialty').textContent = info.specialty;
-                document.getElementById('selected-barber-exp').textContent = info.experience;
+        if (barber && !barber.disabled) {
+            if (infoCard) {
+                document.getElementById('selected-barber-name').textContent = barber.value;
+                document.getElementById('selected-barber-specialty').textContent = barber.dataset.specialty || '';
+                document.getElementById('selected-barber-exp').textContent = 'Rating: ' + (barber.dataset.rating || 'N/A');
                 infoCard.style.display = 'block';
             }
         } else if (infoCard) {

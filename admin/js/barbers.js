@@ -9,12 +9,45 @@ function initBarbers() {
     setupBarberEventListeners();
 }
 
-// Load barbers
+// Load barbers from database
 function loadBarbers() {
     const grid = document.getElementById('barbers-grid');
     if (!grid) return;
     
-    if (barbers.length === 0) {
+    fetch('get_barbers.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Map database fields to JS field names
+                window.barbers = data.barbers.map(b => ({
+                    id: b.id,
+                    firstName: b.first_name,
+                    lastName: b.last_name,
+                    email: b.email,
+                    phone: b.phone,
+                    specialty: b.specialty,
+                    rate: b.rate,
+                    status: b.status,
+                    appointments: b.appointments,
+                    earnings: b.earnings,
+                    rating: b.rating
+                }));
+                renderBarbersGrid();
+            } else {
+                showNotification('Error loading barbers: ' + data.message, 'danger');
+            }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+            showNotification('Server error while loading barbers', 'danger');
+        });
+}
+
+function renderBarbersGrid() {
+    const grid = document.getElementById('barbers-grid');
+    if (!grid) return;
+
+    if (window.barbers.length === 0) {
         grid.innerHTML = `
             <div class="col-12">
                 <div class="card text-center py-5">
@@ -32,65 +65,55 @@ function loadBarbers() {
     
     grid.innerHTML = '';
     
-    barbers.forEach(barber => {
-        const card = document.createElement('div');
-        card.className = 'barber-card';
-        card.innerHTML = `
-            <div class="barber-header">
-                <div class="barber-avatar">
-                    <i class="fas fa-user-tie"></i>
-                </div>
-                <div class="barber-info">
-                    <h5>${barber.firstName} ${barber.lastName}</h5>
-                    <p>${barber.specialty}</p>
-                    <span class="barber-status status-${barber.status}">
-                        <i class="fas fa-circle"></i> ${barber.status.charAt(0).toUpperCase() + barber.status.slice(1)}
-                    </span>
-                </div>
-            </div>
-            <div class="barber-body">
-                <div class="barber-stats">
-                    <div class="barber-stat">
-                        <span class="number">${barber.appointments}</span>
-                        <span class="label">Appointments</span>
+    window.barbers.forEach(barber => {
+        const cardContainer = document.createElement('div');
+        cardContainer.className = 'col-md-6 col-lg-4 mb-4';
+        cardContainer.innerHTML = `
+            <div class="barber-card h-100">
+                <div class="barber-header">
+                    <div class="barber-avatar">
+                        <i class="fas fa-user-tie"></i>
                     </div>
-                    <div class="barber-stat">
-                        <span class="number">${barber.rating}</span>
-                        <span class="label">Rating</span>
-                    </div>
-                    <div class="barber-stat">
-                        <span class="number">${formatCurrency(barber.earnings)}</span>
-                        <span class="label">Earnings</span>
-                    </div>
-                    <div class="barber-stat">
-                        <span class="number">ETB ${barber.rate}/hr</span>
-                        <span class="label">Rate</span>
+                    <div class="barber-info">
+                        <h5>${barber.firstName} ${barber.lastName}</h5>
+                        <p>${barber.specialty}</p>
+                        <span class="barber-status status-${barber.status}">
+                            <i class="fas fa-circle"></i> ${barber.status.charAt(0).toUpperCase() + barber.status.slice(1)}
+                        </span>
                     </div>
                 </div>
-                <div class="barber-actions">
-                    <button class="btn btn-sm btn-outline-primary w-100" onclick="editBarber(${barber.id})">
-                        <i class="fas fa-edit me-1"></i> Edit
-                    </button>
-                    <button class="btn btn-sm btn-outline-warning w-100" onclick="manageSchedule(${barber.id})">
-                        <i class="fas fa-calendar me-1"></i> Schedule
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger w-100" onclick="deleteBarber(${barber.id})">
-                        <i class="fas fa-trash me-1"></i> Remove
-                    </button>
+                <div class="barber-body">
+                    <div class="barber-stats">
+                        <div class="barber-stat">
+                            <span class="number">${barber.appointments}</span>
+                            <span class="label">Appointments</span>
+                        </div>
+                        <div class="barber-stat">
+                            <span class="number">${barber.rating}</span>
+                            <span class="label">Rating</span>
+                        </div>
+                        <div class="barber-stat">
+                            <span class="number">${barber.earnings} ETB</span>
+                            <span class="label">Earnings</span>
+                        </div>
+                        <div class="barber-stat">
+                            <span class="number">ETB ${barber.rate}/hr</span>
+                            <span class="label">Rate</span>
+                        </div>
+                    </div>
+                    <div class="barber-actions">
+                        <button class="btn btn-sm btn-outline-primary w-100" onclick="editBarber(${barber.id})">
+                            <i class="fas fa-edit me-1"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger w-100" onclick="deleteBarber(${barber.id})">
+                            <i class="fas fa-trash me-1"></i> Remove
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
-        grid.appendChild(card);
+        grid.appendChild(cardContainer);
     });
-}
-
-// Setup barber event listeners
-function setupBarberEventListeners() {
-    // Add barber form
-    const addBarberForm = document.getElementById('addBarberForm');
-    if (addBarberForm) {
-        addBarberForm.addEventListener('submit', addNewBarber);
-    }
 }
 
 // Add new barber
@@ -98,42 +121,42 @@ function addNewBarber(e) {
     e.preventDefault();
     
     const newBarber = {
-        id: barbers.length > 0 ? Math.max(...barbers.map(b => b.id)) + 1 : 1,
         firstName: document.getElementById('barber-first-name').value,
         lastName: document.getElementById('barber-last-name').value,
         email: document.getElementById('barber-email').value,
         phone: document.getElementById('barber-phone').value,
         specialty: document.getElementById('barber-specialty').value,
         rate: parseInt(document.getElementById('barber-rate').value),
-        status: document.getElementById('barber-status').value,
-        appointments: 0,
-        earnings: 0,
-        rating: 4.5
+        status: document.getElementById('barber-status').value
     };
     
-    barbers.push(newBarber);
-    saveAllData();
-    
-    // Close modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById('addBarberModal'));
-    modal.hide();
-    
-    // Reset form
-    document.getElementById('addBarberForm').reset();
-    
-    // Reload barbers
-    loadBarbers();
-    
-    showNotification('New barber added successfully!', 'success');
+    fetch('add_barber.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newBarber)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addBarberModal'));
+            modal.hide();
+            document.getElementById('addBarberForm').reset();
+            loadBarbers();
+        } else {
+            showNotification(data.message, 'danger');
+        }
+    })
+    .catch(err => {
+        console.error('Error:', err);
+        showNotification('Failed to add barber', 'danger');
+    });
 }
 
 // Edit barber
 function editBarber(id) {
-    const barber = barbers.find(b => b.id === id);
+    const barber = window.barbers.find(b => b.id === id);
     if (!barber) return;
-    
-    // Store barber ID for update
-    localStorage.setItem('edit-barber-id', id);
     
     // Populate form
     document.getElementById('barber-first-name').value = barber.firstName;
@@ -161,55 +184,61 @@ function editBarber(id) {
 
 // Update barber details
 function updateBarberDetails(id) {
-    const barber = barbers.find(b => b.id === id);
-    if (!barber) return;
+    const updatedBarber = {
+        id: id,
+        firstName: document.getElementById('barber-first-name').value,
+        lastName: document.getElementById('barber-last-name').value,
+        email: document.getElementById('barber-email').value,
+        phone: document.getElementById('barber-phone').value,
+        specialty: document.getElementById('barber-specialty').value,
+        rate: parseInt(document.getElementById('barber-rate').value),
+        status: document.getElementById('barber-status').value
+    };
     
-    // Update barber
-    barber.firstName = document.getElementById('barber-first-name').value;
-    barber.lastName = document.getElementById('barber-last-name').value;
-    barber.email = document.getElementById('barber-email').value;
-    barber.phone = document.getElementById('barber-phone').value;
-    barber.specialty = document.getElementById('barber-specialty').value;
-    barber.rate = parseInt(document.getElementById('barber-rate').value);
-    barber.status = document.getElementById('barber-status').value;
-    
-    saveAllData();
-    
-    // Close modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById('addBarberModal'));
-    modal.hide();
-    
-    // Reset form and title
-    document.getElementById('addBarberForm').reset();
-    document.querySelector('#addBarberModal .modal-title').textContent = 'Add New Barber';
-    
-    // Reload barbers
-    loadBarbers();
-    
-    showNotification(`Barber ${barber.firstName} ${barber.lastName} updated successfully`, 'success');
-    
-    // Clear stored ID
-    localStorage.removeItem('edit-barber-id');
-}
-
-// Manage schedule
-function manageSchedule(id) {
-    const barber = barbers.find(b => b.id === id);
-    if (barber) {
-        alert(`Schedule management for ${barber.firstName} ${barber.lastName}\n\nFeature coming soon!`);
-    }
+    fetch('update_barber.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedBarber)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addBarberModal'));
+            modal.hide();
+            document.getElementById('addBarberForm').reset();
+            document.querySelector('#addBarberModal .modal-title').textContent = 'Add New Barber';
+            loadBarbers();
+        } else {
+            showNotification(data.message, 'danger');
+        }
+    })
+    .catch(err => {
+        console.error('Error:', err);
+        showNotification('Failed to update barber', 'danger');
+    });
 }
 
 // Delete barber
 function deleteBarber(id) {
     if (confirm('Are you sure you want to delete this barber? This action cannot be undone.')) {
-        const index = barbers.findIndex(b => b.id === id);
-        if (index !== -1) {
-            const barberName = `${barbers[index].firstName} ${barbers[index].lastName}`;
-            barbers.splice(index, 1);
-            saveAllData();
-            loadBarbers();
-            showNotification(`Barber ${barberName} deleted successfully`, 'success');
-        }
+        fetch('delete_barber.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: id })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                loadBarbers();
+            } else {
+                showNotification(data.message, 'danger');
+            }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+            showNotification('Failed to delete barber', 'danger');
+        });
     }
 }

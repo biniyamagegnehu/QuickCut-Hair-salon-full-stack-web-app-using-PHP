@@ -5,11 +5,62 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Global data storage
 let appointments = JSON.parse(localStorage.getItem('quickcut-appointments')) || [];
-let barbers = JSON.parse(localStorage.getItem('quickcut-barbers')) || [];
-let services = JSON.parse(localStorage.getItem('quickcut-services')) || [];
-let customers = JSON.parse(localStorage.getItem('quickcut-customers')) || [];
+let barbers = [];
+let services = [];
+let customers = [];
 let notifications = JSON.parse(localStorage.getItem('quickcut-notifications')) || [];
-let currentPage = window.location.pathname.split('/').pop().replace('.html', '');
+let currentPage = window.location.pathname.split('/').pop().replace('.php', '').replace('.html', '');
+
+// Fetch global data from database
+function fetchGlobalData() {
+    // Fetch Barbers
+    fetch('get_barbers.php')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                window.barbers = data.barbers.map(b => ({
+                    id: b.id,
+                    firstName: b.first_name,
+                    lastName: b.last_name,
+                    email: b.email,
+                    phone: b.phone,
+                    specialty: b.specialty,
+                    rate: b.rate,
+                    status: b.status,
+                    appointments: b.appointments,
+                    earnings: b.earnings,
+                    rating: b.rating
+                }));
+                // Trigger any page-specific updates if needed
+                if (typeof populateBarberFilter === 'function') populateBarberFilter();
+                if (typeof populateAppointmentDropdowns === 'function') populateAppointmentDropdowns();
+            }
+        });
+
+    // Fetch Services
+    fetch('get_services.php')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                window.services = data.services;
+                if (typeof populateAppointmentDropdowns === 'function') populateAppointmentDropdowns();
+            }
+        });
+
+    // Fetch Customers (if endpoint exists, otherwise fallback)
+    fetch('get_customers.php')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                window.customers = data.customers;
+                if (typeof populateAppointmentDropdowns === 'function') populateAppointmentDropdowns();
+            }
+        })
+        .catch(() => {
+            // Fallback to localStorage for now if get_customers.php doesn't exist
+            window.customers = JSON.parse(localStorage.getItem('quickcut-customers')) || [];
+        });
+}
 
 // Initialize common features
 function initCommonFeatures() {
@@ -36,6 +87,9 @@ function initCommonFeatures() {
     
     // Load sample data if empty
     if (appointments.length === 0) loadSampleData();
+    
+    // Fetch live data from DB
+    fetchGlobalData();
     
     // Setup event listeners
     setupCommonEventListeners();
