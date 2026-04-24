@@ -20,6 +20,10 @@ if ($user) {
     $user_email = $user['email'] ?? '';
     $user_phone = $user['phone'] ?? '';
 }
+
+// Fetch services
+$stmt = $pdo->query("SELECT id, name, duration, price FROM services ORDER BY name ASC");
+$services = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -220,60 +224,39 @@ if ($user) {
                                 </div>
                             </div>
 
-                            <!-- Service Selection -->
                             <div class="form-section" id="service-selection-section">
                                 <h3><i class="fas fa-cut me-2 text-primary"></i>Select Service *</h3>
                                 <div class="service-options" id="service-options">
-                                    <div class="service-option" id="service-option-1">
-                                        <input type="radio" name="service" id="service1" value="haircut" required>
-                                        <label for="service1">
-                                            <div class="service-icon haircut-icon">
-                                                <i class="fas fa-cut"></i>
+                                    <?php foreach ($services as $index => $service): 
+                                        $icon_class = 'haircut-icon';
+                                        $icon_fa = 'fa-cut';
+                                        
+                                        $lower_name = strtolower($service['name']);
+                                        if (strpos($lower_name, 'beard') !== false) {
+                                            $icon_class = 'beard-icon';
+                                            $icon_fa = 'fa-user-tie';
+                                        } elseif (strpos($lower_name, 'premium') !== false || strpos($lower_name, 'package') !== false) {
+                                            $icon_class = 'premium-icon';
+                                            $icon_fa = 'fa-crown';
+                                        }
+                                    ?>
+                                    <div class="service-option" id="service-option-<?php echo $service['id']; ?>">
+                                        <input type="radio" name="service" id="service<?php echo $service['id']; ?>" value="<?php echo htmlspecialchars($service['name']); ?>" data-price="<?php echo $service['price']; ?> Birr" required>
+                                        <label for="service<?php echo $service['id']; ?>">
+                                            <div class="service-icon <?php echo $icon_class; ?>">
+                                                <i class="fas <?php echo $icon_fa; ?>"></i>
                                             </div>
                                             <div class="service-info">
-                                                <h4 id="service-1-title">Haircut</h4>
-                                                <p id="service-1-desc">Professional men's haircut with styling</p>
+                                                <h4 id="service-<?php echo $service['id']; ?>-title"><?php echo htmlspecialchars($service['name']); ?></h4>
+                                                <p id="service-<?php echo $service['id']; ?>-desc">Professional salon service</p>
                                                 <div class="service-price">
-                                                    <span class="price" id="service-1-price">250 Birr</span>
-                                                    <span class="duration" id="service-1-duration">30-45 min</span>
+                                                    <span class="price" id="service-<?php echo $service['id']; ?>-price"><?php echo $service['price']; ?> Birr</span>
+                                                    <span class="duration" id="service-<?php echo $service['id']; ?>-duration"><?php echo $service['duration']; ?> min</span>
                                                 </div>
                                             </div>
                                         </label>
                                     </div>
-
-                                    <div class="service-option" id="service-option-2">
-                                        <input type="radio" name="service" id="service2" value="beard" required>
-                                        <label for="service2">
-                                            <div class="service-icon beard-icon">
-                                                <i class="fas fa-user-tie"></i>
-                                            </div>
-                                            <div class="service-info">
-                                                <h4 id="service-2-title">Beard Trim</h4>
-                                                <p id="service-2-desc">Precision beard shaping and trim</p>
-                                                <div class="service-price">
-                                                    <span class="price" id="service-2-price">150 Birr</span>
-                                                    <span class="duration" id="service-2-duration">15-20 min</span>
-                                                </div>
-                                            </div>
-                                        </label>
-                                    </div>
-
-                                    <div class="service-option" id="service-option-3">
-                                        <input type="radio" name="service" id="service3" value="premium" required>
-                                        <label for="service3">
-                                            <div class="service-icon premium-icon">
-                                                <i class="fas fa-crown"></i>
-                                            </div>
-                                            <div class="service-info">
-                                                <h4 id="service-3-title">Premium Package</h4>
-                                                <p id="service-3-desc">Haircut + Beard trim + Facial</p>
-                                                <div class="service-price">
-                                                    <span class="price" id="service-3-price">350 Birr</span>
-                                                    <span class="duration" id="service-3-duration">45-60 min</span>
-                                                </div>
-                                            </div>
-                                        </label>
-                                    </div>
+                                    <?php endforeach; ?>
                                 </div>
                             </div>
 
@@ -603,8 +586,13 @@ if ($user) {
                 <div class="col-lg-4" id="footer-right">
                     <h5 class="fw-bold mb-3">Working Hours</h5>
                     <ul class="list-unstyled">
-                        <li class="mb-2">Monday - Sunday: 6:00 AM - 6:00 PM</li>
-                       
+                        <?php 
+                        $stmt = $pdo->query("SELECT day_of_week, open_time, close_time, is_closed FROM working_hours ORDER BY FIELD(day_of_week, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')");
+                        while($row = $stmt->fetch()):
+                            $time_range = $row['is_closed'] ? 'Closed' : date("g:i A", strtotime($row['open_time'])) . " - " . date("g:i A", strtotime($row['close_time']));
+                        ?>
+                        <li class="mb-1 small"><?php echo $row['day_of_week']; ?>: <?php echo $time_range; ?></li>
+                        <?php endwhile; ?>
                     </ul>
                 </div>
             </div>

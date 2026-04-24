@@ -1,6 +1,14 @@
-<?php
 session_start();
+require_once 'db.php';
 $is_logged_in = isset($_SESSION['user_id']);
+
+// Fetch services
+$stmt = $pdo->query("SELECT * FROM services ORDER BY price ASC LIMIT 3");
+$services = $stmt->fetchAll();
+
+// Fetch working hours
+$stmt = $pdo->query("SELECT * FROM working_hours ORDER BY FIELD(day_of_week, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')");
+$working_hours = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -165,72 +173,41 @@ $is_logged_in = isset($_SESSION['user_id']);
                 <p class="lead text-muted">Tailored for the modern man</p>
             </div>
             <div class="row g-4">
+                <?php foreach ($services as $index => $service): 
+                    $featured = ($index === 1) ? 'featured' : '';
+                    $icon = 'fa-cut';
+                    $lower_name = strtolower($service['name']);
+                    if (strpos($lower_name, 'beard') !== false) $icon = 'fa-user-tie';
+                    elseif (strpos($lower_name, 'premium') !== false) $icon = 'fa-crown';
+                ?>
                 <div class="col-lg-4">
-                    <div class="service-card" data-service="haircut" id="haircut-service">
-                        <div class="service-image haircut"></div>
+                    <div class="service-card <?php echo $featured; ?>" data-service="<?php echo $service['id']; ?>" id="service-card-<?php echo $service['id']; ?>">
+                        <div class="service-image" style="background-image: url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=800'); height: 200px; background-size: cover; background-position: center;"></div>
                         <div class="service-content">
                             <div class="service-icon">
-                                <i class="fas fa-cut"></i>
+                                <i class="fas <?php echo $icon; ?>"></i>
                             </div>
-                            <h4 class="fw-bold">Classic Haircut</h4>
+                            <h4 class="fw-bold"><?php echo htmlspecialchars($service['name']); ?></h4>
                             <div class="price-tag">
-                                <span class="price">250 Birr</span>
-                                <span class="duration">30-45 min</span>
+                                <span class="price"><?php echo $service['price']; ?> Birr</span>
+                                <span class="duration"><?php echo $service['duration']; ?> min</span>
                             </div>
-                            <p class="text-muted">Professional men's haircut with styling, trimming, and finishing products</p>
+                            <p class="text-muted">Professional salon service tailored for your needs.</p>
                             <ul class="service-features">
-                                <li><i class="fas fa-check text-primary me-2"></i>Precision cutting</li>
-                                <li><i class="fas fa-check text-primary me-2"></i>Styling & products</li>
-                                <li><i class="fas fa-check text-primary me-2"></i>Free consultation</li>
-                            </ul>
-                            <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-outline-primary w-100 mt-3" id="book-haircut">Book This Service</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="service-card featured" data-service="beard" id="beard-service">
-                        <div class="service-image beard"></div>
-                        <div class="service-content">
-                            <div class="service-icon">
-                                <i class="fas fa-user-tie"></i>
-                            </div>
-                            <h4 class="fw-bold">Beard Trim & Shape</h4>
-                            <div class="price-tag">
-                                <span class="price">150 Birr</span>
-                                <span class="duration">15-20 min</span>
-                            </div>
-                            <p class="text-muted">Precision beard shaping and trim with hot towel treatment and oils</p>
-                            <ul class="service-features">
-                                <li><i class="fas fa-check text-primary me-2"></i>Hot towel treatment</li>
-                                <li><i class="fas fa-check text-primary me-2"></i>Beard oil & balm</li>
-                                <li><i class="fas fa-check text-primary me-2"></i>Detailed shaping</li>
-                            </ul>
-                            <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-primary w-100 mt-3" id="book-beard">Book This Service</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="service-card" data-service="premium" id="premium-service">
-                        <div class="service-image premium"></div>
-                        <div class="service-content">
-                            <div class="service-icon">
-                                <i class="fas fa-crown"></i>
-                            </div>
-                            <h4 class="fw-bold">Premium Package</h4>
-                            <div class="price-tag">
-                                <span class="price">350 Birr</span>
-                                <span class="duration">45-60 min</span>
-                            </div>
-                            <p class="text-muted">Complete grooming experience with haircut, beard trim, and facial care</p>
-                            <ul class="service-features">
-                                <li><i class="fas fa-check text-primary me-2"></i>Haircut + Beard</li>
-                                <li><i class="fas fa-check text-primary me-2"></i>Hot towel facial</li>
+                                <li><i class="fas fa-check text-primary me-2"></i>Expert technique</li>
                                 <li><i class="fas fa-check text-primary me-2"></i>Premium products</li>
+                                <li><i class="fas fa-check text-primary me-2"></i>Styling included</li>
                             </ul>
-                            <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-outline-primary w-100 mt-3" id="book-premium">Book This Service</a>
+                            <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn <?php echo $featured ? 'btn-primary' : 'btn-outline-primary'; ?> w-100 mt-3">Book This Service</a>
                         </div>
                     </div>
                 </div>
+                <?php endforeach; ?>
+                <?php if (empty($services)): ?>
+                    <div class="col-12 text-center">
+                        <p class="text-muted">No services available at the moment. Please check back later.</p>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </section>
@@ -383,10 +360,14 @@ $is_logged_in = isset($_SESSION['user_id']);
                 <div class="col-lg-4">
                     <h5 class="fw-bold mb-3">Working Hours</h5>
                     <div class="hours-list" id="hours-list">
-                        <div class="hour-item">
-                            <span>Monday - Sunday</span>
-                            <span>6:00 AM - 6:00 PM</span>
+                        <?php foreach ($working_hours as $row): 
+                            $time_range = $row['is_closed'] ? 'Closed' : date("g:i A", strtotime($row['open_time'])) . " - " . date("g:i A", strtotime($row['close_time']));
+                        ?>
+                        <div class="hour-item d-flex justify-content-between mb-1">
+                            <span class="small"><?php echo $row['day_of_week']; ?></span>
+                            <span class="small"><?php echo $time_range; ?></span>
                         </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
             </div>
