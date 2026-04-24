@@ -60,6 +60,15 @@ if ($time_24 < $open_time || $time_24 >= $close_time) {
     exit;
 }
 
+// Prevent duplicate bookings for the same slot
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM appointments WHERE appointment_date = ? AND appointment_time = ? AND status IN ('waiting', 'scheduled', 'confirmed', 'in_progress')");
+$stmt->execute([$date_sql, $time_24]);
+
+if ((int)$stmt->fetchColumn() > 0) {
+    echo json_encode(['success' => false, 'message' => 'That time slot has already been booked. Please choose another time.']);
+    exit;
+}
+
 try {
     // Get service id
     $stmt = $pdo->prepare("SELECT id FROM services WHERE name = ?");

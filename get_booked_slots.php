@@ -12,8 +12,8 @@ if (empty($date)) {
 
 try {
     // Fetch booked slots for the given date
-    // We only care about scheduled, confirmed, or in_progress appointments
-    $stmt = $pdo->prepare("SELECT appointment_time FROM appointments WHERE appointment_date = ? AND status IN ('scheduled', 'confirmed', 'in_progress')");
+    // Include waiting so freshly created bookings are immediately blocked in the picker
+    $stmt = $pdo->prepare("SELECT appointment_time FROM appointments WHERE appointment_date = ? AND status IN ('waiting', 'scheduled', 'confirmed', 'in_progress')");
     $stmt->execute([$date]);
     $booked_slots = $stmt->fetchAll(PDO::FETCH_COLUMN);
 

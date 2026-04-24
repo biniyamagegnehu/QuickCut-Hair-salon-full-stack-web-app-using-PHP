@@ -36,7 +36,7 @@ $working_hours = $stmt->fetchAll();
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto" id="nav-menu">
+                <ul class="navbar-nav ms-auto align-items-lg-center" id="nav-menu">
                     <li class="nav-item">
                         <a class="nav-link active" href="welcome.php"><i class="fas fa-home me-1"></i>Home</a>
                     </li>
