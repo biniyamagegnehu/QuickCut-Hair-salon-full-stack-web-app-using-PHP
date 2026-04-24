@@ -144,24 +144,22 @@ document.addEventListener('DOMContentLoaded', function() {
             const openTimeMinutes = hours.is_closed ? -1 : hours.open_hour * 60 + hours.open_minute;
             const closeTimeMinutes = hours.is_closed ? -1 : hours.close_hour * 60 + hours.close_minute;
             
-            // Generate slots for a fixed range (e.g., 6:00 AM to 10:00 PM)
-            for (let h = 6; h <= 22; h++) {
+            // Generate slots for the full 24 hours
+            for (let h = 0; h <= 23; h++) {
                 for (let minute = 0; minute < 60; minute += 15) {
                     const slotTotalMinutes = h * 60 + minute;
                     const time24 = `${h.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
                     const time12 = this.format24to12(time24);
                     
-                    // A slot is available only if:
+                    // A slot is "activated" only if:
                     // 1. Shop is open that day
                     // 2. Time is within working hours
-                    // 3. Time is not in the past (if today)
-                    // 4. Time is not already booked
+                    // 3. Time is not in the past
                     
                     let isWithinWorkingHours = !hours.is_closed && slotTotalMinutes >= openTimeMinutes && slotTotalMinutes < closeTimeMinutes;
-                    let isPassed = isToday && slotTotalMinutes < currentTotalMinutes + 15; // 15 min buffer
+                    let isPassed = isToday && slotTotalMinutes < currentTotalMinutes;
                     
-                    // Real booked check will happen later via async fetch, but we can set a flag
-                    const isBooked = this.isTimeBookedLocally(date, time12);
+                    const isBooked = this.isTimeBookedLocally(date, time24);
                     
                     slots.push({
                         time24: time24,
@@ -178,12 +176,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Check if time is booked from our locally cached data
-        isTimeBookedLocally(date, time12) {
+        isTimeBookedLocally(date, time24) {
             const dateStr = date.toISOString().split('T')[0];
             if (this.bookedSlots && this.bookedSlots[dateStr]) {
-                // The DB stores time as '9:00 AM' or '09:00 AM' or '21:00'? 
-                // Let's assume it matches the formatted time12 for simplicity or we should normalize.
-                return this.bookedSlots[dateStr].includes(time12);
+                // Normalize DB times (usually HH:MM:SS) to HH:MM
+                const normalizedBooked = this.bookedSlots[dateStr].map(t => t.substring(0, 5));
+                return normalizedBooked.includes(time24);
             }
             return false;
         }
