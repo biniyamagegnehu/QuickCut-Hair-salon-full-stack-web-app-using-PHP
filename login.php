@@ -1,6 +1,12 @@
 <?php
 session_start();
 
+// Redirect if already logged in
+if (isset($_SESSION['user_id'])) {
+    header("Location: welcome.php");
+    exit;
+}
+
 // Handle backend POST request for login
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     require_once 'db.php';
@@ -16,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     
     try {
-        $stmt = $pdo->prepare("SELECT id, name, password, role FROM Users WHERE email = ?");
+        $stmt = $pdo->prepare("SELECT id, name, password, role FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
         
@@ -73,10 +79,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <a class="nav-link" href="welcome.php" id="nav-home"><i class="fas fa-home me-1"></i>Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="login.php" id="nav-book-appointment"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
+                        <a class="nav-link" href="bookappointment.php" id="nav-book-appointment"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="login.php" id="nav-queue-status"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
+                        <a class="nav-link" href="queuestatus.php" id="nav-queue-status"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="aboutus.php" id="nav-about"><i class="fas fa-info-circle me-1"></i>About</a>
@@ -85,7 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <a class="nav-link active" href="login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
                     </li>
                 </ul>
-                <a href="login.php" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="login-book-now">
+                <a href="bookappointment.php" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="login-book-now">
                     <i class="fas fa-scissors me-1"></i>Book Now
                 </a>
             </div>

@@ -1,3 +1,7 @@
+<?php
+session_start();
+$is_logged_in = isset($_SESSION['user_id']);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,19 +31,25 @@
                         <a class="nav-link" href="welcome.php" id="nav-home"><i class="fas fa-home me-1"></i>Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="bookappointment.php" id="nav-book"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
+                        <a class="nav-link" href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" id="nav-book"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="queuestatus.php" id="nav-queue"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
+                        <a class="nav-link" href="<?php echo $is_logged_in ? 'queuestatus.php' : 'login.php'; ?>" id="nav-queue"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active" href="aboutus.php" id="nav-about"><i class="fas fa-info-circle me-1"></i>About</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
-                    </li>
+                    <?php if ($is_logged_in): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="logout.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
+                        </li>
+                    <?php endif; ?>
                 </ul>
-                <a href="bookappointment.php" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="about-book-now">
+                <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="about-book-now">
                     <i class="fas fa-scissors me-1"></i>Book Now
                 </a>
             </div>

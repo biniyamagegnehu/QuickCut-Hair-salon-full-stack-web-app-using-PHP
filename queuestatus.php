@@ -1,3 +1,11 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+$is_logged_in = true;
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -69,7 +77,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto" id="queue-nav-menu">
                     <li class="nav-item">
-                        <a class="nav-link" href="bookappointment.php" id="nav-book"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
+                        <a class="nav-link" href="welcome.php" id="nav-home"><i class="fas fa-home me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" id="nav-book"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active" href="queuestatus.php" id="nav-queue"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
@@ -77,9 +88,15 @@
                     <li class="nav-item">
                         <a class="nav-link" href="aboutus.php" id="nav-about"><i class="fas fa-info-circle me-1"></i>About</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="welcome.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
-                    </li>
+                    <?php if ($is_logged_in): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="logout.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
+                        </li>
+                    <?php endif; ?>
                     <li class="nav-item dropdown notification-dropdown">
                         <a class="nav-link" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-bell"></i>
@@ -91,7 +108,7 @@
                         </ul>
                     </li>
                 </ul>
-                <a href="bookappointment.php" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="queue-book-now">
+                <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="queue-book-now">
                     <i class="fas fa-scissors me-1"></i>Book Now
                 </a>
             </div>

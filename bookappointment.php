@@ -2,20 +2,23 @@
 session_start();
 require_once 'db.php';
 
-$is_logged_in = isset($_SESSION['user_id']);
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
+$is_logged_in = true;
 $user_name = '';
 $user_email = '';
 $user_phone = '';
 
-if ($is_logged_in) {
-    $stmt = $pdo->prepare("SELECT name, email, phone FROM users WHERE id = ?");
-    $stmt->execute([$_SESSION['user_id']]);
-    $user = $stmt->fetch();
-    if ($user) {
-        $user_name = $user['name'] ?? '';
-        $user_email = $user['email'] ?? '';
-        $user_phone = $user['phone'] ?? '';
-    }
+$stmt = $pdo->prepare("SELECT name, email, phone FROM users WHERE id = ?");
+$stmt->execute([$_SESSION['user_id']]);
+$user = $stmt->fetch();
+if ($user) {
+    $user_name = $user['name'] ?? '';
+    $user_email = $user['email'] ?? '';
+    $user_phone = $user['phone'] ?? '';
 }
 ?>
 <!DOCTYPE html>
@@ -98,9 +101,15 @@ if ($is_logged_in) {
                     <li class="nav-item">
                         <a class="nav-link" href="aboutus.php" id="nav-about"><i class="fas fa-info-circle me-1"></i>About</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="welcome.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
-                    </li>
+                    <?php if ($is_logged_in): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="logout.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
+                        </li>
+                    <?php endif; ?>
                     <li class="nav-item dropdown notification-dropdown">
                         <a class="nav-link" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-bell"></i>

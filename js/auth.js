@@ -6,21 +6,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const href = anchor.getAttribute('href');
         if (!href) return;
 
-        // Only special-case links that navigate to the public home page
-        if (href.endsWith('welcome.html') || href === 'welcome.html') {
-            // If this is the explicit logout link, clear session and allow navigation
-            if (anchor.id === 'nav-logout') {
-                try {
-                    sessionStorage.removeItem('quickcutCurrentUser');
-                } catch (err) {
-                    console.warn('Failed clearing session on logout', err);
-                }
-                // allow default navigation to proceed
-                return;
+        // Check for logout link by ID
+        if (anchor.id === 'nav-logout') {
+            try {
+                sessionStorage.removeItem('quickcutCurrentUser');
+                // The browser will then follow the href to logout.php
+            } catch (err) {
+                console.warn('Failed clearing session on logout', err);
             }
+            return;
+        }
 
-            // For other links that happen to point to welcome.html, do not clear session
-            // (allow navigation but ensure we don't accidentally treat this as a logout)
+        // Handle other navigation if needed
+        if (href.includes('welcome.php') || href.includes('welcome.html')) {
             return;
         }
     }, false);

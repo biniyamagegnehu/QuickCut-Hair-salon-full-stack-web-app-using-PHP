@@ -1,3 +1,11 @@
+<?php
+session_start();
+if (isset($_SESSION['user_id'])) {
+    header("Location: welcome.php");
+    exit;
+}
+$is_logged_in = false; // Always false if they reach here due to redirect above
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,19 +35,19 @@
                         <a class="nav-link" href="welcome.php" id="nav-home"><i class="fas fa-home me-1"></i>Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="create.php" id="nav-book-appointment"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
+                        <a class="nav-link" href="login.php" id="nav-book-appointment"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="create.php" id="nav-queue-status"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
+                        <a class="nav-link" href="login.php" id="nav-queue-status"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="aboutus.php" id="nav-about"><i class="fas fa-info-circle me-1"></i>About</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="create.php" id="nav-create-account"><i class="fas fa-user-plus me-1"></i>Create Account</a>
+                        <a class="nav-link active" href="login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
                     </li>
                 </ul>
-                <a href="create.php" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="create-book-now">
+                <a href="login.php" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="create-book-now">
                     <i class="fas fa-scissors me-1"></i>Book Now
                 </a>
             </div>

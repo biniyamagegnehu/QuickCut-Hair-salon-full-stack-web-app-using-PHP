@@ -1,3 +1,7 @@
+<?php
+session_start();
+$is_logged_in = isset($_SESSION['user_id']);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,19 +33,25 @@
                         <a class="nav-link active" href="welcome.php"><i class="fas fa-home me-1"></i>Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="login.php"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
+                        <a class="nav-link" href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="login.php"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
+                        <a class="nav-link" href="<?php echo $is_logged_in ? 'queuestatus.php' : 'login.php'; ?>"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="aboutus.php"><i class="fas fa-info-circle me-1"></i>About</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="login.php"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
-                    </li>
+                    <?php if ($is_logged_in): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="logout.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
+                        </li>
+                    <?php endif; ?>
                 </ul>
-                <a href="login.php" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="book-now-btn">
+                <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="book-now-btn">
                     <i class="fas fa-scissors me-1"></i>Book Now
                 </a>
             </div>
@@ -60,10 +70,10 @@
                         <h2 class="display-4 fw-light mb-4" id="hero-tagline">Skip the wait. <span class="fw-bold">Get the cut.</span></h2>
                         <p class="lead mb-5" id="hero-description">Professional grooming services tailored for the modern man. Book online and avoid long queues with our real-time scheduling system.</p>
                         <div class="d-flex flex-wrap gap-3 hero-buttons">
-                            <a href="login.php" class="btn btn-primary btn-lg px-5 py-3" id="book-appointment-btn">
+                            <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-primary btn-lg px-5 py-3" id="book-appointment-btn">
                                 <i class="fas fa-calendar-check me-2"></i>Book Appointment Now
                             </a>
-                            <a href="login.php" class="btn btn-outline-light btn-lg px-5 py-3" id="view-queue-btn">
+                            <a href="<?php echo $is_logged_in ? 'queuestatus.php' : 'login.php'; ?>" class="btn btn-outline-light btn-lg px-5 py-3" id="view-queue-btn">
                                 <i class="fas fa-clock me-2"></i>View Live Queue
                             </a>
                         </div>
@@ -129,7 +139,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <a href="login.php" class="btn btn-light w-100 py-3 mt-4" id="refresh-queue">
+                                <a href="<?php echo $is_logged_in ? 'queuestatus.php' : 'login.php'; ?>" class="btn btn-light w-100 py-3 mt-4" id="refresh-queue">
                                     <i class="fas fa-sync-alt me-2"></i>Refresh Queue Status
                                 </a>
                             </div>
@@ -173,7 +183,7 @@
                                 <li><i class="fas fa-check text-primary me-2"></i>Styling & products</li>
                                 <li><i class="fas fa-check text-primary me-2"></i>Free consultation</li>
                             </ul>
-                            <a href="login.php" class="btn btn-outline-primary w-100 mt-3" id="book-haircut">Book This Service</a>
+                            <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-outline-primary w-100 mt-3" id="book-haircut">Book This Service</a>
                         </div>
                     </div>
                 </div>
@@ -195,7 +205,7 @@
                                 <li><i class="fas fa-check text-primary me-2"></i>Beard oil & balm</li>
                                 <li><i class="fas fa-check text-primary me-2"></i>Detailed shaping</li>
                             </ul>
-                            <a href="login.php" class="btn btn-primary w-100 mt-3" id="book-beard">Book This Service</a>
+                            <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-primary w-100 mt-3" id="book-beard">Book This Service</a>
                         </div>
                     </div>
                 </div>
@@ -217,7 +227,7 @@
                                 <li><i class="fas fa-check text-primary me-2"></i>Hot towel facial</li>
                                 <li><i class="fas fa-check text-primary me-2"></i>Premium products</li>
                             </ul>
-                            <a href="login.php" class="btn btn-outline-primary w-100 mt-3" id="book-premium">Book This Service</a>
+                            <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-outline-primary w-100 mt-3" id="book-premium">Book This Service</a>
                         </div>
                     </div>
                 </div>
@@ -274,7 +284,7 @@
                         </div>
                     </div>
                     <div class="mt-5">
-                        <a href="login.php" class="btn btn-primary btn-lg px-5 py-3" id="book-first-appointment">
+                        <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-primary btn-lg px-5 py-3" id="book-first-appointment">
                             <i class="fas fa-calendar-plus me-2"></i>Book Your First Appointment
                         </a>
                     </div>
@@ -295,7 +305,7 @@
                         </p>
                     </div>
                     <div class="col-lg-4 text-lg-end">
-                        <a href="login.php" class="btn btn-light btn-lg px-5 py-3" id="schedule-now-btn">
+                        <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-light btn-lg px-5 py-3" id="schedule-now-btn">
                             <i class="fas fa-calendar-plus me-2"></i>Schedule Now
                         </a>
                     </div>
