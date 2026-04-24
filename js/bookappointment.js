@@ -33,6 +33,9 @@ document.addEventListener('DOMContentLoaded', function() {
             this.currentDate = new Date();
             this.dates = [];
             this.selectedDate = null;
+            this.bookedSlots = {};
+            this.selectedTime = null;
+            this.selectedTime24 = null;
             this.initializeDates();
             this.startDailyUpdate();
         }
@@ -64,6 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const firstAvailable = this.dates.find(date => date.isAvailable);
             if (firstAvailable) {
                 this.selectedDate = firstAvailable;
+                this.loadBookedSlots(firstAvailable, true);
             }
             
             this.renderDateList();
@@ -101,8 +105,111 @@ document.addEventListener('DOMContentLoaded', function() {
                 open_minute: openM,
                 close_hour: closeH,
                 close_minute: closeM,
+                open_time: hours.open_time,
+                close_time: hours.close_time,
                 is_closed: parseInt(hours.is_closed)
             };
+        }
+
+        getDayBounds(date) {
+            const hours = this.getHoursForDay(date);
+            const openTotalMinutes = hours.open_hour * 60 + hours.open_minute;
+            const closeTotalMinutes = hours.close_hour * 60 + hours.close_minute;
+
+            return {
+                hours,
+                openTotalMinutes,
+                closeTotalMinutes
+            };
+        }
+
+        getCurrentTotalMinutes() {
+            const now = new Date();
+            return now.getHours() * 60 + now.getMinutes();
+        }
+
+        isMinuteAvailable(date, hour, minute) {
+            const { hours, openTotalMinutes, closeTotalMinutes } = this.getDayBounds(date);
+            if (hours.is_closed) return false;
+
+            const selectedTotalMinutes = hour * 60 + minute;
+            if (selectedTotalMinutes < openTotalMinutes || selectedTotalMinutes >= closeTotalMinutes) {
+                return false;
+            }
+
+            const selectedDateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            const today = new Date();
+            const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+            if (selectedDateOnly < todayOnly) {
+                return false;
+            }
+
+            if (selectedDateOnly.getTime() === todayOnly.getTime() && selectedTotalMinutes < this.getCurrentTotalMinutes()) {
+                return false;
+            }
+
+            const time24 = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+            if (this.isTimeBookedLocally(date, time24)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        isHourAvailable(date, hour) {
+            for (let minute = 0; minute < 60; minute++) {
+                if (this.isMinuteAvailable(date, hour, minute)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        resetSelectedTime() {
+            this.selectedTime = null;
+            this.selectedTime24 = null;
+
+            const timeInput = document.getElementById('time-input');
+            if (timeInput) timeInput.value = '';
+
+            const timeValidation = document.getElementById('time-validation');
+            if (timeValidation) {
+                timeValidation.style.display = 'none';
+                timeValidation.innerHTML = '';
+            }
+
+            const timeInfo = document.getElementById('time-info');
+            if (timeInfo) {
+                timeInfo.style.display = 'none';
+                timeInfo.innerHTML = '';
+            }
+        }
+
+        loadBookedSlots(dateInfo, rerender = true) {
+            if (!dateInfo || !dateInfo.date) {
+                return Promise.resolve();
+            }
+
+            const dateStr = dateInfo.date.toISOString().split('T')[0];
+
+            return fetch(`get_booked_slots.php?date=${dateStr}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        this.bookedSlots[dateStr] = Array.isArray(data.booked_slots) ? data.booked_slots : [];
+                        dateInfo.timeSlots = this.generateTimeSlots(dateInfo.date, dateInfo.isToday);
+
+                        if (rerender && this.selectedDate === dateInfo) {
+                            this.updateSelectedDateUI();
+                            this.updateTimeInput();
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error('Error fetching booked slots:', err);
+                });
         }
         
         isDateAvailable(date, isToday) {
@@ -124,8 +231,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const currentMinute = now.getMinutes();
                 const currentTotalMinutes = currentHour * 60 + currentMinute;
                 
-                const openTimeMinutes = hours.open_hour * 60 + hours.open_minute;
-                const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
+                    const openTimeMinutes = hours.open_hour * 60 + hours.open_minute;
+                    const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
                 
                 // Check if current time is before closing time
                 return currentTotalMinutes < closeTimeMinutes;
@@ -249,30 +356,37 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         createDateListContainer() {
-            const datetimeSection = document.querySelector('#datetime-section');
-            if (!datetimeSection) return;
+            const dateCol = document.querySelector('#date-container-col') || document.querySelector('#datetime-section');
+            if (!dateCol) return;
             
             // Remove existing date picker if present
-            const oldDatePicker = datetimeSection.querySelector('.date-picker');
+            const oldDatePicker = dateCol.querySelector('.date-picker');
             if (oldDatePicker) {
                 oldDatePicker.remove();
             }
             
+            // Remove existing container if present
+            const oldContainer = dateCol.querySelector('.date-list-container');
+            if (oldContainer) {
+                oldContainer.remove();
+            }
+            
             // Create date list container
             const dateListContainer = document.createElement('div');
+            const todayHours = this.getHoursForDay(new Date());
             dateListContainer.className = 'date-list-container mb-4';
             dateListContainer.innerHTML = `
                 <div class="date-list-header mb-3">
                     <h5 class="mb-2"><i class="fas fa-calendar-alt me-2"></i>Select Date</h5>
-                    <p class="text-muted mb-0"><small>Click on a date to select. Today is closed after 6:00 PM.</small></p>
+                    <p class="text-muted mb-0"><small>Click on a date to select. Today follows the admin schedule: ${this.format24to12(todayHours.open_time || '09:00')} - ${this.format24to12(todayHours.close_time || '20:00')}.</small></p>
                 </div>
                 <div class="date-list" id="date-list"></div>
-                <div class="date-info mt-3" id="date-info" style="display: none;"></div>
+                <div id="date-info" class="mt-3" style="display: none;"></div>
             `;
             
-            datetimeSection.insertBefore(dateListContainer, datetimeSection.firstChild);
+            dateCol.appendChild(dateListContainer);
             
-            // Add real-time status indicator
+            // Add horizontal scrolling with mouse wheelindicator
             this.addRealTimeStatus();
         }
         
@@ -333,12 +447,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!dateInfo.isAvailable) {
                 if (dateInfo.isToday) {
                     const now = new Date();
+                    const hours = this.getHoursForDay(dateInfo.date);
                     const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
-                    const openTimeMinutes = BUSINESS_HOURS.OPEN_HOUR * 60 + BUSINESS_HOURS.OPEN_MINUTE;
-                    const closeTimeMinutes = BUSINESS_HOURS.CLOSE_HOUR * 60 + BUSINESS_HOURS.CLOSE_MINUTE;
+                    const openTimeMinutes = hours.open_hour * 60 + hours.open_minute;
+                    const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
                     
                     if (currentTotalMinutes < openTimeMinutes) {
-                        availabilityBadge = '<span class="date-badge closed"><i class="fas fa-clock"></i> Opens at 6:00 AM</span>';
+                        availabilityBadge = `<span class="date-badge closed"><i class="fas fa-clock"></i> Opens at ${this.format24to12(hours.open_time)}</span>`;
                     } else if (currentTotalMinutes >= closeTimeMinutes) {
                         availabilityBadge = '<span class="date-badge closed"><i class="fas fa-times-circle"></i> Closed</span>';
                     } else {
@@ -350,7 +465,8 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (dateInfo.isToday) {
                 const now = new Date();
                 const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
-                const closeTimeMinutes = BUSINESS_HOURS.CLOSE_HOUR * 60 + BUSINESS_HOURS.CLOSE_MINUTE;
+                const hours = this.getHoursForDay(dateInfo.date);
+                const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
                 const minutesLeft = closeTimeMinutes - currentTotalMinutes;
                 const hoursLeft = Math.floor(minutesLeft / 60);
                 
@@ -389,23 +505,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         selectDate(dateInfo) {
             this.selectedDate = dateInfo;
+            this.resetSelectedTime();
             
-            // Fetch real booked slots for this date
-            const dateStr = dateInfo.date.toISOString().split('T')[0];
-            fetch(`get_booked_slots.php?date=${dateStr}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        if (!this.bookedSlots) this.bookedSlots = {};
-                        this.bookedSlots[dateStr] = data.booked_slots;
-                        
-                        // Re-generate time slots with real booked data
-                        dateInfo.timeSlots = this.generateTimeSlots(dateInfo.date, dateInfo.isToday);
-                        
-                        this.updateSelectedDateUI();
-                        this.renderTimeInput();
-                    }
-                });
+            this.loadBookedSlots(dateInfo);
 
             this.updateSelectedDateUI();
             this.renderTimeInput();
@@ -438,9 +540,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 day: 'numeric',
                 year: 'numeric'
             });
-            
-            const availableSlots = this.selectedDate.timeSlots.filter(slot => slot.isAvailable).length;
-            const totalSlots = this.selectedDate.timeSlots.length;
             
             const hours = this.getHoursForDay(date);
             const open12 = this.format24to12(`${hours.open_hour.toString().padStart(2, '0')}:${hours.open_minute.toString().padStart(2, '0')}`);
@@ -477,7 +576,90 @@ document.addEventListener('DOMContentLoaded', function() {
                             <span class="text-primary">${formattedDate}</span>
                         </div>
                         <div class="text-end">
-                            <span class="badge ${availableSlots > 0 ? 'bg-success' : 'bg-danger'}">${availableSlots > 0 ? 'Available' : 'Fully Booked'}</span>
+                            <span class="badge ${hours.is_closed ? 'bg-danger' : 'bg-success'}">${hours.is_closed ? 'Closed' : 'Available'}</span>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted"><i class="fas fa-clock me-1"></i> Working hours: ${open12} - ${close12}</small>
+                    </div>
+                    ${availabilityText}
+                </div>
+            `;
+            dateInfoElement.style.display = 'block';
+        }
+        
+        renderTimeInput() {
+            if (!this.selectedDate) return;
+            
+            const timeContainer = document.querySelector('.time-input-container');
+            if (!timeContainer) {
+                this.createTimeInputContainer();
+            updateProgress();
+            updateBookingSummary();
+            
+            // Show selection animation
+            const dateItems = document.querySelectorAll('.date-list-item');
+            dateItems.forEach(item => item.classList.remove('date-selected'));
+            const selectedItem = document.querySelector(`.date-list-item[data-index="${this.dates.indexOf(dateInfo)}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('date-selected');
+                
+                // Add animation
+                selectedItem.style.animation = 'selectPulse 0.5s ease';
+                setTimeout(() => {
+                    selectedItem.style.animation = '';
+                }, 500);
+            }
+        }
+        
+        updateSelectedDateUI() {
+            const dateInfoElement = document.getElementById('date-info');
+            if (!dateInfoElement || !this.selectedDate) return;
+            
+            const date = this.selectedDate.date;
+            const formattedDate = date.toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            });
+            
+            const hours = this.getHoursForDay(date);
+            const open12 = this.format24to12(`${hours.open_hour.toString().padStart(2, '0')}:${hours.open_minute.toString().padStart(2, '0')}`);
+            const close12 = this.format24to12(`${hours.close_hour.toString().padStart(2, '0')}:${hours.close_minute.toString().padStart(2, '0')}`);
+            
+            let availabilityText = '';
+            if (this.selectedDate.isToday) {
+                const now = new Date();
+                const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+                const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
+                
+                if (currentTotalMinutes >= closeTimeMinutes) {
+                    availabilityText = `<div class="text-danger mt-2"><small><i class="fas fa-exclamation-circle"></i> Today is closed after ${close12}</small></div>`;
+                } else if (currentTotalMinutes < hours.open_hour * 60 + hours.open_minute) {
+                    availabilityText = `<div class="text-warning mt-2"><small><i class="fas fa-clock"></i> Opens at ${open12}</small></div>`;
+                } else {
+                    const minutesLeft = closeTimeMinutes - currentTotalMinutes;
+                    const hoursLeft = Math.floor(minutesLeft / 60);
+                    const minutesRemaining = minutesLeft % 60;
+                    
+                    if (hoursLeft > 0) {
+                        availabilityText = `<div class="text-warning mt-2"><small><i class="fas fa-clock"></i> Today closes at ${close12} (${hoursLeft}h ${minutesRemaining}m left)</small></div>`;
+                    } else {
+                        availabilityText = `<div class="text-warning mt-2"><small><i class="fas fa-clock"></i> Today closes at ${close12} (${minutesRemaining}m left)</small></div>`;
+                    }
+                }
+            }
+            
+            dateInfoElement.innerHTML = `
+                <div class="selected-date-info">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <strong><i class="fas fa-calendar-check me-2"></i>Selected Date</strong><br>
+                            <span class="text-primary">${formattedDate}</span>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge ${hours.is_closed ? 'bg-danger' : 'bg-success'}">${hours.is_closed ? 'Closed' : 'Available'}</span>
                         </div>
                     </div>
                     <div class="mt-2">
@@ -501,76 +683,80 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         createTimeInputContainer() {
-            const datetimeSection = document.querySelector('#datetime-section');
-            if (!datetimeSection) return;
+            const timeCol = document.querySelector('#time-container-col') || document.querySelector('#datetime-section');
+            if (!timeCol) return;
             
             // Remove existing time input container if present
-            const oldContainer = datetimeSection.querySelector('.time-input-container');
+            const oldContainer = timeCol.querySelector('.time-input-container');
             if (oldContainer) {
                 oldContainer.remove();
             }
             
             // Create time input container
             const timeInputContainer = document.createElement('div');
-            timeInputContainer.className = 'time-input-container mt-4';
+            timeInputContainer.className = 'time-input-container w-100';
             timeInputContainer.innerHTML = `
                 <div class="time-input-header mb-3">
                     <h5><i class="fas fa-clock me-2"></i>Select Time</h5>
-                    <p class="text-muted mb-0"><small>Choose your preferred time. Only working hours are activated.</small></p>
+                    <p class="text-muted mb-0"><small>Choose any time. Outside working hours are disabled.</small></p>
                 </div>
-                <div class="time-slots-grid" id="time-slots-grid">
-                    <!-- Time slots rendered here -->
+                <div class="time-picker-wrapper form-floating mb-3">
+                    <input type="time" id="time-input" class="form-control form-control-lg fw-bold" required>
+                    <label for="time-input"><i class="fas fa-history me-2"></i>Appointment Time</label>
                 </div>
-                <div class="time-validation mt-3" id="time-validation" style="display: none;"></div>
+                <div class="time-validation mt-2" id="time-validation" style="display: none;"></div>
                 <div class="time-info mt-3" id="time-info" style="display: none;"></div>
-                
-                <style>
-                    .time-slots-grid {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-                        gap: 10px;
-                        max-height: 300px;
-                        overflow-y: auto;
-                        padding: 10px;
-                        background: rgba(255, 255, 255, 0.05);
-                        border-radius: 12px;
-                        border: 1px solid rgba(255, 255, 255, 0.1);
-                    }
-                    .time-slot-btn {
-                        padding: 10px 5px;
-                        border-radius: 8px;
-                        border: 1px solid rgba(255, 255, 255, 0.1);
-                        background: transparent;
-                        color: #ccc;
-                        font-size: 0.85rem;
-                        transition: all 0.2s ease;
-                        cursor: pointer;
-                        text-align: center;
-                    }
-                    .time-slot-btn:hover:not(:disabled) {
-                        border-color: var(--primary-color);
-                        color: var(--primary-color);
-                        background: rgba(var(--primary-rgb), 0.1);
-                    }
-                    .time-slot-btn.active {
-                        background: var(--primary-color);
-                        color: white;
-                        border-color: var(--primary-color);
-                        box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.4);
-                    }
-                    .time-slot-btn:disabled {
-                        opacity: 0.3;
-                        cursor: not-allowed;
-                        background: rgba(255, 255, 255, 0.02);
-                    }
-                    .time-slot-btn.booked {
-                        text-decoration: line-through;
-                        opacity: 0.4;
-                    }
-                </style>
             `;
             
-            datetimeSection.appendChild(timeInputContainer);
+            timeCol.appendChild(timeInputContainer);
+            
+            const timeInput = document.getElementById('time-input');
+            
+            const validateTimeSelection = () => {
+                if (timeInput.value) {
+                    const [hStr, mStr] = timeInput.value.split(':');
+                    const h = parseInt(hStr, 10);
+                    const m = parseInt(mStr, 10);
+                    const time24 = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                    const time12 = this.format24to12(time24);
+                    
+                    this.selectedTime = time12;
+                    this.selectedTime24 = time24;
+                    
+                    const timeValidation = document.getElementById('time-validation');
+                    
+                    // Check if booked
+                    if (this.isTimeBookedLocally(this.selectedDate.date, time24)) {
+                        timeValidation.innerHTML = `<div class="text-danger"><small><i class="fas fa-times-circle"></i> ${time12} is already booked. Please choose another time.</small></div>`;
+                        timeValidation.style.display = 'block';
+                        this.selectedTime = null; // Invalidate
+                        const timeInfo = document.getElementById('time-info');
+                        if (timeInfo) timeInfo.style.display = 'none';
+                    } else {
+                        if (!this.isMinuteAvailable(this.selectedDate.date, h, m)) {
+                            timeValidation.innerHTML = `<div class="text-danger"><small><i class="fas fa-times-circle"></i> ${time12} is unavailable.</small></div>`;
+                            timeValidation.style.display = 'block';
+                            this.selectedTime = null; // Invalidate
+                            const timeInfo = document.getElementById('time-info');
+                            if (timeInfo) timeInfo.style.display = 'none';
+                        } else {
+                            timeValidation.innerHTML = `<div class="text-success"><small><i class="fas fa-check-circle"></i> ${time12} selected</small></div>`;
+                            timeValidation.style.display = 'block';
+                            this.updateTimeInfo(time12);
+                        }
+                    }
+                    
+                    updateProgress();
+                    updateBookingSummary();
+                } else {
+                    this.resetSelectedTime();
+                    updateProgress();
+                    updateBookingSummary();
+                }
+            };
+            
+            timeInput.addEventListener('change', validateTimeSelection);
+            
             this.updateTimeInput();
         }
         
@@ -581,47 +767,62 @@ document.addEventListener('DOMContentLoaded', function() {
         updateTimeInput() {
             if (!this.selectedDate) return;
             
-            const grid = document.getElementById('time-slots-grid');
-            if (!grid) return;
+            const timeInput = document.getElementById('time-input');
+            if (!timeInput) return;
             
-            grid.innerHTML = '';
+            const hours = this.getHoursForDay(this.selectedDate.date);
             
-            this.selectedDate.timeSlots.forEach(slot => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = `time-slot-btn ${slot.isBooked ? 'booked' : ''}`;
-                btn.textContent = slot.time12;
+            if (hours.is_closed) {
+                timeInput.disabled = true;
+                timeInput.value = '';
+                this.resetSelectedTime();
+                return;
+            }
+            
+            timeInput.disabled = false;
+            
+            const openHourStr = hours.open_hour.toString().padStart(2, '0');
+            const openMinStr = hours.open_minute.toString().padStart(2, '0');
+            const closeHourStr = hours.close_hour.toString().padStart(2, '0');
+            const closeMinStr = hours.close_minute.toString().padStart(2, '0');
+            
+            let minTime = `${openHourStr}:${openMinStr}`;
+            const maxTime = `${closeHourStr}:${closeMinStr}`;
+            
+            // If today, minTime should be the current time if it's past opening time
+            if (this.selectedDate.isToday) {
+                const now = new Date();
+                const currentH = now.getHours();
+                const currentM = now.getMinutes();
+                const currentTotal = currentH * 60 + currentM;
+                const openTotal = hours.open_hour * 60 + hours.open_minute;
                 
-                if (!slot.isAvailable) {
-                    btn.disabled = true;
-                    if (slot.isBooked) btn.title = 'Already booked';
-                    else if (slot.isPassed) btn.title = 'Time has passed';
-                    else btn.title = 'Outside working hours';
+                if (currentTotal > openTotal) {
+                    minTime = `${currentH.toString().padStart(2, '0')}:${currentM.toString().padStart(2, '0')}`;
                 }
+            }
+            
+            timeInput.min = minTime;
+            timeInput.max = maxTime;
+            
+            // Re-validate current value if exists
+            if (timeInput.value) {
+                const [hStr, mStr] = timeInput.value.split(':');
+                const h = parseInt(hStr, 10);
+                const m = parseInt(mStr, 10);
                 
-                btn.addEventListener('click', () => {
-                    // Deselect others
-                    grid.querySelectorAll('.time-slot-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    
-                    // Set selected time
-                    this.selectedTime = slot.time12;
-                    this.selectedTime24 = slot.time24;
-                    
-                    // Update validation and summary
-                    const timeValidation = document.getElementById('time-validation');
-                    if (timeValidation) {
-                        timeValidation.innerHTML = `<div class="text-success"><small><i class="fas fa-check-circle"></i> ${slot.time12} selected</small></div>`;
-                        timeValidation.style.display = 'block';
-                    }
-                    
-                    this.updateTimeInfo(slot.time12);
-                    updateProgress();
-                    updateBookingSummary();
-                });
-                
-                grid.appendChild(btn);
-            });
+                if (!this.isMinuteAvailable(this.selectedDate.date, h, m)) {
+                    timeInput.value = '';
+                    this.resetSelectedTime();
+                }
+            }
+            
+            updateProgress();
+            updateBookingSummary();
+        }
+
+        updateMinuteOptions() {
+            // Deprecated: No longer using minute select dropdown
         }
         
         updateTimeInfo(time12) {
@@ -770,12 +971,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             else if (section.id === 'datetime-section') {
                 const dateSelected = dateConfig.selectedDate;
-                const timeHour = document.getElementById('time-hour');
-                const timeMinute = document.getElementById('time-minute');
-                const timePeriod = document.getElementById('time-period');
+                const timeInput = document.getElementById('time-input');
                 
-                if (dateSelected && timeHour && timeMinute && timePeriod &&
-                    timeHour.value && timeMinute.value && timePeriod.value) {
+                if (dateSelected && timeInput && timeInput.value && dateConfig.getSelectedTime12()) {
                     hasValue = true;
                 }
             }
@@ -935,7 +1133,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('summary-time').textContent = selectedTime12;
             document.getElementById('summary-time').className = '';
         } else {
-            document.getElementById('summary-time').textContent = 'Enter time';
+            document.getElementById('summary-time').textContent = 'Select time';
             document.getElementById('summary-time').className = 'text-muted';
         }
     }

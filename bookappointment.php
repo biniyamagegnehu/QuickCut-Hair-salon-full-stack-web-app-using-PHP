@@ -152,11 +152,8 @@ $barbers = $stmt->fetchAll();
                         </div>
                     </div>
                     <div class="col-lg-4 text-lg-end">
-                        <div class="header-stats" id="header-stats">
-                            <div class="stat-item">
-                                <div class="stat-number" id="available-slots">4</div>
-                                <div class="stat-label">Available Slots</div>
-                            </div>
+                        <div class="header-stats" id="header-stats" style="display: none;">
+                            <!-- Removed number of slots as requested -->
                         </div>
                     </div>
                 </div>
@@ -296,77 +293,12 @@ $barbers = $stmt->fetchAll();
 
                             <!-- Date & Time -->
                             <div class="form-section" id="datetime-section">
-                                <div class="row">
-                                    <div class="col-md-6 mb-4">
-                                        
-                                        <div class="date-picker" id="date-picker">
-                                            <div class="date-option" id="date-option-1">
-                                                <input type="radio" name="date" id="today" value="today" required>
-                                                <label for="today">
-                                                    <span class="date-day">Today</span>
-                                                    <span class="date-full">Available slots</span>
-                                                    <span class="badge available" id="today-slots">12 slots</span>
-                                                </label>
-                                            </div>
-                                            <div class="date-option" id="date-option-2">
-                                                <input type="radio" name="date" id="tomorrow" value="tomorrow" required>
-                                                <label for="tomorrow">
-                                                    <span class="date-day">Tomorrow</span>
-                                                    <span class="date-full">More availability</span>
-                                                    <span class="badge available" id="tomorrow-slots">8 slots</span>
-                                                </label>
-                                            </div>
-                                            <div class="date-option" id="date-option-3">
-                                                <input type="radio" name="date" id="saturday" value="saturday" required>
-                                                <label for="saturday">
-                                                    <span class="date-day">Saturday</span>
-                                                    <span class="date-full">Weekend special</span>
-                                                    <span class="badge limited" id="saturday-slots">2 slots</span>
-                                                </label>
-                                            </div>
-                                        </div>
+                                <div class="row" id="datetime-row">
+                                    <div class="col-md-6 mb-4" id="date-container-col">
+                                        <!-- Dynamic Date Picker will be rendered here by JS -->
                                     </div>
-
-                                    <div class="col-md-6">
-                 
-                                        <div class="time-slots" id="time-slots">
-                                            <div class="time-option" id="time-option-1">
-                                                <input type="radio" name="time" id="time1" value="9:00 AM" required>
-                                                <label for="time1">9:00 AM</label>
-                                            </div>
-                                            <div class="time-option booked" id="time-option-2">
-                                                <label>10:00 AM</label>
-                                                <small class="booked-text">Booked</small>
-                                            </div>
-                                            <div class="time-option" id="time-option-3">
-                                                <input type="radio" name="time" id="time3" value="11:00 AM" required>
-                                                <label for="time3">11:00 AM</label>
-                                            </div>
-                                            <div class="time-option" id="time-option-4">
-                                                <input type="radio" name="time" id="time4" value="12:00 PM" required>
-                                                <label for="time4">12:00 PM</label>
-                                            </div>
-                                            <div class="time-option" id="time-option-5">
-                                                <input type="radio" name="time" id="time5" value="2:00 PM" required>
-                                                <label for="time5">2:00 PM</label>
-                                            </div>
-                                            <div class="time-option" id="time-option-6">
-                                                <input type="radio" name="time" id="time6" value="3:00 PM" required>
-                                                <label for="time6">3:00 PM</label>
-                                            </div>
-                                            <div class="time-option" id="time-option-7">
-                                                <input type="radio" name="time" id="time7" value="4:00 PM" required>
-                                                <label for="time7">4:00 PM</label>
-                                            </div>
-                                            <div class="time-option" id="time-option-8">
-                                                <input type="radio" name="time" id="time8" value="5:00 PM" required>
-                                                <label for="time8">5:00 PM</label>
-                                            </div>
-                                            <div class="time-option" id="time-option-9">
-                                                <input type="radio" name="time" id="time9" value="6:00 PM" required>
-                                                <label for="time9">6:00 PM</label>
-                                            </div>
-                                        </div>
+                                    <div class="col-md-6" id="time-container-col">
+                                        <!-- Dynamic Time Pickers will be rendered here by JS -->
                                     </div>
                                 </div>
                             </div>
