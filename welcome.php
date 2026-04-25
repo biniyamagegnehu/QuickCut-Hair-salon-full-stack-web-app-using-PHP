@@ -1,3 +1,4 @@
+<?php
 session_start();
 require_once 'db.php';
 $is_logged_in = isset($_SESSION['user_id']);
