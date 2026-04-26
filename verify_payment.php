@@ -13,6 +13,9 @@ require_once 'db.php';
 require_once 'config/chapa.php';
 require_once 'create_notification.php';
 
+// --- LOGGING FOR DEBUGGING ---
+file_put_contents('chapa_debug.log', "--- VERIFY_START " . date('Y-m-d H:i:s') . " ---\n" . "GET PARAMS: " . json_encode($_GET) . "\n\n", FILE_APPEND);
+
 // ── Get tx_ref from query string ──────────────────────────────
 $tx_ref = trim($_GET['tx_ref'] ?? '');
 
@@ -55,6 +58,7 @@ curl_setopt_array($ch, [
         'Authorization: Bearer ' . CHAPA_SECRET_KEY,
     ],
     CURLOPT_SSL_VERIFYPEER => false,
+    CURLOPT_SSL_VERIFYHOST => false,
     CURLOPT_TIMEOUT        => 30,
 ]);
 
@@ -62,6 +66,9 @@ $verify_raw  = curl_exec($ch);
 $curl_error  = curl_error($ch);
 $http_code   = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
+
+// --- LOGGING FOR DEBUGGING ---
+file_put_contents('chapa_debug.log', "--- VERIFY " . date('Y-m-d H:i:s') . " ---\n" . "TX_REF: " . $tx_ref . "\n" . "HTTP Code: " . $http_code . "\n" . "Response: " . $verify_raw . "\n\n", FILE_APPEND);
 
 if ($curl_error || $verify_raw === false) {
     header('Location: payment_failed.php?reason=gateway_error&tx_ref=' . urlencode($tx_ref));

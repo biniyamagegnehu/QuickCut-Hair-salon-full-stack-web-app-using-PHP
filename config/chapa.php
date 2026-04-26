@@ -6,7 +6,7 @@
 
 // --- Chapa API Key ---
 // Replace with your actual Chapa Secret Key from https://dashboard.chapa.co
-define('CHAPA_SECRET_KEY', 'CHASECK_TEST-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+define('CHAPA_SECRET_KEY', 'CHASECK_TEST-NCjhNvt83XMnU5q8CqNxMz3X69up0ytG');
 
 // --- Chapa API Base URL ---
 define('CHAPA_BASE_URL', 'https://api.chapa.co/v1');

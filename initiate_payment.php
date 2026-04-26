@@ -152,16 +152,15 @@ $chapa_payload = [
     'amount'        => $deposit_amount,
     'currency'      => CHAPA_CURRENCY,
     'email'         => $email,
-    'first_name'    => $first_name,
-    'last_name'     => $last_name,
+    'first_name'    => !empty($first_name) ? $first_name : 'Customer',
+    'last_name'     => !empty($last_name) ? $last_name : '-', // Chapa requires last_name
     'phone_number'  => $phone,
     'tx_ref'        => $tx_ref,
     'callback_url'  => CHAPA_CALLBACK_URL,
-    'return_url'    => CHAPA_CALLBACK_URL, // Chapa also uses return_url
+    'return_url'    => CHAPA_CALLBACK_URL . '?tx_ref=' . $tx_ref, 
     'customization' => [
-        'title'       => 'QuickCut 50% Deposit',
-        'description' => "Deposit for $service_name appointment on $date_sql at $time_24",
-        'logo'        => 'http://localhost/QuickCut/assets/logo.png',
+        'title'       => 'QuickCut', // Max 16 characters
+        'description' => 'Deposit for ' . substr($service_name, 0, 15) . ' on ' . $date_sql, // Max 50 characters
     ],
 ];
 
@@ -174,7 +173,8 @@ curl_setopt_array($ch, [
         'Authorization: Bearer ' . CHAPA_SECRET_KEY,
         'Content-Type: application/json',
     ],
-    CURLOPT_SSL_VERIFYPEER => false, // Disable for localhost; enable in production
+    CURLOPT_SSL_VERIFYPEER => false, 
+    CURLOPT_SSL_VERIFYHOST => false,
     CURLOPT_TIMEOUT        => 30,
 ]);
 
@@ -183,11 +183,15 @@ $curl_error     = curl_error($ch);
 $http_code      = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
 
+// --- LOGGING FOR DEBUGGING ---
+// Check this file in the root directory if booking fails
+file_put_contents('chapa_debug.log', "--- " . date('Y-m-d H:i:s') . " ---\n" . "Payload: " . json_encode($chapa_payload) . "\n" . "HTTP Code: " . $http_code . "\n" . "Response: " . $chapa_raw . "\n\n", FILE_APPEND);
+
 if ($curl_error || $chapa_raw === false) {
     // Mark payment as failed
     $pdo->prepare("UPDATE payments SET status='failed' WHERE transaction_ref=?")->execute([$tx_ref]);
     $pdo->prepare("UPDATE appointments SET status='cancelled' WHERE id=?")->execute([$appointment_id]);
-    echo json_encode(['success' => false, 'message' => 'Payment gateway connection failed. Please try again.']);
+    echo json_encode(['success' => false, 'message' => 'Payment gateway connection failed: ' . $curl_error]);
     exit;
 }
 
@@ -198,7 +202,13 @@ if ($http_code !== 200 || ($chapa_resp['status'] ?? '') !== 'success') {
         $chapa_raw, $tx_ref
     ]);
     $pdo->prepare("UPDATE appointments SET status='cancelled' WHERE id=?")->execute([$appointment_id]);
+    
     $err_msg = $chapa_resp['message'] ?? 'Payment initiation failed.';
+    // If it's a validation error, provide more detail
+    if (isset($chapa_resp['errors'])) {
+        $err_msg .= ' Details: ' . json_encode($chapa_resp['errors']);
+    }
+    
     echo json_encode(['success' => false, 'message' => $err_msg]);
     exit;
 }
