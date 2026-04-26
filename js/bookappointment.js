@@ -544,50 +544,69 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========== SUMMARY UPDATER ==========
     function updateBookingSummary() {
         const service = document.querySelector('input[name="service"]:checked');
-        const barber = document.querySelector('input[name="barber"]:checked');
-        
+        const barber  = document.querySelector('input[name="barber"]:checked');
+
         // Service
-        const sEl = document.getElementById('summary-service');
-        const pEl = document.getElementById('summary-price');
+        const sEl         = document.getElementById('summary-service');
+        const pEl         = document.getElementById('summary-price');
+        const depositEl   = document.getElementById('summary-deposit');
+        const depositRow  = document.getElementById('summary-deposit-row');
+
         if (service) {
             sEl.textContent = service.closest('.service-option').querySelector('h4').textContent;
-            sEl.className = 'text-primary fw-bold';
-            pEl.textContent = service.dataset.price || '0 Birr';
+            sEl.className   = 'text-primary fw-bold';
+
+            // Parse numeric price from data-price (e.g. "200 Birr" → 200)
+            const rawPrice  = parseFloat((service.dataset.price || '0').replace(/[^\d.]/g, '')) || 0;
+            const deposit   = (rawPrice * 0.5).toFixed(2);
+
+            pEl.textContent = rawPrice.toFixed(2) + ' ETB';
+
+            if (depositEl) {
+                depositEl.textContent = deposit + ' ETB';
+                depositEl.className   = 'fw-bold text-warning';
+            }
+            const formDepositEl = document.getElementById('payment-deposit-amount');
+            if (formDepositEl) formDepositEl.textContent = deposit + ' ETB';
+            
+            if (depositRow) depositRow.style.display = '';
         } else {
             sEl.textContent = 'Select service';
-            sEl.className = 'text-muted';
-            pEl.textContent = '0 Birr';
+            sEl.className   = 'text-muted';
+            pEl.textContent = '0 ETB';
+            if (depositEl)  depositEl.textContent = '0 ETB';
+            if (depositRow) depositRow.style.display = 'none';
         }
-        
+
         // Barber
         const bEl = document.getElementById('summary-barber');
         if (barber && !barber.disabled) {
             bEl.textContent = barber.value;
-            bEl.className = 'text-primary fw-bold';
+            bEl.className   = 'text-primary fw-bold';
         } else {
             bEl.textContent = 'Select barber';
-            bEl.className = 'text-muted';
+            bEl.className   = 'text-muted';
         }
-        
+
         // Date & Time
         const dEl = document.getElementById('summary-date');
         const tEl = document.getElementById('summary-time');
         if (window.dateConfig && window.dateConfig.selectedDate) {
             dEl.textContent = window.dateConfig.selectedDate.displayDate;
-            dEl.className = 'text-primary fw-bold';
+            dEl.className   = 'text-primary fw-bold';
         } else {
             dEl.textContent = 'Select date';
-            dEl.className = 'text-muted';
+            dEl.className   = 'text-muted';
         }
-        
-        const ti = document.getElementById('time-input');
+
+        const ti   = document.getElementById('time-input');
         const time = ti ? ti.value : '';
         if (time && window.dateConfig) {
             tEl.textContent = window.dateConfig.getSelectedTime12();
-            tEl.className = 'text-primary fw-bold';
+            tEl.className   = 'text-primary fw-bold';
         } else {
             tEl.textContent = 'Select time';
-            tEl.className = 'text-muted';
+            tEl.className   = 'text-muted';
         }
     }
 
@@ -612,65 +631,70 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // ========== FORM SUBMISSION ==========
+    // ========== FORM SUBMISSION – Chapa Payment Flow ==========
     if (bookingForm) {
         bookingForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             let valid = true;
             bookingForm.querySelectorAll('input[required]').forEach(i => { if (!validateInput(i)) valid = false; });
-            
-            if (!document.querySelector('input[name="service"]:checked')) { showToast('Error', 'Select a service', 'error'); valid = false; }
-            if (!document.querySelector('input[name="barber"]:checked')) { showToast('Error', 'Select a barber', 'error'); valid = false; }
-            if (!document.getElementById('time-input').value) { showToast('Error', 'Select a time', 'error'); valid = false; }
-            
+
+            if (!document.querySelector('input[name="service"]:checked'))   { showToast('Error', 'Please select a service',  'error'); valid = false; }
+            if (!document.querySelector('input[name="barber"]:checked'))    { showToast('Error', 'Please select a barber',   'error'); valid = false; }
+            if (!document.getElementById('time-input')?.value)              { showToast('Error', 'Please select a time slot', 'error'); valid = false; }
+
             if (!valid) return;
 
-            // Payment Validation
-            const method = document.querySelector('input[name="payment_method"]:checked')?.value;
-            if (!method) { showToast('Error', 'Select payment method', 'error'); return; }
+            const submitBtn   = document.getElementById('confirm-booking-btn');
+            const originalHTML = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Initiating Payment…';
+            submitBtn.disabled  = true;
 
-            const submitBtn = document.getElementById('confirm-booking-btn');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
-            submitBtn.disabled = true;
+            const serviceInput = document.querySelector('input[name="service"]:checked');
+            const rawPrice     = parseFloat((serviceInput.dataset.price || '0').replace(/[^\d.]/g, '')) || 0;
+            const deposit      = (rawPrice * 0.5).toFixed(2);
 
             const payload = {
-                fullName: document.getElementById('booking-full-name').value,
-                phone: document.getElementById('booking-phone').value,
-                email: document.getElementById('booking-email').value,
-                service: document.querySelector('input[name="service"]:checked').value,
-                date: window.dateConfig.selectedDate.date.toISOString().split('T')[0],
-                time: document.getElementById('time-input').value,
-                barber: document.querySelector('input[name="barber"]:checked').value,
-                payment_method: method
+                fullName : document.getElementById('booking-full-name').value.trim(),
+                phone    : document.getElementById('booking-phone').value.trim(),
+                email    : document.getElementById('booking-email').value.trim(),
+                service  : serviceInput.value,
+                date     : window.dateConfig.selectedDate.date.toISOString().split('T')[0],
+                time     : document.getElementById('time-input').value,
+                barber   : document.querySelector('input[name="barber"]:checked').value,
             };
 
-            fetch('book_appointment.php', {
-                method: 'POST',
+            // Save partial booking info in case user needs it on return
+            localStorage.setItem('quickcutPendingBooking', JSON.stringify({
+                ...payload,
+                deposit,
+                initiatedAt: new Date().toISOString()
+            }));
+
+            fetch('initiate_payment.php', {
+                method : 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body   : JSON.stringify(payload)
             })
             .then(res => res.json())
             .then(data => {
-                if (data.success) {
-                    localStorage.setItem('quickcutLastBooking', JSON.stringify({
-                        ...payload,
-                        appointment_id: data.appointment_id,
-                        bookingTime: new Date().toISOString()
-                    }));
-                    window.location.href = 'queuestatus.php';
+                if (data.success && data.checkout_url) {
+                    // Store appointment id for potential future reference
+                    localStorage.setItem('quickcutAppointmentId', data.appointment_id);
+                    // Redirect to Chapa payment page
+                    showToast('Redirecting', 'Taking you to the secure payment page…', 'info');
+                    setTimeout(() => { window.location.href = data.checkout_url; }, 800);
                 } else {
-                    showToast('Booking Failed', data.message || 'Error', 'error');
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
+                    showToast('Booking Failed', data.message || 'Could not initiate payment. Try again.', 'error');
+                    submitBtn.innerHTML = originalHTML;
+                    submitBtn.disabled  = false;
                 }
             })
             .catch(err => {
-                console.error(err);
-                showToast('Error', 'Connection failed', 'error');
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
+                console.error('Payment initiation error:', err);
+                showToast('Connection Error', 'Failed to reach the server. Please try again.', 'error');
+                submitBtn.innerHTML = originalHTML;
+                submitBtn.disabled  = false;
             });
         });
     }
@@ -709,14 +733,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 1000);
     }
 
-    // Payment method toggles
-    const pRadios = document.querySelectorAll('input[name="payment_method"]');
-    pRadios.forEach(r => r.addEventListener('change', () => {
-        ['telebirr', 'cbe', 'bank'].forEach(m => {
-            const el = document.getElementById(`${m}-details`);
-            if (el) el.style.display = (r.value === m) ? '' : 'none';
-        });
-    }));
+    // Payment is handled by Chapa — no local payment-method toggles needed.
+    // The old telebirr/cbe/bank UI has been replaced by Chapa's hosted checkout.
 
     addRealTimeClock();
     updateBookingSummary();
