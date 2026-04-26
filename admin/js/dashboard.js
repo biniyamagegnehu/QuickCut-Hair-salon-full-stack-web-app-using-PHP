@@ -13,7 +13,7 @@ function initDashboard() {
                 updateStatsCards(data.stats);
             } else {
                 if (data.message && data.message.includes('Unauthorized')) {
-                    window.location.href = 'login.php';
+                    window.location.href = '../login.php';
                 }
             }
         })

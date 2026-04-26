@@ -267,7 +267,7 @@ check_admin_page();
     
     <!-- JavaScript Files -->
     <script src="../js/auth.js"></script>
-    <script src="js/common.js"></script>
+    <script src="js/common.js?v=1.0.1"></script>
     <script src="js/appointments.js"></script>
 </body>
 </html>

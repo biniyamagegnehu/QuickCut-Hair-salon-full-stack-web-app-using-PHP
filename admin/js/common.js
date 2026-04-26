@@ -9,7 +9,7 @@ let barbers = [];
 let services = [];
 let customers = [];
 let notifications = JSON.parse(localStorage.getItem('quickcut-notifications')) || [];
-let currentPage = window.location.pathname.split('/').pop().replace('.php', '').replace('.html', '');
+let currentPage = window.location.pathname.split('/').pop().replace('.php', '').replace('.php', '');
 
 // Fetch global data from database
 function fetchGlobalData() {
@@ -65,7 +65,7 @@ function fetchGlobalData() {
 // Initialize common features
 function initCommonFeatures() {
     // Skip authentication check for login page
-    if (window.location.pathname.includes('login.php') || window.location.pathname.includes('login.html')) {
+    if (window.location.pathname.includes('login.php') || window.location.pathname.includes('login.php')) {
         return;
     }
     
@@ -436,7 +436,7 @@ function markActiveNavLink() {
         
         // Special case for dashboard
         if (currentPage === '' || currentPage === 'admin' || currentPage === 'admin/') {
-            if (href === 'dashboard.html') {
+            if (href === 'dashboard.php') {
                 link.classList.add('active');
             }
         }
@@ -805,16 +805,16 @@ function getResultDescription(result) {
 function viewSearchResult(type, id) {
     switch(type) {
         case 'appointment':
-            window.location.href = `appointments.html?view=${id}`;
+            window.location.href = `appointments.php?view=${id}`;
             break;
         case 'customer':
-            window.location.href = `customers.html?view=${id}`;
+            window.location.href = `customers.php?view=${id}`;
             break;
         case 'barber':
-            window.location.href = `barbers.html?view=${id}`;
+            window.location.href = `barbers.php?view=${id}`;
             break;
         case 'service':
-            window.location.href = `services.html?view=${id}`;
+            window.location.href = `services.php?view=${id}`;
             break;
     }
 }
@@ -1046,18 +1046,18 @@ function confirmLogout() {
 
 // Logout function
 function logout() {
-    // Clear authentication data
+    // Clear authentication data (local storage)
     localStorage.removeItem('quickcut-admin-loggedin');
     localStorage.removeItem('quickcut-admin-username');
     localStorage.removeItem('quickcut-admin-lastactivity');
     localStorage.removeItem('quickcut-admin-logintime');
     
     // Show logout notification
-    showNotification('You have been logged out successfully. Redirecting to login...', 'info', 2000);
+    showNotification('You have been logged out successfully. Redirecting...', 'info', 2000);
     
-    // Redirect to login page after delay
+    // Redirect to server-side logout to destroy PHP session
     setTimeout(() => {
-        window.location.href = 'login.html';
+        window.location.href = '../logout.php';
     }, 1500);
 }
 

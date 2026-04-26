@@ -2,8 +2,10 @@
 session_start();
 // Unset all session variables
 $_SESSION = array();
+
 // Destroy the session
 session_destroy();
+
 // Clear cookie if used
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
@@ -12,7 +14,8 @@ if (ini_get("session.use_cookies")) {
         $params["secure"], $params["httponly"]
     );
 }
-// Redirect to home page
-header("Location: welcome.php");
+
+// Redirect to the main login page
+header("Location: login.php");
 exit;
 ?>
