@@ -1,11 +1,11 @@
 <?php
 session_start();
-require_once 'db.php';
+require_once '../includes/db.php';
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: ../auth/login.php");
     exit;
 }
-include 'header.php';
+include '../includes/header.php';
 ?>
 <style>
     .queue-page-wrapper {
@@ -136,7 +136,7 @@ include 'header.php';
                         <i class="fas fa-calendar-times fa-3x mb-3 text-muted"></i>
                         <h3 class="fw-bold">No active booking today</h3>
                         <p class="text-muted">Your next appointment will appear here when it's near.</p>
-                        <a href="bookappointment.php" class="btn btn-primary btn-lg mt-3 book-now-btn">Book Now</a>
+                        <a href="../booking/bookappointment.php" class="btn btn-primary btn-lg mt-3 book-now-btn">Book Now</a>
                     </div>
 
                     <div id="has-booking">
@@ -251,7 +251,7 @@ include 'header.php';
 
     async function fetchPosition() {
         try {
-            const res = await fetch('get_position.php');
+            const res = await fetch(BASE_URL + 'queue/get_position.php');
             const p = await res.json();
             
             const hasBooking = document.getElementById('has-booking');
@@ -298,7 +298,7 @@ include 'header.php';
 
     async function fetchQueue(date) {
         try {
-            const res = await fetch(`get_queue.php?date=${date}`);
+            const res = await fetch(BASE_URL + 'queue/get_queue.php?date=' + date);
             const data = await res.json();
             const list = document.getElementById('q-list');
 
@@ -335,4 +335,4 @@ include 'header.php';
     }
 </script>
 
-<?php include 'footer.php'; ?>
+<?php include '../includes/footer.php'; ?>

@@ -89,7 +89,7 @@ check_admin_page();
                     <h6 class="mb-0">Admin User</h6>
                     <small class="text-muted">Administrator</small>
                 </div>
-                <a href="../logout.php" class="logout-btn ms-auto" title="Logout" id="nav-logout">
+                <a href="../auth/logout.php" class="logout-btn ms-auto" title="Logout" id="nav-logout">
                     <i class="fas fa-sign-out-alt"></i>
                 </a>
             </div>

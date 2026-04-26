@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!notificationCount || !notificationList) return;
 
     function fetchNotifications() {
-        fetch('get_notifications.php')
+        fetch(BASE_URL + 'notifications/get_notifications.php')
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.notifications) {
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.markAsRead = function(id, event) {
         if (event) event.preventDefault();
         
-        fetch('mark_notification_read.php', {
+        fetch(BASE_URL + 'notifications/mark_notification_read.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -72,7 +72,7 @@ function initCommonFeatures() {
     // Check if user is logged in
     const isLoggedIn = localStorage.getItem('quickcut-admin-loggedin') === 'true';
     if (!isLoggedIn) {
-        window.location.href = '../login.php';
+        window.location.href = '../auth/login.php';
         return;
     }
     
@@ -1057,7 +1057,7 @@ function logout() {
     
     // Redirect to server-side logout to destroy PHP session
     setTimeout(() => {
-        window.location.href = '../logout.php';
+        window.location.href = '../auth/logout.php';
     }, 1500);
 }
 

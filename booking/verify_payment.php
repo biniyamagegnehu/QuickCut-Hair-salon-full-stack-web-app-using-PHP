@@ -9,9 +9,9 @@
  */
 
 session_start();
-require_once 'db.php';
-require_once 'config/chapa.php';
-require_once 'create_notification.php';
+require_once '../includes/db.php';
+require_once '../config/chapa.php';
+require_once '../notifications/create_notification.php';
 
 // --- LOGGING FOR DEBUGGING ---
 file_put_contents('chapa_debug.log', "--- VERIFY_START " . date('Y-m-d H:i:s') . " ---\n" . "GET PARAMS: " . json_encode($_GET) . "\n\n", FILE_APPEND);

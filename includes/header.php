@@ -1,6 +1,7 @@
 <?php
 // header.php - Main Website Header
 require_once 'db.php';
+require_once 'config.php';
 $is_logged_in = isset($_SESSION['user_id']);
 ?>
 <!DOCTYPE html>
@@ -16,13 +17,16 @@ $is_logged_in = isset($_SESSION['user_id']);
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/welcome.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/welcome.css">
+    <script>
+        const BASE_URL = '<?php echo BASE_URL; ?>';
+    </script>
 </head>
 <body id="main-body">
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="main-nav">
         <div class="container">
-            <a class="navbar-brand logo" href="welcome.php" id="logo">
+            <a class="navbar-brand logo" href="<?php echo BASE_URL; ?>welcome.php" id="logo">
                 <i class="fas fa-cut me-2"></i>QuickCut
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" id="menu-toggle">
@@ -31,28 +35,28 @@ $is_logged_in = isset($_SESSION['user_id']);
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-lg-center" id="nav-menu">
                     <li class="nav-item">
-                        <a class="nav-link" href="welcome.php"><i class="fas fa-home me-1"></i>Home</a>
+                        <a class="nav-link" href="<?php echo BASE_URL; ?>welcome.php"><i class="fas fa-home me-1"></i>Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
+                        <a class="nav-link" href="<?php echo $is_logged_in ? BASE_URL.'booking/bookappointment.php' : BASE_URL.'auth/login.php'; ?>"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo $is_logged_in ? 'queuestatus.php' : 'login.php'; ?>"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
+                        <a class="nav-link" href="<?php echo $is_logged_in ? BASE_URL.'queue/queuestatus.php' : BASE_URL.'auth/login.php'; ?>"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="aboutus.php"><i class="fas fa-info-circle me-1"></i>About</a>
+                        <a class="nav-link" href="<?php echo BASE_URL; ?>aboutus.php"><i class="fas fa-info-circle me-1"></i>About</a>
                     </li>
                     <?php if ($is_logged_in): ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="logout.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
+                            <a class="nav-link" href="<?php echo BASE_URL; ?>auth/logout.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
+                            <a class="nav-link" href="<?php echo BASE_URL; ?>auth/login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
                         </li>
                     <?php endif; ?>
                 </ul>
-                <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="book-now-btn">
+                <a href="<?php echo $is_logged_in ? BASE_URL.'booking/bookappointment.php' : BASE_URL.'auth/login.php'; ?>" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="book-now-btn">
                     <i class="fas fa-scissors me-1"></i>Book Now
                 </a>
             </div>

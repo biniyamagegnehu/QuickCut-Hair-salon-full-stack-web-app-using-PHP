@@ -4,7 +4,7 @@
  * Returns payment info for a single appointment by ID.
  */
 require_once 'admin_auth.php';
-require_once '../db.php';
+require_once '../includes/db.php';
 check_admin();
 
 header('Content-Type: application/json');

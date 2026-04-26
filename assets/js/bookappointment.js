@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let BUSINESS_HOURS_DATA = [];
     
     // Fetch working hours from backend
-    fetch('get_working_hours.php')
+    fetch(BASE_URL + 'booking/get_working_hours.php')
         .then(response => {
             if (!response.ok) throw new Error('Network response was not ok');
             return response.json();
@@ -671,7 +671,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 initiatedAt: new Date().toISOString()
             }));
 
-            fetch('initiate_payment.php', {
+            fetch(BASE_URL + 'booking/initiate_payment.php', {
                 method : 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body   : JSON.stringify(payload)

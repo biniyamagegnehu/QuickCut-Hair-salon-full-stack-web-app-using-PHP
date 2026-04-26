@@ -1,13 +1,13 @@
 <?php
 session_start();
-require_once 'db.php';
+require_once 'includes/db.php';
 $is_logged_in = isset($_SESSION['user_id']);
 
 // Fetch services
 $stmt = $pdo->query("SELECT * FROM services ORDER BY price ASC LIMIT 3");
 $services = $stmt->fetchAll();
 
-include 'header.php';
+include 'includes/header.php';
 ?>
 
     <!-- Hero Section -->
@@ -22,10 +22,10 @@ include 'header.php';
                         <h2 class="display-4 fw-light mb-4" id="hero-tagline">Skip the wait. <span class="fw-bold">Get the cut.</span></h2>
                         <p class="lead mb-5" id="hero-description">Professional grooming services tailored for the modern man. Book online and avoid long queues with our real-time scheduling system.</p>
                         <div class="d-flex flex-wrap gap-3 hero-buttons">
-                            <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-primary btn-lg px-5 py-3" id="book-appointment-btn">
+                            <a href="<?php echo $is_logged_in ? 'booking/bookappointment.php' : 'auth/login.php'; ?>" class="btn btn-primary btn-lg px-5 py-3" id="book-appointment-btn">
                                 <i class="fas fa-calendar-check me-2"></i>Book Appointment Now
                             </a>
-                            <a href="<?php echo $is_logged_in ? 'queuestatus.php' : 'login.php'; ?>" class="btn btn-outline-light btn-lg px-5 py-3" id="view-queue-btn">
+                            <a href="<?php echo $is_logged_in ? 'queue/queuestatus.php' : 'auth/login.php'; ?>" class="btn btn-outline-light btn-lg px-5 py-3" id="view-queue-btn">
                                 <i class="fas fa-clock me-2"></i>View Live Queue
                             </a>
                         </div>
@@ -164,4 +164,4 @@ include 'header.php';
         </div>
     </section>
 
-<?php include 'footer.php'; ?>
+<?php include 'includes/footer.php'; ?>

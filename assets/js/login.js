@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sessionStorage.clear();
         
         // Immediately redirect to home page
-        window.location.href = 'welcome.php';
+        window.location.href = BASE_URL + 'welcome.php';
     }
     
     // ========== CHECK LOGIN STATUS ==========
@@ -382,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('quickcutCurrentUser');
         
         // Immediately redirect to home page
-        window.location.replace('welcome.php');
+        window.location.replace(BASE_URL + 'welcome.php');
     }
     
     // ========== FORGOT PASSWORD MODAL ==========
@@ -734,7 +734,7 @@ function logoutUserImmediately() {
     sessionStorage.clear();
     
     // Immediately redirect to home page
-    window.location.href = 'welcome.php';
+    window.location.href = BASE_URL + 'welcome.php';
 }
 
 /**

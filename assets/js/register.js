@@ -454,7 +454,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Redirect to login page after delay
                 setTimeout(() => {
-                    window.location.href = 'login.php';
+                    window.location.href = BASE_URL + 'auth/login.php';
                 }, 2000);
             } else {
                 // Show error message

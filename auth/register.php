@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (isset($_SESSION['user_id'])) {
-    header("Location: welcome.php");
+    header("Location: ../welcome.php");
     exit;
 }
 $is_logged_in = false; // Always false if they reach here due to redirect above
@@ -17,13 +17,16 @@ $is_logged_in = false; // Always false if they reach here due to redirect above
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/create.css">
+    <link rel="stylesheet" href="../assets/css/register.css">
+    <script>
+        const BASE_URL = '<?php require_once "../includes/config.php"; echo BASE_URL; ?>';
+    </script>
 </head>
 <body id="create-body">
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="create-nav">
         <div class="container">
-            <a class="navbar-brand logo" href="welcome.php" id="create-logo">
+            <a class="navbar-brand logo" href="../welcome.php" id="create-logo">
                 <i class="fas fa-cut me-2"></i>QuickCut
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" id="create-menu-toggle">
@@ -32,16 +35,16 @@ $is_logged_in = false; // Always false if they reach here due to redirect above
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto" id="create-nav-menu">
                     <li class="nav-item">
-                        <a class="nav-link" href="welcome.php" id="nav-home"><i class="fas fa-home me-1"></i>Home</a>
+                        <a class="nav-link" href="../welcome.php" id="nav-home"><i class="fas fa-home me-1"></i>Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo isset($_SESSION['user_id']) ? 'bookappointment.php' : 'login.php'; ?>" id="nav-book-appointment"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
+                        <a class="nav-link" href="<?php echo isset($_SESSION['user_id']) ? '../booking/bookappointment.php' : 'login.php'; ?>" id="nav-book-appointment"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo isset($_SESSION['user_id']) ? 'queuestatus.php' : 'login.php'; ?>" id="nav-queue-status"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
+                        <a class="nav-link" href="<?php echo isset($_SESSION['user_id']) ? '../queue/queuestatus.php' : 'login.php'; ?>" id="nav-queue-status"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="aboutus.php" id="nav-about"><i class="fas fa-info-circle me-1"></i>About</a>
+                        <a class="nav-link" href="../aboutus.php" id="nav-about"><i class="fas fa-info-circle me-1"></i>About</a>
                     </li>
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <li class="nav-item">
@@ -49,11 +52,11 @@ $is_logged_in = false; // Always false if they reach here due to redirect above
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
-                            <a class="nav-link active" href="login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
+                            <a class="nav-link" href="login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
                         </li>
                     <?php endif; ?>
                 </ul>
-                <a href="<?php echo isset($_SESSION['user_id']) ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="create-book-now">
+                <a href="<?php echo isset($_SESSION['user_id']) ? '../booking/bookappointment.php' : 'login.php'; ?>" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="create-book-now">
                     <i class="fas fa-scissors me-1"></i>Book Now
                 </a>
             </div>
@@ -343,8 +346,8 @@ $is_logged_in = false; // Always false if they reach here due to redirect above
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Auth (logout handling) -->
-    <script src="js/auth.js"></script>
+    <script src="../assets/js/auth.js"></script>
     <!-- Custom JavaScript -->
-    <script src="js/create.js"></script>
+    <script src="../assets/js/register.js"></script>
 </body>
 </html>

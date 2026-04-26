@@ -16,7 +16,7 @@ define('DEPOSIT_PERCENT', 0.5);
 
 // --- Callback URL (where Chapa redirects after payment) ---
 // Change to your real domain in production (must be HTTPS for live)
-define('CHAPA_CALLBACK_URL', 'http://localhost/QuickCut/verify_payment.php');
+define('CHAPA_CALLBACK_URL', 'http://localhost/QuickCut/booking/verify_payment.php');
 
 // --- Currency ---
 define('CHAPA_CURRENCY', 'ETB');

@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'db.php';
+require_once '../includes/db.php';
 require_once 'create_notification.php';
 
 header('Content-Type: application/json');

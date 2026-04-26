@@ -1,6 +1,6 @@
 <?php
 require_once 'admin_auth.php';
-require_once '../db.php';
+require_once '../includes/db.php';
 check_admin_page();
 
 // Fetch current working hours
@@ -104,7 +104,7 @@ $working_hours = $stmt->fetchAll();
                     <h6 class="mb-0">Admin User</h6>
                     <small class="text-muted">Administrator</small>
                 </div>
-                <a href="../logout.php" class="logout-btn ms-auto" title="Logout" id="nav-logout">
+                <a href="../auth/logout.php" class="logout-btn ms-auto" title="Logout" id="nav-logout">
                     <i class="fas fa-sign-out-alt"></i>
                 </a>
             </div>

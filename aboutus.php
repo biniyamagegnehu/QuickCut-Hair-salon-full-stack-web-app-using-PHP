@@ -13,7 +13,7 @@ $is_logged_in = isset($_SESSION['user_id']);
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/aboutus.css">
+    <link rel="stylesheet" href="assets/css/aboutus.css">
 </head>
 <body id="about-body">
     <!-- Navigation -->
@@ -31,25 +31,25 @@ $is_logged_in = isset($_SESSION['user_id']);
                         <a class="nav-link" href="welcome.php" id="nav-home"><i class="fas fa-home me-1"></i>Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" id="nav-book"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
+                        <a class="nav-link" href="<?php echo $is_logged_in ? 'booking/bookappointment.php' : 'auth/login.php'; ?>" id="nav-book"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo $is_logged_in ? 'queuestatus.php' : 'login.php'; ?>" id="nav-queue"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
+                        <a class="nav-link" href="<?php echo $is_logged_in ? 'queue/queuestatus.php' : 'auth/login.php'; ?>" id="nav-queue"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active" href="aboutus.php" id="nav-about"><i class="fas fa-info-circle me-1"></i>About</a>
                     </li>
                     <?php if ($is_logged_in): ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="logout.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
+                            <a class="nav-link" href="auth/logout.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
+                            <a class="nav-link" href="auth/login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
                         </li>
                     <?php endif; ?>
                 </ul>
-                <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="about-book-now">
+                <a href="<?php echo $is_logged_in ? 'booking/bookappointment.php' : 'auth/login.php'; ?>" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="about-book-now">
                     <i class="fas fa-scissors me-1"></i>Book Now
                 </a>
             </div>
@@ -333,8 +333,8 @@ $is_logged_in = isset($_SESSION['user_id']);
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Auth (logout handling) -->
-    <script src="js/auth.js"></script>
+    <script src="assets/js/auth.js"></script>
     <!-- Custom JavaScript -->
-    <script src="js/aboutus.js"></script>
+    <script src="assets/js/aboutus.js"></script>
 </body>
 </html>
