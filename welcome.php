@@ -7,65 +7,8 @@ $is_logged_in = isset($_SESSION['user_id']);
 $stmt = $pdo->query("SELECT * FROM services ORDER BY price ASC LIMIT 3");
 $services = $stmt->fetchAll();
 
-// Fetch working hours
-$stmt = $pdo->query("SELECT * FROM working_hours ORDER BY FIELD(day_of_week, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')");
-$working_hours = $stmt->fetchAll();
+include 'header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuickCut - Professional Barber Services</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/welcome.css">
-</head>
-<body id="main-body">
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="main-nav">
-        <div class="container">
-            <a class="navbar-brand logo" href="welcome.php" id="logo">
-                <i class="fas fa-cut me-2"></i>QuickCut
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" id="menu-toggle">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-lg-center" id="nav-menu">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="welcome.php"><i class="fas fa-home me-1"></i>Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo $is_logged_in ? 'queuestatus.php' : 'login.php'; ?>"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="aboutus.php"><i class="fas fa-info-circle me-1"></i>About</a>
-                    </li>
-                    <?php if ($is_logged_in): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="logout.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
-                        </li>
-                    <?php else: ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-                <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="book-now-btn">
-                    <i class="fas fa-scissors me-1"></i>Book Now
-                </a>
-            </div>
-        </div>
-    </nav>
 
     <!-- Hero Section -->
     <section class="hero-section" id="hero">
@@ -124,7 +67,6 @@ $working_hours = $stmt->fetchAll();
                                 <div class="next-slot text-center mb-4">
                                     <h4 class="text-light">Next Available Slot</h4>
                                     <h2 class="display-3 fw-bold text-primary" id="next-slot-time">3:15 PM</h2>
-                                   
                                 </div>
                                 <div class="queue-info">
                                     <div class="queue-item">
@@ -137,15 +79,6 @@ $working_hours = $stmt->fetchAll();
                                                 <h2 class="fw-bold text-primary" id="waiting-count">3</h2>
                                             </div>
                                         </div>
-                                        <div class="queue-visual mt-3" id="queue-visual">
-                                            <div class="queue-dots" id="queue-dots">
-                                                <div class="queue-dot active"></div>
-                                                <div class="queue-dot active"></div>
-                                                <div class="queue-dot active"></div>
-                                                <div class="queue-dot"></div>
-                                                <div class="queue-dot"></div>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                                 <a href="<?php echo $is_logged_in ? 'queuestatus.php' : 'login.php'; ?>" class="btn btn-light w-100 py-3 mt-4" id="refresh-queue">
@@ -156,12 +89,6 @@ $working_hours = $stmt->fetchAll();
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="hero-overlay"></div>
-        <div class="scroll-indicator" id="scroll-indicator">
-            <a href="#services">
-                <i class="fas fa-chevron-down"></i>
-            </a>
         </div>
     </section>
 
@@ -182,33 +109,21 @@ $working_hours = $stmt->fetchAll();
                     elseif (strpos($lower_name, 'premium') !== false) $icon = 'fa-crown';
                 ?>
                 <div class="col-lg-4">
-                    <div class="service-card <?php echo $featured; ?>" data-service="<?php echo $service['id']; ?>" id="service-card-<?php echo $service['id']; ?>">
-                        <div class="service-image" style="background-image: url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=800'); height: 200px; background-size: cover; background-position: center;"></div>
+                    <div class="service-card <?php echo $featured; ?>" id="service-card-<?php echo $service['id']; ?>">
+                        <div class="service-image" style="background-image: url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=800');"></div>
                         <div class="service-content">
-                            <div class="service-icon">
-                                <i class="fas <?php echo $icon; ?>"></i>
-                            </div>
+                            <div class="service-icon"><i class="fas <?php echo $icon; ?>"></i></div>
                             <h4 class="fw-bold"><?php echo htmlspecialchars($service['name']); ?></h4>
                             <div class="price-tag">
                                 <span class="price"><?php echo $service['price']; ?> Birr</span>
                                 <span class="duration"><?php echo $service['duration']; ?> min</span>
                             </div>
                             <p class="text-muted">Professional salon service tailored for your needs.</p>
-                            <ul class="service-features">
-                                <li><i class="fas fa-check text-primary me-2"></i>Expert technique</li>
-                                <li><i class="fas fa-check text-primary me-2"></i>Premium products</li>
-                                <li><i class="fas fa-check text-primary me-2"></i>Styling included</li>
-                            </ul>
                             <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn <?php echo $featured ? 'btn-primary' : 'btn-outline-primary'; ?> w-100 mt-3">Book This Service</a>
                         </div>
                     </div>
                 </div>
                 <?php endforeach; ?>
-                <?php if (empty($services)): ?>
-                    <div class="col-12 text-center">
-                        <p class="text-muted">No services available at the moment. Please check back later.</p>
-                    </div>
-                <?php endif; ?>
             </div>
         </div>
     </section>
@@ -218,51 +133,29 @@ $working_hours = $stmt->fetchAll();
         <div class="container py-5">
             <div class="row align-items-center">
                 <div class="col-lg-6 mb-5 mb-lg-0">
-                    <div class="why-image"></div>
+                    <div class="why-image" style="height: 400px; background: url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80') center/cover no-repeat; border-radius: 15px;"></div>
                 </div>
                 <div class="col-lg-6">
                     <h6 class="text-primary text-uppercase fw-bold mb-3">Why Choose Us</h6>
                     <h2 class="display-5 fw-bold mb-4">Experience the <span class="text-primary">QuickCut</span> Difference</h2>
                     <div class="row g-4">
                         <div class="col-md-6">
-                            <div class="feature-box">
-                                <div class="feature-icon">
-                                    <i class="fas fa-user-tie"></i>
-                                </div>
-                                <h5 class="fw-bold mt-3">Expert Barbers</h5>
-                                <p class="text-light small">Skilled professionals with years of experience and continuous training</p>
+                            <div class="feature-box p-4 bg-white bg-opacity-10 rounded-3">
+                                <i class="fas fa-user-tie fa-2x text-primary mb-3"></i>
+                                <h5 class="fw-bold">Expert Barbers</h5>
+                                <p class="small opacity-75">Skilled professionals with years of experience.</p>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="feature-box">
-                                <div class="feature-icon">
-                                    <i class="fas fa-clock"></i>
-                                </div>
-                                <h5 class="fw-bold mt-3">No Long Waits</h5>
-                                <p class="text-light small">Real-time queue system that saves your valuable time and reduces waiting</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="feature-box">
-                                <div class="feature-icon">
-                                    <i class="fas fa-calendar-alt"></i>
-                                </div>
-                                <h5 class="fw-bold mt-3">Online Booking</h5>
-                                <p class="text-light small">Book your slot easily from any device with our user-friendly platform</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="feature-box">
-                                <div class="feature-icon">
-                                    <i class="fas fa-crown"></i>
-                                </div>
-                                <h5 class="fw-bold mt-3">Premium Service</h5>
-                                <p class="text-light small">High-quality products and excellent customer service guaranteed</p>
+                            <div class="feature-box p-4 bg-white bg-opacity-10 rounded-3">
+                                <i class="fas fa-clock fa-2x text-primary mb-3"></i>
+                                <h5 class="fw-bold">No Long Waits</h5>
+                                <p class="small opacity-75">Real-time queue system that saves your time.</p>
                             </div>
                         </div>
                     </div>
                     <div class="mt-5">
-                        <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-primary btn-lg px-5 py-3" id="book-first-appointment">
+                        <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-primary btn-lg px-5 py-3">
                             <i class="fas fa-calendar-plus me-2"></i>Book Your First Appointment
                         </a>
                     </div>
@@ -271,132 +164,4 @@ $working_hours = $stmt->fetchAll();
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="cta-section" id="cta">
-        <div class="container">
-            <div class="cta-card">
-                <div class="row align-items-center">
-                    <div class="col-lg-8">
-                        <h2 class="display-5 fw-bold mb-3" id="cta-title">Ready for a Fresh Look?</h2>
-                        <p class="lead mb-0" id="cta-description">
-                            Book your appointment now and skip the wait. Our expert barbers are ready to give you the perfect cut.
-                        </p>
-                    </div>
-                    <div class="col-lg-4 text-lg-end">
-                        <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-light btn-lg px-5 py-3" id="schedule-now-btn">
-                            <i class="fas fa-calendar-plus me-2"></i>Schedule Now
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer-section" id="footer">
-        <div class="container py-5">
-            <div class="row">
-                <div class="col-lg-4 mb-4 mb-lg-0">
-                    <h4 class="fw-bold mb-3 logo" id="footer-logo">
-                        <i class="fas fa-cut me-2"></i>QuickCut
-                    </h4>
-                    <p class="text-light small mb-3" id="footer-description">
-                        Skip the wait. Get the cut. QuickCut makes hair appointments fast, easy, and convenient with our modern booking system.
-                    </p>
-                    <div class="social-links mt-4">
-                        <a href="#" class="social-link" id="facebook-link">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="#" class="social-link" id="twitter-link">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="#" class="social-link" id="instagram-link">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="#" class="social-link" id="tiktok-link">
-                            <i class="fab fa-tiktok"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="col-lg-4 mb-4 mb-lg-0">
-                    <h5 class="fw-bold mb-3">Contact Us</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-3">
-                            <div class="d-flex">
-                                <div class="contact-icon">
-                                    <i class="fas fa-phone"></i>
-                                </div>
-                                <div class="ms-3">
-                                    <h6 class="fw-bold">Phone Number</h6>
-                                    <p class="text-light small">(+251) 921456765</p>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="mb-3">
-                            <div class="d-flex">
-                                <div class="contact-icon">
-                                    <i class="fas fa-envelope"></i>
-                                </div>
-                                <div class="ms-3">
-                                    <h6 class="fw-bold">Email Address</h6>
-                                    <p class="text-light small">quickcut@gmail.com</p>
-                                </div>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="d-flex">
-                                <div class="contact-icon">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                </div>
-                                <div class="ms-3">
-                                    <h6 class="fw-bold">Location</h6>
-                                    <p class="text-light small">123 Main Street, Downtown</p>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="col-lg-4">
-                    <h5 class="fw-bold mb-3">Working Hours</h5>
-                    <div class="hours-list" id="hours-list">
-                        <?php foreach ($working_hours as $row): 
-                            $time_range = $row['is_closed'] ? 'Closed' : date("g:i A", strtotime($row['open_time'])) . " - " . date("g:i A", strtotime($row['close_time']));
-                        ?>
-                        <div class="hour-item d-flex justify-content-between mb-1">
-                            <span class="small"><?php echo $row['day_of_week']; ?></span>
-                            <span class="small"><?php echo $time_range; ?></span>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-            </div>
-            
-            <hr class="my-4 bg-light">
-            
-            <div class="row">
-                <div class="col-md-6">
-                    <p class="mb-0 text-light small" id="copyright">
-                        © 2025 QuickCut. All rights reserved.
-                    </p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <a href="#" class="text-light small text-decoration-none me-3" id="privacy-policy">Privacy Policy</a>
-                    <a href="#" class="text-light small text-decoration-none" id="terms-service">Terms of Service</a>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Back to Top Button -->
-    <button class="btn btn-primary scroll-to-top" style="display: none;" id="back-to-top">
-        <i class="fas fa-chevron-up"></i>
-    </button>
-
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JavaScript -->
-    <script src="js/welcome.js"></script>
-</body>
-</html>
+<?php include 'footer.php'; ?>
