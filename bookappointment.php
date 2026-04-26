@@ -348,45 +348,18 @@ $barbers = $stmt->fetchAll();
                             <!-- Submit Button -->
                             <div class="form-submit" id="form-submit">
                                 <!-- Payment Selection -->
+                                <!-- Payment Notice -->
                                 <div class="payment-section mb-3" id="payment-section">
-                                    <h5 class="mb-2"><i class="fas fa-wallet me-2 text-primary"></i>Payment Method</h5>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="payment_method" id="payment-telebirr" value="telebirr" checked>
-                                        <label class="form-check-label" for="payment-telebirr">Telebirr (Mobile Money)</label>
+                                    <h5 class="mb-2"><i class="fas fa-shield-alt me-2 text-primary"></i>Secure Payment</h5>
+                                    <p class="small text-muted mb-3">To confirm your booking, a <strong>50% deposit</strong> is required. Payments are processed securely via Chapa.</p>
+                                    
+                                    <div class="deposit-notice p-3 border rounded bg-light">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>Required Deposit:</span>
+                                            <span class="fw-bold text-primary" id="payment-deposit-amount">0.00 ETB</span>
+                                        </div>
                                     </div>
-                                    <div class="ps-4 mt-2 payment-details" id="telebirr-details">
-                                        <label class="form-label small">Telebirr Phone Number</label>
-                                        <input type="tel" class="form-control" id="telebirr-phone" >
-                                        <div class="invalid-feedback d-none" id="telebirr-error"></div>
-                                    </div>
-
-                                    <div class="form-check mt-2">
-                                        <input class="form-check-input" type="radio" name="payment_method" id="payment-cbe" value="cbe">
-                                        <label class="form-check-label" for="payment-cbe">CBE Birr</label>
-                                    </div>
-                                    <div class="ps-4 mt-2 payment-details" id="cbe-details" style="display:none;">
-                                        <label class="form-label small">Phone Number</label>
-                                        <input type="text" class="form-control" id="cbe-ref">
-                                        <div class="invalid-feedback d-none" id="cbe-error"></div>
-                                    </div>
-
-                                    <div class="form-check mt-2">
-                                        <input class="form-check-input" type="radio" name="payment_method" id="payment-bank" value="bank">
-                                        <label class="form-check-label" for="payment-bank">Bank Transfer (e.g., CBE, Awash)</label>
-                                    </div>
-                                    <div class="ps-4 mt-2 payment-details" id="bank-details" style="display:none;">
-                                        <label class="form-label small">Select Bank</label>
-                                        <select class="form-select mb-2" id="bank-select">
-                                            <option value="cbe">Commercial Bank of Ethiopia (CBE)</option>
-                                            <option value="awash">Awash Bank</option>
-                                            <option value="dashen">Dashen Bank</option>
-                                            <option value="abyssinia">Abyssinia Bank</option>
-                                        </select>
-                                        <label class="form-label small">Account Number / Reference</label>
-                                        <input type="text" class="form-control" id="bank-ref" placeholder="Account number or transaction reference">
-                                        <div class="invalid-feedback d-none" id="bank-error"></div>
-                                        <div class="small text-muted mt-2 payment-small-note">After payment, enter the transaction reference above. We'll confirm manually.</div>
-                                    </div>
+                                    <p class="small text-muted mt-2 mb-0"><i class="fas fa-info-circle me-1"></i> You will be redirected to Chapa to complete the payment.</p>
                                 </div>
 
                                 <button type="submit" class="btn btn-primary btn-lg w-100" id="confirm-booking-btn">
@@ -421,9 +394,13 @@ $barbers = $stmt->fetchAll();
                             <span>Time:</span>
                             <strong id="summary-time">Select time</strong>
                         </div>
+                        <div class="summary-item mt-2" id="summary-deposit-row" style="display: none;">
+                            <span>50% Deposit:</span>
+                            <strong id="summary-deposit" class="text-warning">0.00 ETB</strong>
+                        </div>
                         <div class="summary-total">
                             <span>Total Amount:</span>
-                            <strong id="summary-price">$0.00</strong>
+                            <strong id="summary-price">0.00 ETB</strong>
                         </div>
                     </div>
 

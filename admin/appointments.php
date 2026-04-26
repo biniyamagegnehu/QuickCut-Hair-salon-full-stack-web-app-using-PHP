@@ -189,7 +189,9 @@ check_admin_page();
                                     <th>Service</th>
                                     <th>Barber</th>
                                     <th>Date & Time</th>
-                                    <th>Amount</th>
+                                    <th>Total</th>
+                                    <th>Paid</th>
+                                    <th>Payment</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>

@@ -71,18 +71,30 @@ function loadAppointments(dateFilter = '', statusFilter = '') {
             tbody.innerHTML = '';
             fetchedAppointments.forEach(appointment => {
                 const row = document.createElement('tr');
+                
+                // Format payment status badge
+                let payBadgeClass = 'bg-secondary';
+                if (appointment.payment_status === 'paid') payBadgeClass = 'bg-success';
+                else if (appointment.payment_status === 'pending') payBadgeClass = 'bg-warning text-dark';
+                else if (appointment.payment_status === 'failed') payBadgeClass = 'bg-danger';
+                
+                const paymentBadge = `<span class="badge ${payBadgeClass}">${(appointment.payment_status || 'none').toUpperCase()}</span>`;
+                
                 row.innerHTML = `
                     <td>${appointment.id}</td>
                     <td><strong>${appointment.customer_name}</strong></td>
-                    <td><span class="phone-display">-</span></td>
+                    <td>${appointment.customer_phone || '-'}</td>
                     <td>${appointment.service_name}</td>
-                    <td>-</td>
+                    <td>${appointment.barber_name || '<span class="text-muted">Any</span>'}</td>
                     <td>${appointment.appointment_date}<br><small>${appointment.appointment_time}</small></td>
-                    <td><span class="currency">-</span></td>
+                    <td>${parseFloat(appointment.service_price).toFixed(2)}</td>
+                    <td class="text-primary fw-bold">${parseFloat(appointment.paid_amount || 0).toFixed(2)}</td>
+                    <td>${paymentBadge}</td>
                     <td>
-                        <select class="status-dropdown ${appointment.status}" 
+                        <select class="form-select form-select-sm status-dropdown ${appointment.status}" 
                                 data-id="${appointment.id}"
                                 onchange="updateAppointmentStatusAPI(${appointment.id}, this.value)">
+                            <option value="pending" ${appointment.status === 'pending' ? 'selected' : ''}>Pending Pay</option>
                             <option value="waiting" ${appointment.status === 'waiting' ? 'selected' : ''}>Waiting</option>
                             <option value="in_progress" ${appointment.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
                             <option value="completed" ${appointment.status === 'completed' ? 'selected' : ''}>Completed</option>
@@ -91,9 +103,12 @@ function loadAppointments(dateFilter = '', statusFilter = '') {
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <!-- Backend edit not implemented yet, just visual -->
-                            <button class="action-btn edit" disabled><i class="fas fa-edit"></i></button>
-                            <button class="action-btn delete" disabled><i class="fas fa-trash"></i></button>
+                            <button class="btn btn-sm btn-outline-info me-1" onclick="viewAppointmentDetails(${appointment.id})" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteAppointment(${appointment.id})" title="Delete" disabled>
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
                     </td>
                 `;
@@ -413,26 +428,33 @@ function deleteAppointment(id) {
 }
 
 // View appointment details
-function viewAppointment(id) {
-    const appointment = appointments.find(a => a.id === id);
-    if (appointment) {
-        const details = `
-            Appointment Details:
+function viewAppointmentDetails(id) {
+    fetch(`get_payment_status.php?appointment_id=${id}`)
+        .then(res => res.json())
+        .then(data => {
+            // Find the local appointment data for basic info
+            // In a real app, we'd fetch all details from the backend
+            // For now, let's just show what we have.
             
-            ID: #${appointment.id}
-            Customer: ${appointment.customer}
-            Phone: ${appointment.phone}
-            Service: ${appointment.service}
-            Barber: ${appointment.barber}
-            Date: ${appointment.date}
-            Time: ${appointment.time}
-            Duration: ${appointment.duration} minutes
-            Amount: ${formatCurrency(appointment.amount)}
-            Status: ${appointment.status}
-            Notes: ${appointment.notes || 'None'}
-        `;
-        alert(details);
-    }
+            let paymentMsg = "No payment record found.";
+            if (data.success && data.payment) {
+                const p = data.payment;
+                paymentMsg = `
+--- PAYMENT INFO ---
+Status: ${p.status.toUpperCase()}
+Amount Paid: ${p.amount} ETB
+Remaining Balance: ${p.remaining_balance} ETB
+Transaction Ref: ${p.transaction_ref}
+Date Paid: ${p.created_at}
+                `;
+            }
+            
+            alert(`Appointment #${id}\n${paymentMsg}`);
+        })
+        .catch(err => {
+            console.error(err);
+            alert(`Appointment #${id}\nError loading payment details.`);
+        });
 }
 
 // Export appointments
