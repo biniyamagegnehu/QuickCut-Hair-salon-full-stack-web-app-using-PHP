@@ -1,33 +1,36 @@
 // QuickCut - Book Appointment JavaScript
-// Enhanced with proper 24-hour closure logic and auto-updating dates
+// Fully re-implemented for professional time selection and robust booking logic
 
 document.addEventListener('DOMContentLoaded', function() {
-    // ========== INITIALIZATION ==========
-    console.log('Booking page initialized');
+    // ========== INITIALIZATION & DATA FETCHING ==========
     
-    // ========== BUSINESS HOURS CONFIG ==========
     let BUSINESS_HOURS_DATA = [];
     
     // Fetch working hours from backend
     fetch('get_working_hours.php')
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 BUSINESS_HOURS_DATA = data.working_hours;
-                // Re-initialize DateConfig with real data
-                window.dateConfig = new DateConfig();
+                if (window.dateConfig) {
+                    window.dateConfig.initializeDates();
+                } else {
+                    window.dateConfig = new DateConfig();
+                }
             } else {
                 console.error('Failed to load working hours:', data.message);
-                // Fallback or handle error
-                window.dateConfig = new DateConfig();
+                if (!window.dateConfig) window.dateConfig = new DateConfig();
             }
         })
         .catch(err => {
             console.error('Error fetching working hours:', err);
-            window.dateConfig = new DateConfig();
+            if (!window.dateConfig) window.dateConfig = new DateConfig();
         });
-    
-    // ========== DATE CONFIGURATION ==========
+
+    // ========== DATE CONFIGURATION CLASS ==========
     class DateConfig {
         constructor() {
             this.currentDate = new Date();
@@ -41,9 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         initializeDates() {
-            // Generate dates for next 7 days
             this.dates = [];
-            
             for (let i = 0; i < 7; i++) {
                 const date = new Date(this.currentDate);
                 date.setDate(this.currentDate.getDate() + i);
@@ -57,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     dayOfWeek: date.getDay(),
                     dayName: this.getDayName(date),
                     isAvailable: this.isDateAvailable(date, i === 0),
-                    timeSlots: this.generateTimeSlots(date, i === 0)
+                    timeSlots: []
                 };
                 
                 this.dates.push(dateInfo);
@@ -74,124 +75,75 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         formatDisplayDate(date, offset) {
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-            
             if (offset === 0) return 'Today';
             if (offset === 1) return 'Tomorrow';
-            
             const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            
             return `${dayNames[date.getDay()]}, ${monthNames[date.getMonth()]} ${date.getDate()}`;
+        }
+
+        getDayName(date) {
+            return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
         }
         
         getHoursForDay(date) {
-            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            const dayName = days[date.getDay()];
+            const dayName = this.getDayName(date);
             const hours = BUSINESS_HOURS_DATA.find(h => h.day_of_week === dayName);
             
-            if (!hours) {
-                // Fallback
-                return { open_hour: 9, close_hour: 20, is_closed: 0 };
-            }
+            if (!hours) return { open_hour: 9, open_minute: 0, close_hour: 20, close_minute: 0, is_closed: 0 };
             
             const [openH, openM] = hours.open_time.split(':').map(Number);
             const [closeH, closeM] = hours.close_time.split(':').map(Number);
             
             return {
-                open_hour: openH,
-                open_minute: openM,
-                close_hour: closeH,
-                close_minute: closeM,
-                open_time: hours.open_time,
-                close_time: hours.close_time,
+                open_hour: openH, open_minute: openM,
+                close_hour: closeH, close_minute: closeM,
+                open_time: hours.open_time, close_time: hours.close_time,
                 is_closed: parseInt(hours.is_closed)
             };
         }
 
-        getDayBounds(date) {
+        generateTimeSlots(date, isToday) {
+            const slots = [];
             const hours = this.getHoursForDay(date);
-            const openTotalMinutes = hours.open_hour * 60 + hours.open_minute;
-            const closeTotalMinutes = hours.close_hour * 60 + hours.close_minute;
+            if (hours.is_closed) return [];
 
-            return {
-                hours,
-                openTotalMinutes,
-                closeTotalMinutes
-            };
-        }
-
-        getCurrentTotalMinutes() {
             const now = new Date();
-            return now.getHours() * 60 + now.getMinutes();
-        }
-
-        isMinuteAvailable(date, hour, minute) {
-            const { hours, openTotalMinutes, closeTotalMinutes } = this.getDayBounds(date);
-            if (hours.is_closed) return false;
-
-            const selectedTotalMinutes = hour * 60 + minute;
-            if (selectedTotalMinutes < openTotalMinutes || selectedTotalMinutes >= closeTotalMinutes) {
-                return false;
-            }
-
-            const selectedDateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-            const today = new Date();
-            const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-            if (selectedDateOnly < todayOnly) {
-                return false;
-            }
-
-            if (selectedDateOnly.getTime() === todayOnly.getTime() && selectedTotalMinutes < this.getCurrentTotalMinutes()) {
-                return false;
-            }
-
-            const time24 = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-            if (this.isTimeBookedLocally(date, time24)) {
-                return false;
-            }
-
-            return true;
-        }
-
-        isHourAvailable(date, hour) {
-            for (let minute = 0; minute < 60; minute++) {
-                if (this.isMinuteAvailable(date, hour, minute)) {
-                    return true;
+            const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+            const openTimeMinutes = hours.open_hour * 60 + hours.open_minute;
+            const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
+            
+            for (let h = 0; h <= 23; h++) {
+                for (let minute = 0; minute < 60; minute += 30) {
+                    const slotTotalMinutes = h * 60 + minute;
+                    const time24 = `${h.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                    const time12 = this.format24to12(time24);
+                    
+                    const isWithinWorkingHours = slotTotalMinutes >= openTimeMinutes && slotTotalMinutes < closeTimeMinutes;
+                    const isPassed = isToday && slotTotalMinutes < currentTotalMinutes + 30; // 30 min buffer
+                    const isBooked = this.isTimeBookedLocally(date, time24);
+                    
+                    slots.push({
+                        time24, time12,
+                        isAvailable: isWithinWorkingHours && !isPassed && !isBooked,
+                        isBooked, isWithinWorkingHours, isPassed,
+                        totalMinutes: slotTotalMinutes
+                    });
                 }
             }
+            return slots;
+        }
 
+        isTimeBookedLocally(date, time24) {
+            const dateStr = date.toISOString().split('T')[0];
+            if (this.bookedSlots[dateStr]) {
+                return this.bookedSlots[dateStr].some(t => t.substring(0, 5) === time24);
+            }
             return false;
         }
 
-        resetSelectedTime() {
-            this.selectedTime = null;
-            this.selectedTime24 = null;
-
-            const timeInput = document.getElementById('time-input');
-            if (timeInput) timeInput.value = '';
-
-            const timeValidation = document.getElementById('time-validation');
-            if (timeValidation) {
-                timeValidation.style.display = 'none';
-                timeValidation.innerHTML = '';
-            }
-
-            const timeInfo = document.getElementById('time-info');
-            if (timeInfo) {
-                timeInfo.style.display = 'none';
-                timeInfo.innerHTML = '';
-            }
-        }
-
         loadBookedSlots(dateInfo, rerender = true) {
-            if (!dateInfo || !dateInfo.date) {
-                return Promise.resolve();
-            }
-
+            if (!dateInfo) return Promise.resolve();
             const dateStr = dateInfo.date.toISOString().split('T')[0];
 
             return fetch(`get_booked_slots.php?date=${dateStr}`)
@@ -200,719 +152,297 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.success) {
                         this.bookedSlots[dateStr] = Array.isArray(data.booked_slots) ? data.booked_slots : [];
                         dateInfo.timeSlots = this.generateTimeSlots(dateInfo.date, dateInfo.isToday);
-
                         if (rerender && this.selectedDate === dateInfo) {
                             this.updateSelectedDateUI();
-                            this.updateTimeInput();
+                            this.renderTimeInput();
                         }
                     }
                 })
-                .catch(err => {
-                    console.error('Error fetching booked slots:', err);
-                });
+                .catch(err => console.error('Error fetching booked slots:', err));
         }
-        
+
         isDateAvailable(date, isToday) {
             const hours = this.getHoursForDay(date);
             if (hours.is_closed) return false;
-
-            const now = new Date();
-            const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-            const todayOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             
-            // Check if date is in the past (before today)
-            if (dateOnly < todayOnly) {
-                return false;
-            }
-            
-            // For today: Check if current time is within working hours
             if (isToday) {
-                const currentHour = now.getHours();
-                const currentMinute = now.getMinutes();
-                const currentTotalMinutes = currentHour * 60 + currentMinute;
-                
-                    const openTimeMinutes = hours.open_hour * 60 + hours.open_minute;
-                    const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
-                
-                // Check if current time is before closing time
-                return currentTotalMinutes < closeTimeMinutes;
+                const now = new Date();
+                const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
+                return (now.getHours() * 60 + now.getMinutes()) < closeTimeMinutes - 30;
             }
-            
             return true;
         }
-        
-        generateTimeSlots(date, isToday) {
-            const slots = [];
-            const hours = this.getHoursForDay(date);
-            
-            const now = new Date();
-            const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
-            
-            const openTimeMinutes = hours.is_closed ? -1 : hours.open_hour * 60 + hours.open_minute;
-            const closeTimeMinutes = hours.is_closed ? -1 : hours.close_hour * 60 + hours.close_minute;
-            
-            // Generate slots for the full 24 hours
-            for (let h = 0; h <= 23; h++) {
-                for (let minute = 0; minute < 60; minute += 15) {
-                    const slotTotalMinutes = h * 60 + minute;
-                    const time24 = `${h.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-                    const time12 = this.format24to12(time24);
-                    
-                    // A slot is "activated" only if:
-                    // 1. Shop is open that day
-                    // 2. Time is within working hours
-                    // 3. Time is not in the past
-                    
-                    let isWithinWorkingHours = !hours.is_closed && slotTotalMinutes >= openTimeMinutes && slotTotalMinutes < closeTimeMinutes;
-                    let isPassed = isToday && slotTotalMinutes < currentTotalMinutes;
-                    
-                    const isBooked = this.isTimeBookedLocally(date, time24);
-                    
-                    slots.push({
-                        time24: time24,
-                        time12: time12,
-                        isAvailable: isWithinWorkingHours && !isPassed && !isBooked,
-                        isBooked: isBooked,
-                        isWithinWorkingHours: isWithinWorkingHours,
-                        isPassed: isPassed,
-                        totalMinutes: slotTotalMinutes
-                    });
-                }
-            }
-            return slots;
-        }
-        
-        // Check if time is booked from our locally cached data
-        isTimeBookedLocally(date, time24) {
-            const dateStr = date.toISOString().split('T')[0];
-            if (this.bookedSlots && this.bookedSlots[dateStr]) {
-                // Normalize DB times (usually HH:MM:SS) to HH:MM
-                const normalizedBooked = this.bookedSlots[dateStr].map(t => t.substring(0, 5));
-                return normalizedBooked.includes(time24);
-            }
-            return false;
-        }
-        
-        isTimeBooked(date, time24) {
-            // Simulate booked slots (25% chance)
-            const dateStr = date.toDateString();
-            const slotKey = `${dateStr}-${time24}`;
-            const hash = this.hashString(slotKey);
-            return hash % 4 === 0;
-        }
-        
-        hashString(str) {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                hash = ((hash << 5) - hash) + str.charCodeAt(i);
-                hash |= 0;
-            }
-            return Math.abs(hash);
-        }
-        
+
         format24to12(time24) {
             const [hours, minutes] = time24.split(':').map(Number);
-            let period = 'AM';
-            let hour12 = hours;
-            
-            if (hours === 0) {
-                hour12 = 12; // 12:00 AM
-                period = 'AM';
-            } else if (hours < 12) {
-                hour12 = hours;
-                period = 'AM';
-            } else if (hours === 12) {
-                hour12 = 12;
-                period = 'PM';
-            } else if (hours > 12) {
-                hour12 = hours - 12;
-                period = 'PM';
-            }
-            
+            let period = hours >= 12 ? 'PM' : 'AM';
+            let hour12 = hours % 12 || 12;
             return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
         }
-        
+
+        getSelectedTime12() {
+            return this.selectedTime;
+        }
+
+        resetSelectedTime() {
+            this.selectedTime   = null;
+            this.selectedTime24 = null;
+            const input = document.getElementById('time-input');
+            if (input) input.value = '';
+            const badge = document.getElementById('time-selected-badge');
+            if (badge) { badge.innerHTML = ''; badge.style.display = 'none'; }
+        }
+
         renderDateList() {
-            const dateContainer = document.querySelector('.date-list-container');
-            if (!dateContainer) {
-                this.createDateListContainer();
-            }
-            
             const dateList = document.getElementById('date-list');
-            if (!dateList) return;
-            
+            if (!dateList) {
+                this.createDateListContainer();
+                return;
+            }
+            // Hide skeleton loader on first real render
+            const skeleton = document.getElementById('date-skeleton-strip');
+            if (skeleton) skeleton.style.display = 'none';
+
             dateList.innerHTML = '';
-            
             this.dates.forEach((dateInfo, index) => {
                 const dateItem = this.createDateListItem(dateInfo, index);
                 dateList.appendChild(dateItem);
             });
-            
-            // Update selected date UI
             if (this.selectedDate) {
                 this.updateSelectedDateUI();
                 this.renderTimeInput();
             }
         }
-        
+
         createDateListContainer() {
-            const dateCol = document.querySelector('#date-container-col') || document.querySelector('#datetime-section');
-            if (!dateCol) return;
-            
-            // Remove existing date picker if present
-            const oldDatePicker = dateCol.querySelector('.date-picker');
-            if (oldDatePicker) {
-                oldDatePicker.remove();
-            }
-            
-            // Remove existing container if present
-            const oldContainer = dateCol.querySelector('.date-list-container');
-            if (oldContainer) {
-                oldContainer.remove();
-            }
-            
-            // Create date list container
-            const dateListContainer = document.createElement('div');
-            const todayHours = this.getHoursForDay(new Date());
-            dateListContainer.className = 'date-list-container mb-4';
-            dateListContainer.innerHTML = `
-                <div class="date-list-header mb-3">
-                    <h5 class="mb-2"><i class="fas fa-calendar-alt me-2"></i>Select Date</h5>
-                    <p class="text-muted mb-0"><small>Click on a date to select. Today follows the admin schedule: ${this.format24to12(todayHours.open_time || '09:00')} - ${this.format24to12(todayHours.close_time || '20:00')}.</small></p>
-                </div>
-                <div class="date-list" id="date-list"></div>
-                <div id="date-info" class="mt-3" style="display: none;"></div>
-            `;
-            
-            dateCol.appendChild(dateListContainer);
-            
-            // Add horizontal scrolling with mouse wheelindicator
+            // With new HTML structure, the anchors (date-list, date-info) already exist in the DOM.
+            // Just hide the skeletons and render into the existing #date-list.
+            const skeleton = document.getElementById('date-skeleton-strip');
+            if (skeleton) skeleton.style.display = 'none';
+            this.renderDateList();
             this.addRealTimeStatus();
         }
-        
+
         addRealTimeStatus() {
-            const header = document.querySelector('.date-list-header');
-            if (!header) return;
-            
-            const statusDiv = document.createElement('div');
-            statusDiv.className = 'real-time-status mt-2';
-            statusDiv.id = 'real-time-status';
-            header.appendChild(statusDiv);
-            
+            // Status badge is already in the DOM via #real-time-status
             this.updateRealTimeStatus();
         }
-        
+
         updateRealTimeStatus() {
             const statusDiv = document.getElementById('real-time-status');
             if (!statusDiv) return;
-            
             const now = new Date();
             const hours = this.getHoursForDay(now);
+            const currentTotal = now.getHours() * 60 + now.getMinutes();
+            const openTotal = hours.open_hour * 60 + hours.open_minute;
+            const closeTotal = hours.close_hour * 60 + hours.close_minute;
             
-            const currentHour = now.getHours();
-            const currentMinute = now.getMinutes();
-            const currentTotalMinutes = currentHour * 60 + currentMinute;
-            
-            const openTimeMinutes = hours.open_hour * 60 + hours.open_minute;
-            const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
-            
-            let statusText = '';
-            let statusClass = '';
-            
-            if (hours.is_closed) {
-                statusText = `<span class="text-danger"><i class="fas fa-times-circle"></i> Closed for today.</span>`;
-                statusClass = 'status-closed';
-            } else if (currentTotalMinutes < openTimeMinutes) {
-                statusText = `<span class="text-warning"><i class="fas fa-clock"></i> Opens at ${this.format24to12(hours.open_time || hours.open_hour + ':00')}</span>`;
-                statusClass = 'status-closed';
-            } else if (currentTotalMinutes >= closeTimeMinutes) {
-                statusText = `<span class="text-danger"><i class="fas fa-exclamation-circle"></i> Closed for today.</span>`;
-                statusClass = 'status-closed';
+            let status = '';
+            if (hours.is_closed || currentTotal >= closeTotal) {
+                status = '<span class="text-danger"><i class="fas fa-times-circle"></i> Closed</span>';
+            } else if (currentTotal < openTotal) {
+                status = `<span class="text-warning"><i class="fas fa-clock"></i> Opens at ${this.format24to12(hours.open_time)}</span>`;
             } else {
-                statusText = `<span class="text-success"><i class="fas fa-clock"></i> Open now! Closes at ${this.format24to12(hours.close_time || hours.close_hour + ':00')}</span>`;
-                statusClass = 'status-open';
+                status = `<span class="text-success"><i class="fas fa-clock"></i> Open now! Closes at ${this.format24to12(hours.close_time)}</span>`;
             }
-            
-            statusDiv.innerHTML = `<small>${statusText}</small>`;
-            statusDiv.className = `real-time-status mt-2 ${statusClass}`;
+            statusDiv.innerHTML = `<small>${status}</small>`;
         }
-        
+
         createDateListItem(dateInfo, index) {
-            const dateItem = document.createElement('div');
-            dateItem.className = `date-list-item ${dateInfo.isAvailable ? '' : 'date-unavailable'} ${this.selectedDate === dateInfo ? 'date-selected' : ''}`;
-            dateItem.dataset.index = index;
-            
-            // Create availability indicator
-            let availabilityBadge = '';
-            if (!dateInfo.isAvailable) {
-                if (dateInfo.isToday) {
-                    const now = new Date();
-                    const hours = this.getHoursForDay(dateInfo.date);
-                    const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
-                    const openTimeMinutes = hours.open_hour * 60 + hours.open_minute;
-                    const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
-                    
-                    if (currentTotalMinutes < openTimeMinutes) {
-                        availabilityBadge = `<span class="date-badge closed"><i class="fas fa-clock"></i> Opens at ${this.format24to12(hours.open_time)}</span>`;
-                    } else if (currentTotalMinutes >= closeTimeMinutes) {
-                        availabilityBadge = '<span class="date-badge closed"><i class="fas fa-times-circle"></i> Closed</span>';
-                    } else {
-                        availabilityBadge = '<span class="date-badge closed"><i class="fas fa-times-circle"></i> Past Date</span>';
-                    }
-                } else {
-                    availabilityBadge = '<span class="date-badge closed">Closed</span>';
-                }
-            } else if (dateInfo.isToday) {
-                const now = new Date();
-                const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
-                const hours = this.getHoursForDay(dateInfo.date);
-                const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
-                const minutesLeft = closeTimeMinutes - currentTotalMinutes;
-                const hoursLeft = Math.floor(minutesLeft / 60);
-                
-                if (hoursLeft > 0) {
-                    availabilityBadge = `<span class="date-badge today"><i class="fas fa-calendar-day"></i> Today (${hoursLeft}h left)</span>`;
-                } else {
-                    availabilityBadge = `<span class="date-badge today"><i class="fas fa-calendar-day"></i> Today (${minutesLeft % 60}m left)</span>`;
-                }
-            } else if (dateInfo.isTomorrow) {
-                availabilityBadge = '<span class="date-badge tomorrow"><i class="fas fa-calendar-plus"></i> Tomorrow</span>';
-            } else {
-                availabilityBadge = '<span class="date-badge available"><i class="fas fa-check-circle"></i> Available</span>';
-            }
-            
-            dateItem.innerHTML = `
-                <div class="date-item-content">
-                    <div class="date-display">${dateInfo.displayDate}</div>
-                    <div class="date-full">${dateInfo.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</div>
-                    <div class="date-meta">
-                        ${availabilityBadge}
-                    </div>
-                </div>
+            const div = document.createElement('div');
+            const isSelected = this.selectedDate === dateInfo;
+            div.className = `date-card ${dateInfo.isAvailable ? '' : 'date-card--closed'} ${isSelected ? 'date-card--selected' : ''}`;
+            div.dataset.index = index;
+            div.setAttribute('role', 'button');
+            if (!dateInfo.isAvailable) div.setAttribute('aria-disabled', 'true');
+
+            const dayNames  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+            const monthNames= ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const d = dateInfo.date;
+            const dayShort  = dayNames[d.getDay()];
+            const monthShort= monthNames[d.getMonth()];
+            const dayNum    = d.getDate();
+            const label     = dateInfo.isToday ? 'Today' : (dateInfo.isTomorrow ? 'Tomorrow' : (dateInfo.isAvailable ? 'Available' : 'Closed'));
+
+            div.innerHTML = `
+                <div class="date-card__day">${dayShort}</div>
+                <div class="date-card__num">${dayNum}</div>
+                <div class="date-card__month">${monthShort}</div>
+                <div class="date-card__label">${label}</div>
             `;
-            
-            // Add click event if available
             if (dateInfo.isAvailable) {
-                dateItem.addEventListener('click', () => {
-                    this.selectDate(dateInfo);
-                });
-            } else {
-                dateItem.style.cursor = 'not-allowed';
+                div.addEventListener('click', () => this.selectDate(dateInfo));
             }
-            
-            return dateItem;
+            return div;
         }
-        
+
         selectDate(dateInfo) {
             this.selectedDate = dateInfo;
             this.resetSelectedTime();
-            
             this.loadBookedSlots(dateInfo);
-
             this.updateSelectedDateUI();
-            this.renderTimeInput();
+            this.renderDateList();
             updateProgress();
             updateBookingSummary();
-            
-            // Show selection animation
-            const dateItems = document.querySelectorAll('.date-list-item');
-            dateItems.forEach(item => item.classList.remove('date-selected'));
-            const selectedItem = document.querySelector(`.date-list-item[data-index="${this.dates.indexOf(dateInfo)}"]`);
-            if (selectedItem) {
-                selectedItem.classList.add('date-selected');
-                
-                // Add animation
-                selectedItem.style.animation = 'selectPulse 0.5s ease';
-                setTimeout(() => {
-                    selectedItem.style.animation = '';
-                }, 500);
-            }
-        }
-        
-        updateSelectedDateUI() {
-            const dateInfoElement = document.getElementById('date-info');
-            if (!dateInfoElement || !this.selectedDate) return;
-            
-            const date = this.selectedDate.date;
-            const formattedDate = date.toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric'
-            });
-            
-            const hours = this.getHoursForDay(date);
-            const open12 = this.format24to12(`${hours.open_hour.toString().padStart(2, '0')}:${hours.open_minute.toString().padStart(2, '0')}`);
-            const close12 = this.format24to12(`${hours.close_hour.toString().padStart(2, '0')}:${hours.close_minute.toString().padStart(2, '0')}`);
-            
-            let availabilityText = '';
-            if (this.selectedDate.isToday) {
-                const now = new Date();
-                const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
-                const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
-                
-                if (currentTotalMinutes >= closeTimeMinutes) {
-                    availabilityText = `<div class="text-danger mt-2"><small><i class="fas fa-exclamation-circle"></i> Today is closed after ${close12}</small></div>`;
-                } else if (currentTotalMinutes < hours.open_hour * 60 + hours.open_minute) {
-                    availabilityText = `<div class="text-warning mt-2"><small><i class="fas fa-clock"></i> Opens at ${open12}</small></div>`;
-                } else {
-                    const minutesLeft = closeTimeMinutes - currentTotalMinutes;
-                    const hoursLeft = Math.floor(minutesLeft / 60);
-                    const minutesRemaining = minutesLeft % 60;
-                    
-                    if (hoursLeft > 0) {
-                        availabilityText = `<div class="text-warning mt-2"><small><i class="fas fa-clock"></i> Today closes at ${close12} (${hoursLeft}h ${minutesRemaining}m left)</small></div>`;
-                    } else {
-                        availabilityText = `<div class="text-warning mt-2"><small><i class="fas fa-clock"></i> Today closes at ${close12} (${minutesRemaining}m left)</small></div>`;
-                    }
-                }
-            }
-            
-            dateInfoElement.innerHTML = `
-                <div class="selected-date-info">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <strong><i class="fas fa-calendar-check me-2"></i>Selected Date</strong><br>
-                            <span class="text-primary">${formattedDate}</span>
-                        </div>
-                        <div class="text-end">
-                            <span class="badge ${hours.is_closed ? 'bg-danger' : 'bg-success'}">${hours.is_closed ? 'Closed' : 'Available'}</span>
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <small class="text-muted"><i class="fas fa-clock me-1"></i> Working hours: ${open12} - ${close12}</small>
-                    </div>
-                    ${availabilityText}
-                </div>
-            `;
-            dateInfoElement.style.display = 'block';
-        }
-        
-        renderTimeInput() {
-            if (!this.selectedDate) return;
-            
-            const timeContainer = document.querySelector('.time-input-container');
-            if (!timeContainer) {
-                this.createTimeInputContainer();
-            updateProgress();
-            updateBookingSummary();
-            
-            // Show selection animation
-            const dateItems = document.querySelectorAll('.date-list-item');
-            dateItems.forEach(item => item.classList.remove('date-selected'));
-            const selectedItem = document.querySelector(`.date-list-item[data-index="${this.dates.indexOf(dateInfo)}"]`);
-            if (selectedItem) {
-                selectedItem.classList.add('date-selected');
-                
-                // Add animation
-                selectedItem.style.animation = 'selectPulse 0.5s ease';
-                setTimeout(() => {
-                    selectedItem.style.animation = '';
-                }, 500);
-            }
-        }
-        
-        updateSelectedDateUI() {
-            const dateInfoElement = document.getElementById('date-info');
-            if (!dateInfoElement || !this.selectedDate) return;
-            
-            const date = this.selectedDate.date;
-            const formattedDate = date.toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric'
-            });
-            
-            const hours = this.getHoursForDay(date);
-            const open12 = this.format24to12(`${hours.open_hour.toString().padStart(2, '0')}:${hours.open_minute.toString().padStart(2, '0')}`);
-            const close12 = this.format24to12(`${hours.close_hour.toString().padStart(2, '0')}:${hours.close_minute.toString().padStart(2, '0')}`);
-            
-            let availabilityText = '';
-            if (this.selectedDate.isToday) {
-                const now = new Date();
-                const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
-                const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
-                
-                if (currentTotalMinutes >= closeTimeMinutes) {
-                    availabilityText = `<div class="text-danger mt-2"><small><i class="fas fa-exclamation-circle"></i> Today is closed after ${close12}</small></div>`;
-                } else if (currentTotalMinutes < hours.open_hour * 60 + hours.open_minute) {
-                    availabilityText = `<div class="text-warning mt-2"><small><i class="fas fa-clock"></i> Opens at ${open12}</small></div>`;
-                } else {
-                    const minutesLeft = closeTimeMinutes - currentTotalMinutes;
-                    const hoursLeft = Math.floor(minutesLeft / 60);
-                    const minutesRemaining = minutesLeft % 60;
-                    
-                    if (hoursLeft > 0) {
-                        availabilityText = `<div class="text-warning mt-2"><small><i class="fas fa-clock"></i> Today closes at ${close12} (${hoursLeft}h ${minutesRemaining}m left)</small></div>`;
-                    } else {
-                        availabilityText = `<div class="text-warning mt-2"><small><i class="fas fa-clock"></i> Today closes at ${close12} (${minutesRemaining}m left)</small></div>`;
-                    }
-                }
-            }
-            
-            dateInfoElement.innerHTML = `
-                <div class="selected-date-info">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <strong><i class="fas fa-calendar-check me-2"></i>Selected Date</strong><br>
-                            <span class="text-primary">${formattedDate}</span>
-                        </div>
-                        <div class="text-end">
-                            <span class="badge ${hours.is_closed ? 'bg-danger' : 'bg-success'}">${hours.is_closed ? 'Closed' : 'Available'}</span>
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <small class="text-muted"><i class="fas fa-clock me-1"></i> Working hours: ${open12} - ${close12}</small>
-                    </div>
-                    ${availabilityText}
-                </div>
-            `;
-            dateInfoElement.style.display = 'block';
-        }
-        
-        renderTimeInput() {
-            if (!this.selectedDate) return;
-            
-            const timeContainer = document.querySelector('.time-input-container');
-            if (!timeContainer) {
-                this.createTimeInputContainer();
-            } else {
-                this.updateTimeInput();
-            }
-        }
-        
-        createTimeInputContainer() {
-            const timeCol = document.querySelector('#time-container-col') || document.querySelector('#datetime-section');
-            if (!timeCol) return;
-            
-            // Remove existing time input container if present
-            const oldContainer = timeCol.querySelector('.time-input-container');
-            if (oldContainer) {
-                oldContainer.remove();
-            }
-            
-            // Create time input container
-            const timeInputContainer = document.createElement('div');
-            timeInputContainer.className = 'time-input-container w-100';
-            timeInputContainer.innerHTML = `
-                <div class="time-input-header mb-3">
-                    <h5><i class="fas fa-clock me-2"></i>Select Time</h5>
-                    <p class="text-muted mb-0"><small>Choose any time. Outside working hours are disabled.</small></p>
-                </div>
-                <div class="time-picker-wrapper form-floating mb-3">
-                    <input type="time" id="time-input" class="form-control form-control-lg fw-bold" required>
-                    <label for="time-input"><i class="fas fa-history me-2"></i>Appointment Time</label>
-                </div>
-                <div class="time-validation mt-2" id="time-validation" style="display: none;"></div>
-                <div class="time-info mt-3" id="time-info" style="display: none;"></div>
-            `;
-            
-            timeCol.appendChild(timeInputContainer);
-            
-            const timeInput = document.getElementById('time-input');
-            
-            const validateTimeSelection = () => {
-                if (timeInput.value) {
-                    const [hStr, mStr] = timeInput.value.split(':');
-                    const h = parseInt(hStr, 10);
-                    const m = parseInt(mStr, 10);
-                    const time24 = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-                    const time12 = this.format24to12(time24);
-                    
-                    this.selectedTime = time12;
-                    this.selectedTime24 = time24;
-                    
-                    const timeValidation = document.getElementById('time-validation');
-                    
-                    // Check if booked
-                    if (this.isTimeBookedLocally(this.selectedDate.date, time24)) {
-                        timeValidation.innerHTML = `<div class="text-danger"><small><i class="fas fa-times-circle"></i> ${time12} is already booked. Please choose another time.</small></div>`;
-                        timeValidation.style.display = 'block';
-                        this.selectedTime = null; // Invalidate
-                        const timeInfo = document.getElementById('time-info');
-                        if (timeInfo) timeInfo.style.display = 'none';
-                    } else {
-                        if (!this.isMinuteAvailable(this.selectedDate.date, h, m)) {
-                            timeValidation.innerHTML = `<div class="text-danger"><small><i class="fas fa-times-circle"></i> ${time12} is unavailable.</small></div>`;
-                            timeValidation.style.display = 'block';
-                            this.selectedTime = null; // Invalidate
-                            const timeInfo = document.getElementById('time-info');
-                            if (timeInfo) timeInfo.style.display = 'none';
-                        } else {
-                            timeValidation.innerHTML = `<div class="text-success"><small><i class="fas fa-check-circle"></i> ${time12} selected</small></div>`;
-                            timeValidation.style.display = 'block';
-                            this.updateTimeInfo(time12);
-                        }
-                    }
-                    
-                    updateProgress();
-                    updateBookingSummary();
-                } else {
-                    this.resetSelectedTime();
-                    updateProgress();
-                    updateBookingSummary();
-                }
-            };
-            
-            timeInput.addEventListener('change', validateTimeSelection);
-            
-            this.updateTimeInput();
-        }
-        
-        getSelectedTime12() {
-            return this.selectedTime || null;
         }
 
-        updateTimeInput() {
+        updateSelectedDateUI() {
+            // Highlight the chosen card in the date strip
+            document.querySelectorAll('.date-card').forEach(c => c.classList.remove('date-card--selected'));
             if (!this.selectedDate) return;
-            
-            const timeInput = document.getElementById('time-input');
-            if (!timeInput) return;
-            
+            const idx = this.dates.indexOf(this.selectedDate);
+            const card = document.querySelector(`.date-card[data-index="${idx}"]`);
+            if (card) card.classList.add('date-card--selected');
+
+            // Show working hours chip in #date-info
+            const el = document.getElementById('date-info');
+            if (!el) return;
             const hours = this.getHoursForDay(this.selectedDate.date);
-            
-            if (hours.is_closed) {
-                timeInput.disabled = true;
-                timeInput.value = '';
-                this.resetSelectedTime();
+            el.innerHTML = `
+                <div class="date-info-chip">
+                    <i class="fas fa-clock me-1"></i>
+                    ${hours.is_closed
+                        ? '<span class="chip-closed">Closed</span>'
+                        : `Working hours: <strong>${this.format24to12(hours.open_time)} – ${this.format24to12(hours.close_time)}</strong>`
+                    }
+                </div>
+            `;
+            el.style.display = 'block';
+        }
+
+        renderTimeInput() {
+            if (!this.selectedDate) return;
+            // Hide time skeleton on first use
+            const skeleton = document.getElementById('time-skeleton-strip');
+            if (skeleton) skeleton.style.display = 'none';
+
+            // Ensure hidden input exists (only once)
+            if (!document.getElementById('time-input')) {
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden'; hidden.id = 'time-input'; hidden.name = 'time'; hidden.required = true;
+                document.getElementById('time-container-col').appendChild(hidden);
+            }
+
+            this.updateTimeSlots();
+        }
+
+        createTimeSelectionContainer() {
+            // No-op: container (#time-slots-wrapper) already exists in the DOM.
+            this.renderTimeInput();
+        }
+
+        updateTimeSlots() {
+            const wrapper = document.getElementById('time-slots-wrapper');
+            if (!wrapper || !this.selectedDate) return;
+            wrapper.innerHTML = '';
+
+            const slots = this.selectedDate.timeSlots.filter(s => s.isWithinWorkingHours);
+            if (slots.length === 0) {
+                wrapper.innerHTML = `
+                    <div class="ts-empty">
+                        <i class="fas fa-calendar-times fa-2x mb-2"></i>
+                        <div>No available times for this day</div>
+                    </div>`;
                 return;
             }
-            
-            timeInput.disabled = false;
-            
-            const openHourStr = hours.open_hour.toString().padStart(2, '0');
-            const openMinStr = hours.open_minute.toString().padStart(2, '0');
-            const closeHourStr = hours.close_hour.toString().padStart(2, '0');
-            const closeMinStr = hours.close_minute.toString().padStart(2, '0');
-            
-            let minTime = `${openHourStr}:${openMinStr}`;
-            const maxTime = `${closeHourStr}:${closeMinStr}`;
-            
-            // If today, minTime should be the current time if it's past opening time
-            if (this.selectedDate.isToday) {
-                const now = new Date();
-                const currentH = now.getHours();
-                const currentM = now.getMinutes();
-                const currentTotal = currentH * 60 + currentM;
-                const openTotal = hours.open_hour * 60 + hours.open_minute;
-                
-                if (currentTotal > openTotal) {
-                    minTime = `${currentH.toString().padStart(2, '0')}:${currentM.toString().padStart(2, '0')}`;
-                }
+
+            const periods = [
+                { id: 'morning',   label: 'Morning',   icon: 'fa-sun',       start: 0,    end: 720  },
+                { id: 'afternoon', label: 'Afternoon', icon: 'fa-cloud-sun', start: 720,  end: 1020 },
+                { id: 'evening',   label: 'Evening',   icon: 'fa-moon',      start: 1020, end: 1440 }
+            ];
+
+            periods.forEach(p => {
+                const pSlots = slots.filter(s => s.totalMinutes >= p.start && s.totalMinutes < p.end);
+                if (!pSlots.length) return;
+                const group = document.createElement('div');
+                group.className = 'ts-period';
+                group.innerHTML = `
+                    <div class="ts-period__label">
+                        <i class="fas ${p.icon}"></i>${p.label}
+                    </div>
+                    <div class="ts-grid"></div>`;
+                const grid = group.querySelector('.ts-grid');
+                pSlots.forEach(s => grid.appendChild(this.createSlotElement(s)));
+                wrapper.appendChild(group);
+            });
+
+            // Restore or clear selection
+            if (this.selectedTime24) {
+                const radio = document.querySelector(`.ts-slot input[value="${this.selectedTime24}"]`);
+                if (radio && !radio.disabled) radio.checked = true;
+                else this.resetSelectedTime();
             }
-            
-            timeInput.min = minTime;
-            timeInput.max = maxTime;
-            
-            // Re-validate current value if exists
-            if (timeInput.value) {
-                const [hStr, mStr] = timeInput.value.split(':');
-                const h = parseInt(hStr, 10);
-                const m = parseInt(mStr, 10);
-                
-                if (!this.isMinuteAvailable(this.selectedDate.date, h, m)) {
-                    timeInput.value = '';
-                    this.resetSelectedTime();
-                }
+        }
+
+        createSlotElement(slot) {
+            const div = document.createElement('div');
+            const isSelected = this.selectedTime24 === slot.time24;
+            div.className = `ts-slot${slot.isAvailable ? '' : (slot.isBooked ? ' ts-slot--booked' : ' ts-slot--closed')}`;
+            if (!slot.isAvailable) div.setAttribute('aria-disabled', 'true');
+
+            div.innerHTML = `
+                <input type="radio" name="time_slot_radio" id="slot-${slot.time24}" value="${slot.time24}" ${slot.isAvailable ? '' : 'disabled'} ${isSelected ? 'checked' : ''}>
+                <label for="slot-${slot.time24}">
+                    <span class="ts-slot__time">${slot.time12.split(' ')[0]}</span>
+                    <span class="ts-slot__ampm">${slot.isAvailable ? slot.time12.split(' ')[1] : (slot.isBooked ? 'Booked' : 'N/A')}</span>
+                </label>
+            `;
+
+            if (slot.isAvailable) {
+                div.addEventListener('click', () => {
+                    div.querySelector('input').checked = true;
+                    this.selectTime(slot);
+                });
             }
-            
+            return div;
+        }
+
+        selectTime(slot) {
+            this.selectedTime    = slot.time12;
+            this.selectedTime24  = slot.time24;
+            const input = document.getElementById('time-input');
+            if (input) input.value = slot.time24;
+
+            // Update the header badge
+            const badge = document.getElementById('time-selected-badge');
+            if (badge) {
+                badge.innerHTML = `<i class="fas fa-check-circle me-1"></i>${slot.time12}`;
+                badge.style.display = '';
+            }
+
+            // Re-render slots to reflect new selected state
+            this.updateTimeSlots();
             updateProgress();
             updateBookingSummary();
         }
 
-        updateMinuteOptions() {
-            // Deprecated: No longer using minute select dropdown
-        }
-        
-        updateTimeInfo(time12) {
-            const timeInfo = document.getElementById('time-info');
-            if (!timeInfo) return;
-            
-            timeInfo.innerHTML = `
-                <div class="selected-time-info alert alert-success">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-check-circle me-2"></i>
-                        <div>
-                            <strong>Selected Time:</strong> ${time12}<br>
-                            <small class="text-muted">Date: ${this.selectedDate.displayDate}</small>
-                        </div>
-                    </div>
-                </div>
-            `;
-            timeInfo.style.display = 'block';
-        }
-        
+        updateTimeInput() { this.updateTimeSlots(); }
 
-        
+        updateTimeInfo(time12) {
+            // Info is now displayed via the header badge (#time-selected-badge).
+            // This method is kept for compatibility but is a no-op.
+        }
+
         startDailyUpdate() {
-            // Update every minute
             setInterval(() => {
                 const now = new Date();
-                const currentHour = now.getHours();
-                const currentMinute = now.getMinutes();
-                const currentTotalMinutes = currentHour * 60 + currentMinute;
-                const currentDate = now.getDate();
-                const lastUpdateDate = this.currentDate.getDate();
-                
-                const hours = this.getHoursForDay(now);
-                const openTimeMinutes = hours.open_hour * 60 + hours.open_minute;
-                const closeTimeMinutes = hours.close_hour * 60 + hours.close_minute;
-                
-                // Check if we need to update today's availability
-                const today = this.dates[0];
-                if (today) {
-                    const shouldBeAvailable = currentTotalMinutes >= openTimeMinutes && currentTotalMinutes < closeTimeMinutes;
-                    
-                    // If availability changed, update the date list
-                    if (today.isAvailable !== shouldBeAvailable) {
-                        today.isAvailable = shouldBeAvailable;
-                        today.timeSlots = this.generateTimeSlots(today.date, true);
-                        
-                        // Re-render date list
-                        this.renderDateList();
-                        
-                        // Update real-time status
-                        this.updateRealTimeStatus();
-                        
-                        // If today was selected and became unavailable, auto-select next available date
-                        if (this.selectedDate === today && !shouldBeAvailable) {
-                            const nextAvailable = this.dates.find(date => date.isAvailable);
-                            if (nextAvailable) {
-                                this.selectDate(nextAvailable);
-                            }
-                        }
-                        
-                        // If today became available and no date is selected, select it
-                        if (shouldBeAvailable && !this.selectedDate) {
-                            this.selectDate(today);
-                        }
-                    }
-                }
-                
-                // Check if we need to roll over to next day (after midnight)
-                if (currentDate !== lastUpdateDate) {
-                    // New day! Shift dates
+                if (now.getDate() !== this.currentDate.getDate()) {
                     this.currentDate = now;
                     this.initializeDates();
-                }
-                
-                // Update today's slots if it's today
-                if (this.selectedDate && this.selectedDate.isToday) {
+                } else if (this.selectedDate && this.selectedDate.isToday) {
                     this.selectedDate.timeSlots = this.generateTimeSlots(this.selectedDate.date, true);
-                    this.updateTimeInput();
+                    this.updateTimeSlots();
+                    this.updateRealTimeStatus();
                 }
-            }, 60000); // Check every minute
+            }, 60000);
         }
     }
-    
 
-    
-    // ========== NAVBAR SCROLL EFFECT ==========
+    // ========== NAVBAR EFFECT ==========
     const navbar = document.querySelector('#booking-nav');
-    
     if (navbar) {
-        window.addEventListener('scroll', function() {
+        window.addEventListener('scroll', () => {
             if (window.scrollY > 50) {
                 navbar.style.padding = '0.5rem 0';
                 navbar.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
@@ -923,38 +453,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 navbar.style.backgroundColor = '';
             }
         });
-        
         window.dispatchEvent(new Event('scroll'));
     }
 
-    // ========== ACTIVE NAV LINK ==========
-    function setActiveNavLink() {
-        const currentPage = window.location.pathname.split('/').pop();
-        const navLinks = document.querySelectorAll('#booking-nav-menu .nav-link');
-        
-        navLinks.forEach(link => {
-            link.classList.remove('active');
-            const linkPage = link.getAttribute('href');
-            
-            if (linkPage === currentPage || 
-                (currentPage === 'bookappointment.html' && linkPage === 'bookappointment.html')) {
-                link.classList.add('active');
-            }
-        });
-    }
-    
-    setActiveNavLink();
-
-    // ========== BOOKING PROGRESS TRACKER ==========
+    // ========== PROGRESS TRACKER ==========
     const progressSteps = document.querySelectorAll('.progress-step');
     const formSections = document.querySelectorAll('.form-section');
     
     function updateProgress() {
         let currentStep = 0;
-        
         formSections.forEach((section, index) => {
             let hasValue = false;
-            
             if (section.id === 'personal-info-section') {
                 const name = document.getElementById('booking-full-name').value;
                 const phone = document.getElementById('booking-phone').value;
@@ -962,879 +471,254 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (name && phone && email) hasValue = true;
             }
             else if (section.id === 'service-selection-section') {
-                const serviceSelected = document.querySelector('input[name="service"]:checked');
-                if (serviceSelected) hasValue = true;
+                if (document.querySelector('input[name="service"]:checked')) hasValue = true;
             }
             else if (section.id === 'barber-selection-section') {
-                const barberSelected = document.querySelector('input[name="barber"]:checked');
-                if (barberSelected && barberSelected.value !== 'alex') hasValue = true;
+                const barber = document.querySelector('input[name="barber"]:checked');
+                if (barber && barber.value !== 'alex') hasValue = true;
             }
             else if (section.id === 'datetime-section') {
-                const dateSelected = dateConfig.selectedDate;
-                const timeInput = document.getElementById('time-input');
-                
-                if (dateSelected && timeInput && timeInput.value && dateConfig.getSelectedTime12()) {
+                const ti = document.getElementById('time-input');
+                if (window.dateConfig && window.dateConfig.selectedDate && ti && ti.value) {
                     hasValue = true;
                 }
             }
-            
-            if (hasValue) {
-                currentStep = Math.max(currentStep, index + 1);
-            }
+            if (hasValue) currentStep = Math.max(currentStep, index + 1);
         });
         
         progressSteps.forEach((step, index) => {
             step.classList.remove('active', 'completed');
-            if (index < currentStep) {
-                step.classList.add('completed');
-            }
-            if (index === currentStep) {
-                step.classList.add('active');
-            }
+            if (index < currentStep) step.classList.add('completed');
+            if (index === currentStep) step.classList.add('active');
         });
     }
 
     // ========== FORM VALIDATION ==========
     const bookingForm = document.getElementById('booking-form');
-    
-    // Real-time validation
-    const formInputs = bookingForm ? bookingForm.querySelectorAll('input[required], select[required], textarea') : [];
-    
-    formInputs.forEach(input => {
-        if (input.type !== 'radio' && !input.classList.contains('time-select')) {
-            input.addEventListener('blur', function() {
-                validateInput(this);
-                updateProgress();
-            });
-            
-            input.addEventListener('input', function() {
-                clearError(this);
-                updateProgress();
-            });
-        }
-    });
-
-    // Radio button change handlers
-    document.addEventListener('change', function(e) {
-        if (e.target.name === 'service' || e.target.name === 'barber') {
-            updateProgress();
-            updateBookingSummary();
-            updateSelectedBarberInfo();
-        }
-    });
-
     function validateInput(input) {
         let isValid = true;
         let errorMessage = '';
+        const val = input.value.trim();
         
-        if (!input.value.trim()) {
+        if (!val) {
             isValid = false;
-            errorMessage = 'This field is required';
+            errorMessage = 'Required';
         } else {
-            switch(input.id) {
-                case 'booking-full-name':
-                    if (input.value.length < 2) {
-                        isValid = false;
-                        errorMessage = 'Name must be at least 2 characters';
-                    }
-                    break;
-                    
-                case 'booking-phone':
-                    const phoneRegex = /^(09|07)\d{8}$/; // Accept 10-digit Ethiopian numbers (09xxxxxxx or 07xxxxxxx)
-                    if (!phoneRegex.test(input.value)) {
-                        isValid = false;
-                        errorMessage = 'Enter valid Ethiopian phone number (10 digits, e.g. 09xxxxxxxx)';
-                    }
-                    break;
-                    
-                case 'booking-email':
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailRegex.test(input.value)) {
-                        isValid = false;
-                        errorMessage = 'Enter valid email address';
-                    }
-                    break;
+            if (input.id === 'booking-phone') {
+                if (!/^(09|07)\d{8}$/.test(val)) {
+                    isValid = false;
+                    errorMessage = 'Enter 10 digits (09/07)';
+                }
+            } else if (input.id === 'booking-email') {
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+                    isValid = false;
+                    errorMessage = 'Invalid email';
+                }
             }
         }
         
         if (!isValid) {
-            showError(input, errorMessage);
+            input.classList.add('is-invalid');
+            let err = input.parentNode.querySelector('.invalid-feedback');
+            if (!err) {
+                err = document.createElement('div');
+                err.className = 'invalid-feedback d-block';
+                input.parentNode.appendChild(err);
+            }
+            err.textContent = errorMessage;
         } else {
-            clearError(input);
+            input.classList.remove('is-invalid');
+            const err = input.parentNode.querySelector('.invalid-feedback');
+            if (err) err.remove();
         }
-        
         return isValid;
     }
-    
-    function showError(input, message) {
-        clearError(input);
-        
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'invalid-feedback d-block';
-        errorDiv.textContent = message;
-        
-        input.parentNode.appendChild(errorDiv);
-        input.classList.add('is-invalid');
-    }
-    
-    function clearError(input) {
-        const errorDiv = input.parentNode.querySelector('.invalid-feedback');
-        if (errorDiv) {
-            errorDiv.remove();
-        }
-        input.classList.remove('is-invalid');
+
+    if (bookingForm) {
+        bookingForm.querySelectorAll('input[required]').forEach(input => {
+            input.addEventListener('blur', () => { validateInput(input); updateProgress(); });
+            input.addEventListener('input', () => { input.classList.remove('is-invalid'); updateProgress(); });
+        });
     }
 
-    // ========== BOOKING SUMMARY UPDATER ==========
-
-    
-    // Barber info is now dynamic from data attributes
-    const barberInfo = {};
-    
+    // ========== SUMMARY UPDATER ==========
     function updateBookingSummary() {
         const service = document.querySelector('input[name="service"]:checked');
         const barber = document.querySelector('input[name="barber"]:checked');
         
         // Service
+        const sEl = document.getElementById('summary-service');
+        const pEl = document.getElementById('summary-price');
         if (service) {
-            const serviceLabel = service.closest('.service-option').querySelector('h4').textContent;
-            document.getElementById('summary-service').textContent = serviceLabel;
-            document.getElementById('summary-service').className = '';
-            
-            const price = service.dataset.price || '0 Birr';
-            document.getElementById('summary-price').textContent = price;
+            sEl.textContent = service.closest('.service-option').querySelector('h4').textContent;
+            sEl.className = 'text-primary fw-bold';
+            pEl.textContent = service.dataset.price || '0 Birr';
         } else {
-            document.getElementById('summary-service').textContent = 'Select service';
-            document.getElementById('summary-service').className = 'text-muted';
-            document.getElementById('summary-price').textContent = '0 Birr';
+            sEl.textContent = 'Select service';
+            sEl.className = 'text-muted';
+            pEl.textContent = '0 Birr';
         }
         
         // Barber
+        const bEl = document.getElementById('summary-barber');
         if (barber && !barber.disabled) {
-            document.getElementById('summary-barber').textContent = barber.value;
-            document.getElementById('summary-barber').className = '';
+            bEl.textContent = barber.value;
+            bEl.className = 'text-primary fw-bold';
         } else {
-            document.getElementById('summary-barber').textContent = 'Select barber';
-            document.getElementById('summary-barber').className = 'text-muted';
+            bEl.textContent = 'Select barber';
+            bEl.className = 'text-muted';
         }
         
-        // Date
-        if (dateConfig.selectedDate && dateConfig.selectedDate.isAvailable) {
-            document.getElementById('summary-date').textContent = dateConfig.selectedDate.displayDate;
-            document.getElementById('summary-date').className = '';
+        // Date & Time
+        const dEl = document.getElementById('summary-date');
+        const tEl = document.getElementById('summary-time');
+        if (window.dateConfig && window.dateConfig.selectedDate) {
+            dEl.textContent = window.dateConfig.selectedDate.displayDate;
+            dEl.className = 'text-primary fw-bold';
         } else {
-            document.getElementById('summary-date').textContent = 'Select date';
-            document.getElementById('summary-date').className = 'text-muted';
+            dEl.textContent = 'Select date';
+            dEl.className = 'text-muted';
         }
         
-        // Time
-        const selectedTime12 = dateConfig.getSelectedTime12();
-        if (selectedTime12) {
-            document.getElementById('summary-time').textContent = selectedTime12;
-            document.getElementById('summary-time').className = '';
+        const ti = document.getElementById('time-input');
+        const time = ti ? ti.value : '';
+        if (time && window.dateConfig) {
+            tEl.textContent = window.dateConfig.getSelectedTime12();
+            tEl.className = 'text-primary fw-bold';
         } else {
-            document.getElementById('summary-time').textContent = 'Select time';
-            document.getElementById('summary-time').className = 'text-muted';
+            tEl.textContent = 'Select time';
+            tEl.className = 'text-muted';
         }
     }
-    
+
     function updateSelectedBarberInfo() {
         const barber = document.querySelector('input[name="barber"]:checked');
-        const infoCard = document.getElementById('selected-barber-info');
-        
-        if (barber && !barber.disabled) {
-            if (infoCard) {
-                document.getElementById('selected-barber-name').textContent = barber.value;
-                document.getElementById('selected-barber-specialty').textContent = barber.dataset.specialty || '';
-                document.getElementById('selected-barber-exp').textContent = 'Rating: ' + (barber.dataset.rating || 'N/A');
-                infoCard.style.display = 'block';
-            }
-        } else if (infoCard) {
-            infoCard.style.display = 'none';
+        const card = document.getElementById('selected-barber-info');
+        if (barber && !barber.disabled && card) {
+            document.getElementById('selected-barber-name').textContent = barber.value;
+            document.getElementById('selected-barber-specialty').textContent = barber.dataset.specialty || '';
+            document.getElementById('selected-barber-exp').textContent = 'Rating: ' + (barber.dataset.rating || 'N/A');
+            card.style.display = 'block';
+        } else if (card) {
+            card.style.display = 'none';
         }
     }
+
+    document.addEventListener('change', (e) => {
+        if (e.target.name === 'service' || e.target.name === 'barber') {
+            updateProgress();
+            updateBookingSummary();
+            if (e.target.name === 'barber') updateSelectedBarberInfo();
+        }
+    });
 
     // ========== FORM SUBMISSION ==========
     if (bookingForm) {
         bookingForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            let isValid = true;
-            let errorMessages = [];
+            let valid = true;
+            bookingForm.querySelectorAll('input[required]').forEach(i => { if (!validateInput(i)) valid = false; });
             
-            // Validate personal info
-            const name = document.getElementById('booking-full-name');
-            const phone = document.getElementById('booking-phone');
-            const email = document.getElementById('booking-email');
+            if (!document.querySelector('input[name="service"]:checked')) { showToast('Error', 'Select a service', 'error'); valid = false; }
+            if (!document.querySelector('input[name="barber"]:checked')) { showToast('Error', 'Select a barber', 'error'); valid = false; }
+            if (!document.getElementById('time-input').value) { showToast('Error', 'Select a time', 'error'); valid = false; }
             
-            if (!validateInput(name)) {
-                isValid = false;
-                errorMessages.push('Valid full name is required');
-            }
-            if (!validateInput(phone)) {
-                isValid = false;
-                errorMessages.push('Valid phone number is required');
-            }
-            if (!validateInput(email)) {
-                isValid = false;
-                errorMessages.push('Valid email is required');
-            }
-            
-            // Validate service
-            const serviceSelected = document.querySelector('input[name="service"]:checked');
-            if (!serviceSelected) {
-                isValid = false;
-                errorMessages.push('Please select a service');
-            }
-            
-            // Validate barber
-            const barberSelected = document.querySelector('input[name="barber"]:checked');
-            if (!barberSelected || barberSelected.value === 'alex' || barberSelected.disabled) {
-                isValid = false;
-                errorMessages.push('Please select an available barber');
-            }
-            
-            // Validate date
-            if (!dateConfig.selectedDate || !dateConfig.selectedDate.isAvailable) {
-                isValid = false;
-                errorMessages.push('Please select an available date');
-            }
-            
-            // Validate time
-            const timeValidation = document.getElementById('time-validation');
-            const selectedTime = dateConfig.getSelectedTime12();
-            
-            if (!selectedTime) {
-                isValid = false;
-                errorMessages.push('Please select a time');
-            } else if (timeValidation && timeValidation.querySelector('.text-danger')) {
-                isValid = false;
-                errorMessages.push('Please select a valid time');
-            }
-            
-            if (isValid) {
-                // Validate payment selection with inline errors
-                const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value || null;
-                let paymentValid = true;
-                let paymentInfo = null;
+            if (!valid) return;
 
-                const teleInput = document.getElementById('telebirr-phone');
-                const cbeInput = document.getElementById('cbe-ref');
-                const bankInput = document.getElementById('bank-ref');
-                const teleErr = document.getElementById('telebirr-error');
-                const cbeErr = document.getElementById('cbe-error');
-                const bankErr = document.getElementById('bank-error');
+            // Payment Validation
+            const method = document.querySelector('input[name="payment_method"]:checked')?.value;
+            if (!method) { showToast('Error', 'Select payment method', 'error'); return; }
 
-                // clear previous payment errors
-                [teleInput, cbeInput, bankInput].forEach(inp => { if (inp) inp.classList.remove('is-invalid'); });
-                [teleErr, cbeErr, bankErr].forEach(el => { if (el) { el.classList.add('d-none'); el.textContent = ''; } });
+            const submitBtn = document.getElementById('confirm-booking-btn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+            submitBtn.disabled = true;
 
-                if (!paymentMethod) {
-                    paymentValid = false;
-                    errorMessages.push('Please select a payment method');
-                } else if (paymentMethod === 'telebirr') {
-                    const tel = teleInput ? teleInput.value.trim() : '';
-                    const phoneRegex = /^(09|07)\d{8}$/; // EthioTelecom or Safaricom-style 10 digits
-                    if (!phoneRegex.test(tel)) {
-                        paymentValid = false;
-                        if (teleErr) { teleErr.textContent = 'Enter a valid Ethiopian phone (10 digits, e.g. 09xxxxxxxx and 07xxxxxxxx)'; teleErr.classList.remove('d-none'); }
-                        if (teleInput) teleInput.classList.add('is-invalid');
-                    } else {
-                        paymentInfo = { method: 'Telebirr', phone: tel };
-                    }
-                } else if (paymentMethod === 'cbe') {
-                    const ref = cbeInput ? cbeInput.value.trim() : '';
-                    const phoneRegex = /^(09|07)\d{8}$/;
-                    if (!phoneRegex.test(ref)) {
-                        paymentValid = false;
-                        if (cbeErr) { cbeErr.textContent = 'Enter a valid Ethiopian phone for CBE (10 digits e.g. 09xxxxxxxx and 07xxxxxxxx)'; cbeErr.classList.remove('d-none'); }
-                        if (cbeInput) cbeInput.classList.add('is-invalid');
-                    } else {
-                        paymentInfo = { method: 'CBE', phone: ref };
-                    }
-                } else if (paymentMethod === 'bank') {
-                    const bank = document.getElementById('bank-select').value;
-                    const bankRef = bankInput ? bankInput.value.trim() : '';
-                    const digitsOnly = /^\d+$/;
-                    if (!bankRef || !digitsOnly.test(bankRef)) {
-                        paymentValid = false;
-                        if (bankErr) { bankErr.textContent = 'Enter a numeric account number or transaction reference'; bankErr.classList.remove('d-none'); }
-                        if (bankInput) bankInput.classList.add('is-invalid');
-                    } else {
-                        // validate length by bank
-                        const len = bankRef.length;
-                        let validLen = false;
-                        if (bank === 'cbe') validLen = (len === 13);
-                        if (bank === 'dashen') validLen = (len >=13 && len <=16);
-                        if (bank === 'awash') validLen = (len >=10 && len <=12);
-                        if (bank === 'abyssinia') validLen = (len >=8 && len <=12);
+            const payload = {
+                fullName: document.getElementById('booking-full-name').value,
+                phone: document.getElementById('booking-phone').value,
+                email: document.getElementById('booking-email').value,
+                service: document.querySelector('input[name="service"]:checked').value,
+                date: window.dateConfig.selectedDate.date.toISOString().split('T')[0],
+                time: document.getElementById('time-input').value,
+                barber: document.querySelector('input[name="barber"]:checked').value,
+                payment_method: method
+            };
 
-                        if (!validLen) {
-                            paymentValid = false;
-                            if (bankErr) { bankErr.textContent = 'Account/reference length is invalid for selected bank'; bankErr.classList.remove('d-none'); }
-                            if (bankInput) bankInput.classList.add('is-invalid');
-                        } else {
-                            paymentInfo = { method: 'Bank Transfer', bank: bank, reference: bankRef };
-                        }
-                    }
-                }
-
-                if (!paymentValid) {
-                    const errorMessage = errorMessages[0] || 'Please correct payment details';
-                    showToast('Payment Error', errorMessage, 'error');
-                    const firstError = document.querySelector('.is-invalid') || document.getElementById('telebirr-phone') || document.getElementById('cbe-ref') || document.getElementById('bank-ref');
-                    if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    return;
-                }
-                const submitBtn = document.getElementById('confirm-booking-btn');
-                const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
-                submitBtn.disabled = true;
-                
-                const selectedTime12 = dateConfig.getSelectedTime12();
-                const bookingPayload = {
-                    fullName: document.getElementById('booking-full-name').value,
-                    phone: document.getElementById('booking-phone').value,
-                    email: document.getElementById('booking-email').value,
-                    service: document.querySelector('input[name="service"]:checked')?.value,
-                    date: dateConfig.selectedDate.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
-                    time: selectedTime12,
-                    barber: document.querySelector('input[name="barber"]:checked')?.value
-                };
-
-                fetch('book_appointment.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(bookingPayload)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        saveBookingData();
-                        try {
-                            const last = JSON.parse(localStorage.getItem('quickcutLastBooking') || '{}');
-                            if (last && paymentInfo) {
-                                last.payment = paymentInfo;
-                                last.backend_id = data.appointment_id;
-                                localStorage.setItem('quickcutLastBooking', JSON.stringify(last));
-                            }
-                        } catch (e) {}
-
-                        try {
-                            sessionStorage.setItem('justBooked', '1');
-                        } catch (e) {}
-
-                        window.location.href = 'queuestatus.php';
-                    } else {
-                        showToast('Booking Failed', data.message || 'Server error occurred', 'error');
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.disabled = false;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showToast('Booking Error', 'Could not connect to the server.', 'error');
+            fetch('book_appointment.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.setItem('quickcutLastBooking', JSON.stringify({
+                        ...payload,
+                        appointment_id: data.appointment_id,
+                        bookingTime: new Date().toISOString()
+                    }));
+                    window.location.href = 'queuestatus.php';
+                } else {
+                    showToast('Booking Failed', data.message || 'Error', 'error');
                     submitBtn.innerHTML = originalText;
                     submitBtn.disabled = false;
-                });
-            } else {
-                const errorMessage = errorMessages[0] || 'Please complete all required fields';
-                showToast('Booking Failed', errorMessage, 'error');
-                
-                const firstError = document.querySelector('.is-invalid');
-                if (firstError) {
-                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
-            }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Error', 'Connection failed', 'error');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
         });
     }
 
-    function saveBookingData() {
-        const selectedTime12 = dateConfig.getSelectedTime12();
-        
-        const bookingData = {
-            fullName: document.getElementById('booking-full-name').value,
-            phone: document.getElementById('booking-phone').value,
-            email: document.getElementById('booking-email').value,
-            service: document.querySelector('input[name="service"]:checked')?.value,
-            serviceName: document.querySelector('input[name="service"]:checked')?.closest('.service-option').querySelector('h4')?.textContent,
-            barber: document.querySelector('input[name="barber"]:checked')?.value,
-            barberName: document.querySelector('input[name="barber"]:checked')?.closest('.barber-option').querySelector('h5')?.textContent,
-            date: dateConfig.selectedDate.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
-            time: selectedTime12,
-            specialRequests: document.getElementById('special-requests').value,
-            bookingTime: new Date().toISOString(),
-            bookingId: 'BK-' + Date.now(),
-            status: 'confirmed',
-            queuePosition: Math.floor(Math.random() * 5) + 1,
-            totalAmount: document.getElementById('summary-price').textContent
-        };
-        
-        localStorage.setItem('quickcutLastBooking', JSON.stringify(bookingData));
-        let bookingHistory = JSON.parse(localStorage.getItem('quickcutBookingHistory') || '[]');
-        bookingHistory.push(bookingData);
-        localStorage.setItem('quickcutBookingHistory', JSON.stringify(bookingHistory));
-        sessionStorage.setItem('currentBooking', JSON.stringify(bookingData));
-    }
-
-    // ========== TOAST NOTIFICATIONS ==========
+    // ========== UTILS: TOAST, CLOCK, ETC ==========
     function showToast(title, message, type = 'info') {
-        let toastContainer = document.querySelector('.toast-container');
-        if (!toastContainer) {
-            toastContainer = document.createElement('div');
-            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-            document.body.appendChild(toastContainer);
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            document.body.appendChild(container);
         }
-        
-        const toastId = 'toast-' + Date.now();
         const toast = document.createElement('div');
-        toast.id = toastId;
-        toast.className = `toast align-items-center text-bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} border-0`;
+        toast.className = `toast align-items-center text-bg-${type === 'error' ? 'danger' : (type === 'success' ? 'success' : 'info')} border-0`;
         toast.setAttribute('role', 'alert');
-        
         toast.innerHTML = `
             <div class="d-flex">
-                <div class="toast-body">
-                    <strong>${title}</strong><br>
-                    <small>${message}</small>
-                </div>
+                <div class="toast-body"><strong>${title}</strong><br>${message}</div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
             </div>
         `;
-        
-        toastContainer.appendChild(toast);
-        
+        container.appendChild(toast);
         const bsToast = new bootstrap.Toast(toast, { delay: 5000 });
         bsToast.show();
-        
-        toast.addEventListener('hidden.bs.toast', function () {
-            toast.remove();
-        });
+        toast.addEventListener('hidden.bs.toast', () => toast.remove());
     }
 
-    // ========== BACK TO TOP BUTTON ==========
-    const backToTopBtn = document.getElementById('back-to-top');
-    if (backToTopBtn) {
-        window.addEventListener('scroll', function() {
-            backToTopBtn.style.display = window.scrollY > 300 ? 'flex' : 'none';
-        });
-        
-        backToTopBtn.addEventListener('click', function() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-    }
-
-    // ========== ADD CUSTOM CSS STYLES ==========
-    const customStyles = document.createElement('style');
-    customStyles.textContent = `
-        /* Animations */
-        @keyframes selectPulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.7); }
-            70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(13, 110, 253, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(13, 110, 253, 0); }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* Date List Styling */
-        .date-list-container {
-            background: #fff;
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid #e0e0e0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            animation: fadeIn 0.5s ease;
-        }
-        
-        .date-list-header {
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 15px;
-        }
-        
-        .real-time-status {
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .real-time-status.status-open {
-            background: rgba(40, 167, 69, 0.1);
-            border-left: 3px solid #28a745;
-        }
-        
-        .real-time-status.status-closed {
-            background: rgba(220, 53, 69, 0.1);
-            border-left: 3px solid #dc3545;
-        }
-        
-        .real-time-status.status-warning {
-            background: rgba(255, 193, 7, 0.1);
-            border-left: 3px solid #ffc107;
-        }
-        
-        .date-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 12px;
-            max-height: 320px;
-            overflow-y: auto;
-            padding: 10px;
-            margin-top: 10px;
-        }
-        
-        .date-list-item {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        .date-list-item:hover:not(.date-unavailable) {
-            border-color: #0d6efd;
-            transform: translateY(-3px);
-            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
-        }
-        
-        .date-list-item.date-selected {
-            border-color: #0d6efd;
-            background: rgba(13, 110, 253, 0.08);
-            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
-        }
-        
-        .date-list-item.date-unavailable {
-            opacity: 0.6;
-            cursor: not-allowed;
-            background: #f8f9fa;
-        }
-        
-        .date-list-item.date-unavailable:hover {
-            transform: none;
-            box-shadow: none;
-            border-color: #e9ecef;
-        }
-        
-        .date-item-content {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-        
-        .date-display {
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        
-        .date-full {
-            font-size: 0.85rem;
-            color: #666;
-            margin-bottom: 10px;
-            flex-grow: 1;
-        }
-        
-        .date-meta {
-            display: flex;
-            justify-content: flex-end;
-        }
-        
-        .date-badge {
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 4px 8px;
-            border-radius: 12px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .date-badge.available {
-            background: #28a745;
-            color: white;
-        }
-        
-        .date-badge.today {
-            background: #ffc107;
-            color: #000;
-        }
-        
-        .date-badge.tomorrow {
-            background: #17a2b8;
-            color: white;
-        }
-        
-        .date-badge.closed {
-            background: #dc3545;
-            color: white;
-        }
-        
-        /* Selected Date Info */
-        .selected-date-info {
-            background: rgba(13, 110, 253, 0.08);
-            border: 1px solid rgba(13, 110, 253, 0.2);
-            border-radius: 8px;
-            padding: 15px;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        /* Time Input Styling */
-        .time-input-container {
-            background: #fff;
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid #e0e0e0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-top: 20px;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        .time-input-header {
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 15px;
-        }
-        
-        .time-select {
-            height: 50px;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .time-select:focus {
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-        }
-        
-        .time-validation {
-            min-height: 40px;
-            display: flex;
-            align-items: center;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .time-validation .text-success {
-            color: #198754;
-            font-weight: 500;
-        }
-        
-        .time-validation .text-danger {
-            color: #dc3545;
-            font-weight: 500;
-        }
-        
-        .time-validation .text-muted {
-            color: #6c757d;
-        }
-        
-        /* Time Suggestions */
-        .time-suggestions {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            border: 1px solid #e9ecef;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .time-suggestion {
-            min-width: 85px;
-            padding: 8px 12px;
-            transition: all 0.2s ease;
-            border: 2px solid #dee2e6;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .time-suggestion:hover {
-            background: #0d6efd;
-            color: white;
-            border-color: #0d6efd;
-            transform: translateY(-2px);
-        }
-        
-        .time-suggestion.active {
-            background: #0d6efd !important;
-            color: white !important;
-            border-color: #0d6efd !important;
-            animation: selectPulse 0.5s ease;
-        }
-        
-        /* Selected Time Info */
-        .selected-time-info {
-            border: none;
-            background: rgba(25, 135, 84, 0.1);
-            border-left: 4px solid #198754;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        /* Progress Steps */
-        .progress-step.active span {
-            background: #0d6efd !important;
-            color: white !important;
-            transform: scale(1.1);
-            box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.2);
-            animation: selectPulse 2s infinite;
-        }
-        
-        .progress-step.completed span {
-            background: #28a745 !important;
-            color: white !important;
-        }
-        
-        /* Scrollbar Styling */
-        .date-list::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .date-list::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        
-        .date-list::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 10px;
-        }
-        
-        .date-list::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
-        
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .date-list {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 10px;
-            }
-            
-            .date-list-item {
-                padding: 12px;
-            }
-            
-            .date-display {
-                font-size: 1rem;
-            }
-            
-            .time-select {
-                height: 45px;
-                font-size: 0.95rem;
-            }
-            
-            .time-suggestion {
-                min-width: 70px;
-                padding: 6px 10px;
-                font-size: 0.85rem;
-            }
-            
-            .real-time-status {
-                font-size: 0.8rem;
-                padding: 6px 10px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .date-list {
-                grid-template-columns: 1fr;
-            }
-            
-            .date-list-container,
-            .time-input-container {
-                padding: 15px;
-            }
-            
-            .time-input-group .row.g-3 {
-                margin: 0 -5px;
-            }
-            
-            .time-input-group .col-md-4 {
-                padding: 0 5px;
-            }
-        }
-    `;
-    document.head.appendChild(customStyles);
-    
-    // ========== ADD REAL-TIME CLOCK ==========
     function addRealTimeClock() {
         const clock = document.createElement('div');
-        clock.className = 'real-time-clock';
         clock.id = 'real-time-clock';
+        clock.style.cssText = 'position:fixed; bottom:20px; left:20px; background:rgba(0,0,0,0.8); color:#fff; padding:8px 15px; border-radius:30px; font-size:0.8rem; z-index:1000; border:1px solid rgba(255,255,255,0.1); backdrop-filter:blur(5px);';
         document.body.appendChild(clock);
-        
-        function updateClock() {
+        setInterval(() => {
             const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: true
-            });
-            const dateString = now.toLocaleDateString('en-US', {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric'
-            });
-            clock.textContent = `${dateString} • ${timeString}`;
-            
-            // Update booking summary and progress
-            updateBookingSummary();
-            updateProgress();
-        }
-        
-        updateClock();
-        setInterval(updateClock, 1000);
+            clock.innerHTML = `<i class="fas fa-clock me-2 text-warning"></i>${now.toLocaleDateString()} • ${now.toLocaleTimeString()}`;
+        }, 1000);
     }
 
-    // ========== INITIALIZE EVERYTHING ==========
-    function initializePage() {
-        // Add real-time clock
-        addRealTimeClock();
-        
-        // Initialize booking summary
-        updateBookingSummary();
-        updateProgress();
+    // Payment method toggles
+    const pRadios = document.querySelectorAll('input[name="payment_method"]');
+    pRadios.forEach(r => r.addEventListener('change', () => {
+        ['telebirr', 'cbe', 'bank'].forEach(m => {
+            const el = document.getElementById(`${m}-details`);
+            if (el) el.style.display = (r.value === m) ? '' : 'none';
+        });
+    }));
 
-        // Payment method toggles
-        const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
-        const telebirrDetails = document.getElementById('telebirr-details');
-        const cbeDetails = document.getElementById('cbe-details');
-        const bankDetails = document.getElementById('bank-details');
-
-        function updatePaymentUI() {
-            const method = document.querySelector('input[name="payment_method"]:checked')?.value;
-            if (method === 'telebirr') {
-                telebirrDetails.style.display = '';
-                cbeDetails.style.display = 'none';
-                bankDetails.style.display = 'none';
-            } else if (method === 'cbe') {
-                telebirrDetails.style.display = 'none';
-                cbeDetails.style.display = '';
-                bankDetails.style.display = 'none';
-            } else if (method === 'bank') {
-                telebirrDetails.style.display = 'none';
-                cbeDetails.style.display = 'none';
-                bankDetails.style.display = '';
-            }
-        }
-
-        paymentRadios.forEach(r => r.addEventListener('change', updatePaymentUI));
-        updatePaymentUI();
-        
-        // Show page with fade-in effect
-        document.body.style.opacity = '0';
-        document.body.style.transition = 'opacity 0.5s ease';
-        
-        setTimeout(() => {
-            document.body.style.opacity = '1';
-        }, 100);
-    }
-
-    // ========== START INITIALIZATION ==========
-    initializePage();
+    addRealTimeClock();
+    updateBookingSummary();
+    updateProgress();
 });

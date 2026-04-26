@@ -167,7 +167,7 @@ $barbers = $stmt->fetchAll();
                 <div class="col-lg-8" id="booking-left-column">
                     <div class="booking-form-card" id="booking-form-card">
                         <!-- Progress -->
-                        <div class="booking-progress" id="ooking-progress">
+                        <div class="booking-progress" id="booking-progress">
                             <div class="progress-step active" id="progress-step-1">
                                 <span>1</span>
                                 <div class="step-label">Personal Info</div>
@@ -293,13 +293,49 @@ $barbers = $stmt->fetchAll();
 
                             <!-- Date & Time -->
                             <div class="form-section" id="datetime-section">
-                                <div class="row" id="datetime-row">
-                                    <div class="col-md-6 mb-4" id="date-container-col">
-                                        <!-- Dynamic Date Picker will be rendered here by JS -->
+                                <!-- Date Picker Row -->
+                                <div id="date-container-col">
+                                    <div class="dt-section-header mb-3">
+                                        <div>
+                                            <h5 class="mb-1"><i class="fas fa-calendar-alt me-2"></i>Select Date</h5>
+                                            <p class="text-muted mb-0 small">Choose a date for your appointment</p>
+                                        </div>
+                                        <div id="real-time-status" class="dt-status-badge"></div>
                                     </div>
-                                    <div class="col-md-6" id="time-container-col">
-                                        <!-- Dynamic Time Pickers will be rendered here by JS -->
+                                    <!-- Skeleton strip (replaced by JS) -->
+                                    <div class="date-skeleton-strip" id="date-skeleton-strip">
+                                        <div class="skeleton-date-card"></div>
+                                        <div class="skeleton-date-card"></div>
+                                        <div class="skeleton-date-card"></div>
+                                        <div class="skeleton-date-card"></div>
+                                        <div class="skeleton-date-card"></div>
                                     </div>
+                                    <div class="date-list" id="date-list"></div>
+                                    <div id="date-info" class="mt-3" style="display:none;"></div>
+                                </div>
+
+                                <!-- Divider -->
+                                <div class="dt-divider"></div>
+
+                                <!-- Time Picker Row -->
+                                <div id="time-container-col">
+                                    <div class="dt-section-header mb-3">
+                                        <div>
+                                            <h5 class="mb-1"><i class="fas fa-clock me-2"></i>Select Time</h5>
+                                            <p class="text-muted mb-0 small">Choose an available slot</p>
+                                        </div>
+                                        <div id="time-selected-badge" class="dt-status-badge" style="display:none;"></div>
+                                    </div>
+                                    <!-- Skeleton grid (replaced by JS) -->
+                                    <div class="time-skeleton-grid" id="time-skeleton-strip">
+                                        <div class="skeleton-time-card"></div>
+                                        <div class="skeleton-time-card"></div>
+                                        <div class="skeleton-time-card"></div>
+                                        <div class="skeleton-time-card"></div>
+                                        <div class="skeleton-time-card"></div>
+                                        <div class="skeleton-time-card"></div>
+                                    </div>
+                                    <div id="time-slots-wrapper"></div>
                                 </div>
                             </div>
 
@@ -528,7 +564,7 @@ $barbers = $stmt->fetchAll();
     <!-- Auth (logout handling) -->
     <script src="js/auth.js"></script>
     <!-- Custom JavaScript -->
-    <script src="js/bookappointment.js"></script>
+    <script src="js/bookappointment.js?v=<?php echo time(); ?>"></script>
     <!-- Notifications -->
     <script src="js/notifications.js"></script>
 </body>
