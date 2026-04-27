@@ -90,9 +90,6 @@ function initCommonFeatures() {
     document.addEventListener('keypress', updateLastActivity);
     document.addEventListener('scroll', updateLastActivity);
     
-    // Load sample data if empty
-    if (appointments.length === 0) loadSampleData();
-    
     // Fetch live data from DB
     fetchGlobalData();
     

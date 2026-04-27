@@ -77,12 +77,33 @@ function updateStatsCards(stats) {
     `;
 }
 
-// Load today's appointments
+// Load today's appointments from database
 function loadTodayAppointments() {
-    const todayApps = getTodayAppointments();
+    const tbody = document.getElementById('today-appointments-list');
+    if (!tbody) return;
+    
+    const today = new Date().toISOString().split('T')[0];
+    
+    fetch(`get_appointments.php?date=${today}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                renderTodayAppointments(data.appointments);
+            } else {
+                console.error('Error loading appointments:', data.message);
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error loading data</td></tr>';
+            }
+        })
+        .catch(err => {
+            console.error('Fetch error:', err);
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Server error</td></tr>';
+        });
+}
+
+function renderTodayAppointments(appointments) {
     const tbody = document.getElementById('today-appointments-list');
     
-    if (todayApps.length === 0) {
+    if (appointments.length === 0) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="7" class="text-center py-4">
@@ -96,31 +117,33 @@ function loadTodayAppointments() {
     
     tbody.innerHTML = '';
     
-    todayApps.forEach(appointment => {
+    appointments.forEach(app => {
         const row = document.createElement('tr');
+        // Format time to 12h if needed, or use as is
+        const timeStr = app.appointment_time;
+        
         row.innerHTML = `
-            <td><strong>${appointment.time}</strong></td>
-            <td>${appointment.customer}</td>
-            <td><span class="phone-display">${appointment.phone}</span></td>
-            <td>${appointment.service}</td>
-            <td>${appointment.barber}</td>
+            <td><strong>${timeStr}</strong></td>
+            <td>${app.customer_name}</td>
+            <td><span class="phone-display">${app.customer_phone}</span></td>
+            <td>${app.service_name}</td>
+            <td>${app.barber_name || 'Unassigned'}</td>
             <td>
-                <select class="status-dropdown ${appointment.status}" 
-                        data-id="${appointment.id}"
-                        onchange="updateAppointmentStatus(${appointment.id}, this.value)">
-                    <option value="scheduled" ${appointment.status === 'scheduled' ? 'selected' : ''}>Scheduled</option>
-                    <option value="confirmed" ${appointment.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
-                    <option value="in-progress" ${appointment.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
-                    <option value="completed" ${appointment.status === 'completed' ? 'selected' : ''}>Completed</option>
-                    <option value="cancelled" ${appointment.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                <select class="status-dropdown ${app.status}" 
+                        onchange="updateAppointmentStatus(${app.id}, this.value)">
+                    <option value="scheduled" ${app.status === 'scheduled' ? 'selected' : ''}>Scheduled</option>
+                    <option value="confirmed" ${app.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                    <option value="in-progress" ${app.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
+                    <option value="completed" ${app.status === 'completed' ? 'selected' : ''}>Completed</option>
+                    <option value="cancelled" ${app.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                 </select>
             </td>
             <td>
                 <div class="action-buttons">
-                    <button class="action-btn edit" onclick="editAppointment(${appointment.id})">
+                    <button class="action-btn edit" onclick="window.location.href='appointments.php?id=${app.id}'">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="action-btn delete" onclick="deleteAppointment(${appointment.id})">
+                    <button class="action-btn delete" onclick="deleteAppointment(${app.id})">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
