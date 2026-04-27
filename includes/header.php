@@ -18,6 +18,7 @@ $is_logged_in = isset($_SESSION['user_id']);
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/welcome.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/notifications.css">
     <script>
         const BASE_URL = '<?php echo BASE_URL; ?>';
     </script>
@@ -47,6 +48,34 @@ $is_logged_in = isset($_SESSION['user_id']);
                         <a class="nav-link" href="<?php echo BASE_URL; ?>aboutus.php"><i class="fas fa-info-circle me-1"></i>About</a>
                     </li>
                     <?php if ($is_logged_in): ?>
+                        <!-- Notification Bell -->
+                        <li class="nav-item">
+                            <div class="notification-bell-wrapper nav-link" id="notification-bell-wrapper">
+                                <i class="fas fa-bell"></i>
+                                <span class="notification-badge" id="notification-badge">0</span>
+                                
+                                <div class="notification-dropdown" id="notification-dropdown">
+                                    <div class="notification-header">
+                                        <h6>Notifications</h6>
+                                        <a href="#" class="mark-all-read" id="mark-all-read-btn">Mark all as read</a>
+                                    </div>
+                                    <div class="unread-status p-2 px-3 small text-muted border-bottom">
+                                        <span id="unread-count-text">0 New</span>
+                                    </div>
+                                    <div class="notification-list" id="notification-list">
+                                        <!-- Notifications will be loaded here -->
+                                        <div class="no-notifications">
+                                            <i class="fas fa-bell-slash"></i>
+                                            <p>Loading...</p>
+                                        </div>
+                                    </div>
+                                    <div class="notification-footer">
+                                        <a href="#">View All</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+
                         <li class="nav-item">
                             <a class="nav-link" href="<?php echo BASE_URL; ?>auth/logout.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
                         </li>

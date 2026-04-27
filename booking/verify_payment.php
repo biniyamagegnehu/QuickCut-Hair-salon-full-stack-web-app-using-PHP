@@ -106,7 +106,13 @@ try {
 
         if ($appt) {
             $msg = "✅ Payment confirmed! Your appointment for {$appt['service_name']} on {$appt['appointment_date']} at {$appt['appointment_time']} is now confirmed.";
-            create_notification($pdo, $user_id, $msg, 'payment');
+            create_notification($pdo, $user_id, $msg, 'payment_success', $appointment_id);
+            
+            // Notify Admin
+            $admin_msg = "💰 New Payment: Received for {$appt['service_name']} (User ID: $user_id)";
+            // We need an admin user ID. Assuming there's a convention or we send to role 'admin'
+            // The helper now supports role.
+            create_notification($pdo, 0, $admin_msg, 'admin_new_booking', $appointment_id, 'admin');
         }
 
         $pdo->commit();
@@ -125,7 +131,7 @@ try {
             "UPDATE appointments SET status='cancelled' WHERE id=? AND status='pending'"
         )->execute([$appointment_id]);
 
-        create_notification($pdo, $user_id, "❌ Payment for your appointment was not completed. The slot has been released.", 'payment');
+        create_notification($pdo, $user_id, "❌ Payment for your appointment was not completed. The slot has been released.", 'payment_failed', $appointment_id);
 
         $pdo->commit();
         header('Location: payment_failed.php?tx_ref=' . urlencode($tx_ref) . '&appt_id=' . $appointment_id);

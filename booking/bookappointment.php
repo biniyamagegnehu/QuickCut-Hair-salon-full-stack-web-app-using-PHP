@@ -42,6 +42,7 @@ $barbers = $stmt->fetchAll();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../assets/css/bookappointment.css">
+    <link rel="stylesheet" href="../assets/css/notifications.css">
     <script>
         const BASE_URL = '<?php require_once "../includes/config.php"; echo BASE_URL; ?>';
     </script>
@@ -114,6 +115,32 @@ $barbers = $stmt->fetchAll();
                         <a class="nav-link" href="../aboutus.php" id="nav-about"><i class="fas fa-info-circle me-1"></i>About</a>
                     </li>
                     <?php if ($is_logged_in): ?>
+                        <!-- Notification Bell -->
+                        <li class="nav-item">
+                            <div class="notification-bell-wrapper nav-link" id="notification-bell-wrapper">
+                                <i class="fas fa-bell"></i>
+                                <span class="notification-badge" id="notification-badge">0</span>
+                                
+                                <div class="notification-dropdown" id="notification-dropdown">
+                                    <div class="notification-header">
+                                        <h6>Notifications</h6>
+                                        <a href="#" class="mark-all-read" id="mark-all-read-btn">Mark all as read</a>
+                                    </div>
+                                    <div class="unread-status p-2 px-3 small text-muted border-bottom">
+                                        <span id="unread-count-text">0 New</span>
+                                    </div>
+                                    <div class="notification-list" id="notification-list">
+                                        <div class="no-notifications">
+                                            <i class="fas fa-bell-slash"></i>
+                                            <p>Loading...</p>
+                                        </div>
+                                    </div>
+                                    <div class="notification-footer">
+                                        <a href="#">View All</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="../auth/logout.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
                         </li>
@@ -122,16 +149,6 @@ $barbers = $stmt->fetchAll();
                             <a class="nav-link" href="../auth/login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
                         </li>
                     <?php endif; ?>
-                    <li class="nav-item dropdown notification-dropdown">
-                        <a class="nav-link" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-bell"></i>
-                            <span class="badge bg-danger notification-badge rounded-pill" id="notification-count" style="display:none; position:absolute; top:0; right:0; font-size: 0.6rem;">0</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="notificationDropdown" id="notification-list" style="width: 320px; max-height: 400px; overflow-y: auto;">
-                            <li><h6 class="dropdown-header">Notifications</h6></li>
-                            <li id="no-notifications"><a class="dropdown-item text-muted text-center py-3" href="#">No notifications</a></li>
-                        </ul>
-                    </li>
                 </ul>
                 <a href="bookappointment.php" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="booking-book-now">
                     <i class="fas fa-scissors me-1"></i>Book Appointment

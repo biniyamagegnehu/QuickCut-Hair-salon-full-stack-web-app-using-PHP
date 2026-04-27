@@ -137,6 +137,11 @@ try {
     $stmt->execute([$user_id, $appointment_id, $deposit_amount, $tx_ref]);
 
     $pdo->commit();
+
+    // Notify customer about initiated booking
+    require_once '../notifications/create_notification.php';
+    create_notification($pdo, $user_id, "📅 You've initiated a booking for $service_name on $date_sql at $time_raw. Please complete the payment to confirm.", 'booking_initiated', $appointment_id);
+
 } catch (PDOException $e) {
     $pdo->rollBack();
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);

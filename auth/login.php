@@ -62,8 +62,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../assets/css/login.css">
+    <link rel="stylesheet" href="../assets/css/notifications.css">
     <script>
-        const BASE_URL = '<?php require_once "../includes/config.php"; echo BASE_URL; ?>';
+        const BASE_URL = '<?php echo dirname(dirname($_SERVER['PHP_SELF'])) . "/"; ?>';
     </script>
 </head>
 <body id="login-body">
@@ -91,6 +92,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <a class="nav-link" href="../aboutus.php" id="nav-about"><i class="fas fa-info-circle me-1"></i>About</a>
                     </li>
                     <?php if (isset($_SESSION['user_id'])): ?>
+                        <!-- Notification Bell -->
+                        <li class="nav-item">
+                            <div class="notification-bell-wrapper nav-link" id="notification-bell-wrapper">
+                                <i class="fas fa-bell"></i>
+                                <span class="notification-badge" id="notification-badge">0</span>
+                                
+                                <div class="notification-dropdown" id="notification-dropdown">
+                                    <div class="notification-header">
+                                        <h6>Notifications</h6>
+                                        <a href="#" class="mark-all-read" id="mark-all-read-btn">Mark all as read</a>
+                                    </div>
+                                    <div class="unread-status p-2 px-3 small text-muted border-bottom">
+                                        <span id="unread-count-text">0 New</span>
+                                    </div>
+                                    <div class="notification-list" id="notification-list">
+                                        <div class="no-notifications">
+                                            <i class="fas fa-bell-slash"></i>
+                                            <p>Loading...</p>
+                                        </div>
+                                    </div>
+                                    <div class="notification-footer">
+                                        <a href="#">View All</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="logout.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
                         </li>

@@ -1,4 +1,9 @@
 // common.js - Common JavaScript functions for all admin pages
+if (typeof BASE_URL === 'undefined') {
+    // Determine BASE_URL dynamically or fallback to one level up
+    window.BASE_URL = window.location.origin + window.location.pathname.split('/').slice(0, -2).join('/') + '/';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     initCommonFeatures();
 });
@@ -101,8 +106,69 @@ function initCommonFeatures() {
     // Mark active nav link
     markActiveNavLink();
     
+    // Initialize Live Notifications
+    initLiveNotifications();
+
     // Show welcome notification (only once per session)
     showWelcomeNotification();
+}
+
+/**
+ * Dynamically initializes the live notification system on admin pages
+ */
+function initLiveNotifications() {
+    const navItems = document.querySelector('.top-nav-items');
+    const oldBtn = document.querySelector('.notification-btn');
+    
+    if (!navItems || !oldBtn || document.getElementById('notification-bell-wrapper')) return;
+
+    // Create the wrapper and dropdown HTML
+    const wrapper = document.createElement('div');
+    wrapper.className = 'notification-bell-wrapper';
+    wrapper.id = 'notification-bell-wrapper';
+    wrapper.innerHTML = `
+        <button class="notification-btn">
+            <i class="fas fa-bell"></i>
+            <span class="badge" id="notification-badge">0</span>
+        </button>
+        <div class="notification-dropdown" id="notification-dropdown" style="top: 40px; right: 0;">
+            <div class="notification-header">
+                <h6 class="text-white">Admin Alerts</h6>
+                <a href="#" class="mark-all-read" id="mark-all-read-btn">Mark all as read</a>
+            </div>
+            <div class="unread-status p-2 px-3 small text-muted border-bottom">
+                <span id="unread-count-text">0 New</span>
+            </div>
+            <div class="notification-list" id="notification-list">
+                <div class="no-notifications">
+                    <i class="fas fa-bell-slash"></i>
+                    <p>Loading alerts...</p>
+                </div>
+            </div>
+            <div class="notification-footer">
+                <a href="reports.php">View Activity Log</a>
+            </div>
+        </div>
+    `;
+
+    // Replace old button with new wrapper
+    oldBtn.parentNode.replaceChild(wrapper, oldBtn);
+
+    // Load CSS if not already present
+    if (!document.getElementById('notifications-css')) {
+        const link = document.createElement('link');
+        link.id = 'notifications-css';
+        link.rel = 'stylesheet';
+        link.href = '../assets/css/notifications.css';
+        document.head.appendChild(link);
+    }
+
+    // Load Notifications JS if not already present
+    if (!document.querySelector('script[src*="notifications.js"]')) {
+        const script = document.createElement('script');
+        script.src = '../assets/js/notifications.js';
+        document.body.appendChild(script);
+    }
 }
 
 // Load sample data

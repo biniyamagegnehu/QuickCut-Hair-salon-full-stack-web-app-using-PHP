@@ -1,94 +1,174 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const notificationCount = document.getElementById('notification-count');
-    const notificationList = document.getElementById('notification-list');
-    
-    if (!notificationCount || !notificationList) return;
+/**
+ * QuickCut Notification System JS - Robust Version
+ */
 
-    function fetchNotifications() {
-        fetch(BASE_URL + 'notifications/get_notifications.php')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.notifications) {
-                    updateNotificationUI(data.notifications);
-                }
-            })
-            .catch(error => console.error('Error fetching notifications:', error));
+(function() {
+    // Self-healing BASE_URL
+    function getBaseUrl() {
+        if (typeof window.BASE_URL !== 'undefined' && window.BASE_URL) return window.BASE_URL;
+        
+        const scriptTag = document.querySelector('script[src*="notifications.js"]');
+        if (scriptTag) {
+            const src = scriptTag.getAttribute('src');
+            return src.split('assets')[0];
+        }
+        
+        // Final fallback: try to guess from location
+        const path = window.location.pathname;
+        if (path.includes('/admin/')) return '../';
+        if (path.includes('/booking/') || path.includes('/queue/') || path.includes('/auth/')) return '../';
+        return './';
     }
 
-    function updateNotificationUI(notifications) {
-        let unreadCount = 0;
-        let html = '<li><h6 class="dropdown-header">Notifications</h6></li>';
+    const BASE_URL = getBaseUrl();
 
-        if (notifications.length === 0) {
-            html += '<li id="no-notifications"><a class="dropdown-item text-muted text-center" href="#">No notifications</a></li>';
-        } else {
-            notifications.forEach(notification => {
-                if (notification.is_read == 0) unreadCount++;
-                
-                let icon = 'fa-bell';
-                let colorClass = 'text-primary';
-                
-                if (notification.type === 'booking') {
-                    icon = 'fa-calendar-check';
-                    colorClass = 'text-success';
-                } else if (notification.type === 'queue') {
-                    icon = 'fa-list-ol';
-                    colorClass = 'text-warning';
-                } else if (notification.type === 'status') {
-                    icon = 'fa-info-circle';
-                    colorClass = 'text-info';
+    function init() {
+        const bellWrapper = document.getElementById('notification-bell-wrapper');
+        const dropdown = document.getElementById('notification-dropdown');
+        const badge = document.getElementById('notification-badge');
+        
+        if (!bellWrapper || !dropdown) {
+            // If elements not found, retry once after a short delay (useful for dynamic injection)
+            if (!window.notifRetry) {
+                window.notifRetry = true;
+                setTimeout(init, 500);
+            }
+            return;
+        }
+
+        let hoverTimeout;
+
+        // --- Fetch Logic ---
+        const fetchNotifications = async () => {
+            try {
+                const response = await fetch(`${BASE_URL}notifications/get_notifications.php`);
+                const data = await response.json();
+                if (data.success) {
+                    updateUI(data);
                 }
+            } catch (err) { console.error("Notification Fetch Error:", err); }
+        };
 
-                const readClass = notification.is_read == 0 ? 'fw-bold bg-light' : '';
-                
-                html += `
-                    <li>
-                        <a class="dropdown-item ${readClass} border-bottom py-2" href="#" onclick="markAsRead(${notification.id}, event)">
-                            <div class="d-flex align-items-center">
-                                <div class="me-3 ${colorClass}"><i class="fas ${icon}"></i></div>
-                                <div>
-                                    <div class="small">${notification.message}</div>
-                                    <div class="text-muted" style="font-size: 0.75rem;">${new Date(notification.created_at).toLocaleString()}</div>
-                                </div>
-                            </div>
-                        </a>
-                    </li>
-                `;
+        const updateUI = (data) => {
+            // Update Badge
+            if (badge) {
+                const unread = data.unread_count;
+                badge.innerText = unread > 9 ? '9+' : unread;
+                badge.style.display = unread > 0 ? 'block' : 'none';
+            }
+
+            // Update Text Status
+            const unreadText = document.getElementById('unread-count-text');
+            if (unreadText) {
+                unreadText.innerText = data.unread_count > 0 ? `${data.unread_count} New` : 'No New Notifications';
+            }
+
+            // Update List
+            const list = document.getElementById('notification-list');
+            if (!list) return;
+
+            if (data.notifications.length === 0) {
+                list.innerHTML = '<div class="no-notifications"><i class="fas fa-bell-slash"></i><p>No notifications</p></div>';
+                return;
+            }
+
+            list.innerHTML = data.notifications.map(n => `
+                <div class="notification-item ${parseInt(n.is_read) === 0 ? 'unread' : ''}" onclick="markOneRead(${n.id})">
+                    <div class="notification-icon"><i class="${getIcon(n.type)}"></i></div>
+                    <div class="notification-content">
+                        <p class="notification-msg">${n.message}</p>
+                        <span class="notification-time">${timeAgo(n.created_at)}</span>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        // --- Event Listeners ---
+        bellWrapper.addEventListener('mouseenter', () => {
+            clearTimeout(hoverTimeout);
+            dropdown.classList.add('active');
+            fetchNotifications();
+        });
+
+        bellWrapper.addEventListener('mouseleave', () => {
+            hoverTimeout = setTimeout(() => {
+                dropdown.classList.remove('active');
+            }, 300);
+        });
+
+        bellWrapper.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (window.innerWidth <= 992) {
+                dropdown.classList.toggle('active');
+                if (dropdown.classList.contains('active')) fetchNotifications();
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!bellWrapper.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        const markAllBtn = document.getElementById('mark-all-read-btn');
+        if (markAllBtn) {
+            markAllBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                    const res = await fetch(`${BASE_URL}notifications/mark_notification_read.php`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ mark_all: true })
+                    });
+                    const data = await res.json();
+                    if (data.success) fetchNotifications();
+                } catch (err) { console.error(err); }
             });
         }
 
-        notificationList.innerHTML = html;
+        // --- Helper Functions ---
+        window.markOneRead = async (id) => {
+            try {
+                const res = await fetch(`${BASE_URL}notifications/mark_notification_read.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notification_id: id })
+                });
+                const data = await res.json();
+                if (data.success) fetchNotifications();
+            } catch (err) { console.error(err); }
+        };
 
-        if (unreadCount > 0) {
-            notificationCount.innerText = unreadCount;
-            notificationCount.style.display = 'inline-block';
-        } else {
-            notificationCount.style.display = 'none';
+        function getIcon(type) {
+            const icons = {
+                'payment_success': 'fas fa-check-circle',
+                'payment_failed': 'fas fa-times-circle',
+                'status_change': 'fas fa-info-circle',
+                'admin_new_booking': 'fas fa-calendar-plus',
+                'queue_alert_1': 'fas fa-clock',
+                'queue_alert_2': 'fas fa-clock'
+            };
+            return icons[type] || 'fas fa-bell';
         }
+
+        function timeAgo(dateString) {
+            const diff = Math.floor((new Date() - new Date(dateString)) / 1000);
+            if (diff < 60) return 'just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            return Math.floor(diff / 86400) + 'd ago';
+        }
+
+        // Initial fetch and interval
+        fetchNotifications();
+        setInterval(fetchNotifications, 15000);
     }
 
-    window.markAsRead = function(id, event) {
-        if (event) event.preventDefault();
-        
-        fetch(BASE_URL + 'notifications/mark_notification_read.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ notification_id: id })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                fetchNotifications(); // Refresh list
-            }
-        })
-        .catch(error => console.error('Error marking as read:', error));
-    };
-
-    // Initial fetch
-    fetchNotifications();
-
-    // Poll every 10 seconds
-    setInterval(fetchNotifications, 10000);
-});
+    // Run initialization
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();

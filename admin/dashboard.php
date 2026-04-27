@@ -19,6 +19,11 @@ check_admin_page();
     <!-- CSS Files -->
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/notifications.css">
+    <?php require_once '../includes/config.php'; ?>
+    <script>
+        const BASE_URL = '<?php echo BASE_URL; ?>';
+    </script>
 </head>
 <body>
     <!-- Sidebar -->
@@ -110,10 +115,31 @@ check_admin_page();
                 <input type="text" placeholder="Search..." id="global-search">
             </div>
             <div class="top-nav-items">
-                <button class="notification-btn">
-                    <i class="fas fa-bell"></i>
-                    <span class="badge" id="notification-count">3</span>
-                </button>
+                <div class="notification-bell-wrapper" id="notification-bell-wrapper">
+                    <button class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge" id="notification-badge">0</span>
+                    </button>
+                    
+                    <div class="notification-dropdown" id="notification-dropdown" style="top: 40px; right: 0;">
+                        <div class="notification-header">
+                            <h6 class="text-white">Admin Alerts</h6>
+                            <a href="#" class="mark-all-read" id="mark-all-read-btn">Mark all as read</a>
+                        </div>
+                        <div class="unread-status p-2 px-3 small text-muted border-bottom">
+                            <span id="unread-count-text">0 New</span>
+                        </div>
+                        <div class="notification-list" id="notification-list">
+                            <div class="no-notifications">
+                                <i class="fas fa-bell-slash"></i>
+                                <p>Loading alerts...</p>
+                            </div>
+                        </div>
+                        <div class="notification-footer">
+                            <a href="reports.php">View Activity Log</a>
+                        </div>
+                    </div>
+                </div>
                 <button class="fullscreen-btn">
                     <i class="fas fa-expand"></i>
                 </button>
@@ -205,5 +231,6 @@ check_admin_page();
     <script src="../js/auth.js"></script>
     <script src="js/common.js?v=1.0.1"></script>
     <script src="js/dashboard.js"></script>
+    <script src="../assets/js/notifications.js"></script>
 </body>
 </html>
