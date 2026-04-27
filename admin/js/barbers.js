@@ -1,25 +1,32 @@
-// barbers.js - Barbers specific JavaScript
+// barbers.js - Professional Version
 document.addEventListener('DOMContentLoaded', function() {
     initBarbers();
 });
 
-// Initialize barbers
+let barbersData = [];
+let activeFilters = {
+    search: '',
+    status: 'all',
+    specialty: 'all'
+};
+
 function initBarbers() {
     loadBarbers();
-    setupBarberEventListeners();
+    setupEventListeners();
 }
 
-// Load barbers from database
 function loadBarbers() {
     const grid = document.getElementById('barbers-grid');
     if (!grid) return;
     
+    // Show skeleton or loader if needed
+    grid.innerHTML = '<div class="col-12 text-center py-5"><div class="spinner-border text-primary"></div><p class="mt-2">Loading barbers...</p></div>';
+
     fetch('get_barbers.php')
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Map database fields to JS field names
-                window.barbers = data.barbers.map(b => ({
+                barbersData = data.barbers.map(b => ({
                     id: b.id,
                     firstName: b.first_name,
                     lastName: b.last_name,
@@ -28,13 +35,16 @@ function loadBarbers() {
                     specialty: b.specialty,
                     rate: b.rate,
                     status: b.status,
-                    appointments: b.appointments,
-                    earnings: b.earnings,
-                    rating: b.rating
+                    appointments: parseInt(b.appointments) || 0,
+                    earnings: parseFloat(b.earnings) || 0,
+                    rating: parseFloat(b.rating) || 0.0
                 }));
-                renderBarbersGrid();
+                
+                updateStats();
+                populateSpecialties();
+                applyFilters();
             } else {
-                showNotification('Error loading barbers: ' + data.message, 'danger');
+                showNotification(data.message, 'danger');
             }
         })
         .catch(err => {
@@ -43,84 +53,184 @@ function loadBarbers() {
         });
 }
 
-function renderBarbersGrid() {
+function updateStats() {
+    const total = barbersData.length;
+    const active = barbersData.filter(b => b.status === 'active').length;
+    const avgRating = total > 0 ? (barbersData.reduce((acc, b) => acc + b.rating, 0) / total).toFixed(1) : '0.0';
+    const totalEarnings = barbersData.reduce((acc, b) => acc + b.earnings, 0).toLocaleString();
+
+    document.getElementById('total-barbers').textContent = total;
+    document.getElementById('active-barbers').textContent = active;
+    document.getElementById('avg-rating').textContent = avgRating;
+    document.getElementById('total-earnings').textContent = totalEarnings + ' ETB';
+}
+
+function populateSpecialties() {
+    const specialtyFilter = document.getElementById('specialty-filter');
+    if (!specialtyFilter) return;
+
+    const specialties = [...new Set(barbersData.map(b => b.specialty))];
+    specialtyFilter.innerHTML = '<option value="all">All Specialties</option>';
+    specialties.forEach(s => {
+        specialtyFilter.innerHTML += `<option value="${s}">${s}</option>`;
+    });
+}
+
+function setupEventListeners() {
+    const searchInput = document.getElementById('barber-search');
+    const statusFilter = document.getElementById('status-filter');
+    const specialtyFilter = document.getElementById('specialty-filter');
+    const resetBtn = document.getElementById('reset-filters');
+    const form = document.getElementById('addBarberForm');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            activeFilters.search = e.target.value.toLowerCase();
+            applyFilters();
+        });
+    }
+
+    if (statusFilter) {
+        statusFilter.addEventListener('change', (e) => {
+            activeFilters.status = e.target.value;
+            applyFilters();
+        });
+    }
+
+    if (specialtyFilter) {
+        specialtyFilter.addEventListener('change', (e) => {
+            activeFilters.specialty = e.target.value;
+            applyFilters();
+        });
+    }
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            if (searchInput) searchInput.value = '';
+            if (statusFilter) statusFilter.value = 'all';
+            if (specialtyFilter) specialtyFilter.value = 'all';
+            activeFilters = { search: '', status: 'all', specialty: 'all' };
+            applyFilters();
+        });
+    }
+
+    if (form) {
+        form.onsubmit = function(e) {
+            e.preventDefault();
+            const id = form.getAttribute('data-edit-id');
+            if (id) {
+                saveBarber(id);
+            } else {
+                saveBarber();
+            }
+        };
+    }
+}
+
+function applyFilters() {
+    const filtered = barbersData.filter(b => {
+        const matchesSearch = (b.firstName + ' ' + b.lastName).toLowerCase().includes(activeFilters.search) || 
+                              b.specialty.toLowerCase().includes(activeFilters.search);
+        const matchesStatus = activeFilters.status === 'all' || b.status === activeFilters.status;
+        const matchesSpecialty = activeFilters.specialty === 'all' || b.specialty === activeFilters.specialty;
+        
+        return matchesSearch && matchesStatus && matchesSpecialty;
+    });
+
+    renderBarbersGrid(filtered);
+}
+
+function renderBarbersGrid(data) {
     const grid = document.getElementById('barbers-grid');
     if (!grid) return;
 
-    if (window.barbers.length === 0) {
+    if (data.length === 0) {
         grid.innerHTML = `
             <div class="col-12">
-                <div class="card text-center py-5">
-                    <i class="fas fa-user-tie fa-3x text-muted mb-3"></i>
-                    <h4 class="text-muted">No Barbers Found</h4>
-                    <p class="text-muted">Add your first barber to get started</p>
-                    <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addBarberModal">
-                        <i class="fas fa-user-plus me-2"></i>Add First Barber
+                <div class="text-center py-5 bg-white rounded-4 border border-dashed">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Barbers Match Your Search</h4>
+                    <p class="text-muted">Try adjusting your filters or search terms</p>
+                    <button class="btn btn-primary mt-3" onclick="document.getElementById('reset-filters').click()">
+                        Clear All Filters
                     </button>
                 </div>
             </div>
         `;
         return;
     }
-    
+
     grid.innerHTML = '';
-    
-    window.barbers.forEach(barber => {
-        const cardContainer = document.createElement('div');
-        cardContainer.className = 'col-md-6 col-lg-4 mb-4';
-        cardContainer.innerHTML = `
-            <div class="barber-card h-100">
+    data.forEach(barber => {
+        const col = document.createElement('div');
+        col.className = 'col-sm-12 col-md-6 col-lg-6 col-xl-4';
+        
+        const statusClass = `bg-${barber.status}`;
+        const statusLabel = barber.status.charAt(0).toUpperCase() + barber.status.slice(1);
+        const pillClass = barber.status === 'active' ? 'text-success bg-success-soft' : 
+                         (barber.status === 'vacation' ? 'text-warning bg-warning-soft' : 'text-secondary bg-secondary-soft');
+
+        col.innerHTML = `
+            <div class="barber-card">
                 <div class="barber-header">
-                    <div class="barber-avatar">
-                        <i class="fas fa-user-tie"></i>
+                    <div class="barber-avatar-wrapper">
+                        <div class="barber-avatar">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="status-indicator ${statusClass}"></div>
                     </div>
                     <div class="barber-info">
                         <h5>${barber.firstName} ${barber.lastName}</h5>
                         <p>${barber.specialty}</p>
-                        <span class="barber-status status-${barber.status}">
-                            <i class="fas fa-circle"></i> ${barber.status.charAt(0).toUpperCase() + barber.status.slice(1)}
-                        </span>
+                        <span class="barber-status-pill ${pillClass}">${statusLabel}</span>
                     </div>
                 </div>
                 <div class="barber-body">
-                    <div class="barber-stats">
-                        <div class="barber-stat">
-                            <span class="number">${barber.appointments}</span>
-                            <span class="label">Appointments</span>
+                    <div class="barber-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>${barber.email}</span>
                         </div>
-                        <div class="barber-stat">
-                            <span class="number">${barber.rating}</span>
-                            <span class="label">Rating</span>
+                        <div class="meta-item">
+                            <i class="fas fa-phone"></i>
+                            <span>${barber.phone}</span>
                         </div>
-                        <div class="barber-stat">
-                            <span class="number">${barber.earnings} ETB</span>
-                            <span class="label">Earnings</span>
+                    </div>
+                    <div class="barber-stats-grid">
+                        <div class="stat-item">
+                            <span class="val">${barber.appointments}</span>
+                            <span class="lbl">Bookings</span>
                         </div>
-                        <div class="barber-stat">
-                            <span class="number">ETB ${barber.rate}/hr</span>
-                            <span class="label">Rate</span>
+                        <div class="stat-item">
+                            <span class="val">${barber.rating}</span>
+                            <span class="lbl">Rating</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="val">${barber.rate}</span>
+                            <span class="lbl">ETB/Hr</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="val">${barber.earnings.toLocaleString()}</span>
+                            <span class="lbl">Earned</span>
                         </div>
                     </div>
                     <div class="barber-actions">
-                        <button class="btn btn-sm btn-outline-primary w-100" onclick="editBarber(${barber.id})">
-                            <i class="fas fa-edit me-1"></i> Edit
+                        <button class="btn btn-light border flex-grow-1" onclick="editBarber(${barber.id})">
+                            <i class="fas fa-edit me-2 text-primary"></i> Edit
                         </button>
-                        <button class="btn btn-sm btn-outline-danger w-100" onclick="deleteBarber(${barber.id})">
-                            <i class="fas fa-trash me-1"></i> Remove
+                        <button class="btn btn-light border text-danger" onclick="deleteBarber(${barber.id})">
+                            <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 </div>
             </div>
         `;
-        grid.appendChild(cardContainer);
+        grid.appendChild(col);
     });
 }
 
-// Add new barber
-function addNewBarber(e) {
-    e.preventDefault();
-    
-    const newBarber = {
+function saveBarber(id = null) {
+    const barberData = {
         firstName: document.getElementById('barber-first-name').value,
         lastName: document.getElementById('barber-last-name').value,
         email: document.getElementById('barber-email').value,
@@ -129,18 +239,21 @@ function addNewBarber(e) {
         rate: parseInt(document.getElementById('barber-rate').value),
         status: document.getElementById('barber-status').value
     };
-    
-    fetch('add_barber.php', {
+
+    if (id) barberData.id = id;
+
+    const endpoint = id ? 'update_barber.php' : 'add_barber.php';
+
+    fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newBarber)
+        body: JSON.stringify(barberData)
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             showNotification(data.message, 'success');
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addBarberModal'));
-            modal.hide();
+            bootstrap.Modal.getInstance(document.getElementById('addBarberModal')).hide();
             document.getElementById('addBarberForm').reset();
             loadBarbers();
         } else {
@@ -149,16 +262,18 @@ function addNewBarber(e) {
     })
     .catch(err => {
         console.error('Error:', err);
-        showNotification('Failed to add barber', 'danger');
+        showNotification('Operation failed', 'danger');
     });
 }
 
-// Edit barber
 function editBarber(id) {
-    const barber = window.barbers.find(b => b.id === id);
+    const barber = barbersData.find(b => b.id === id);
     if (!barber) return;
+
+    const form = document.getElementById('addBarberForm');
+    form.setAttribute('data-edit-id', id);
+    document.getElementById('modalTitle').textContent = 'Edit Barber Details';
     
-    // Populate form
     document.getElementById('barber-first-name').value = barber.firstName;
     document.getElementById('barber-last-name').value = barber.lastName;
     document.getElementById('barber-email').value = barber.email;
@@ -166,62 +281,12 @@ function editBarber(id) {
     document.getElementById('barber-specialty').value = barber.specialty;
     document.getElementById('barber-rate').value = barber.rate;
     document.getElementById('barber-status').value = barber.status;
-    
-    // Change modal title
-    document.querySelector('#addBarberModal .modal-title').textContent = 'Edit Barber';
-    
-    // Update form submit handler
-    const form = document.getElementById('addBarberForm');
-    form.onsubmit = function(e) {
-        e.preventDefault();
-        updateBarberDetails(id);
-    };
-    
-    // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('addBarberModal'));
-    modal.show();
+
+    new bootstrap.Modal(document.getElementById('addBarberModal')).show();
 }
 
-// Update barber details
-function updateBarberDetails(id) {
-    const updatedBarber = {
-        id: id,
-        firstName: document.getElementById('barber-first-name').value,
-        lastName: document.getElementById('barber-last-name').value,
-        email: document.getElementById('barber-email').value,
-        phone: document.getElementById('barber-phone').value,
-        specialty: document.getElementById('barber-specialty').value,
-        rate: parseInt(document.getElementById('barber-rate').value),
-        status: document.getElementById('barber-status').value
-    };
-    
-    fetch('update_barber.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedBarber)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showNotification(data.message, 'success');
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addBarberModal'));
-            modal.hide();
-            document.getElementById('addBarberForm').reset();
-            document.querySelector('#addBarberModal .modal-title').textContent = 'Add New Barber';
-            loadBarbers();
-        } else {
-            showNotification(data.message, 'danger');
-        }
-    })
-    .catch(err => {
-        console.error('Error:', err);
-        showNotification('Failed to update barber', 'danger');
-    });
-}
-
-// Delete barber
 function deleteBarber(id) {
-    if (confirm('Are you sure you want to delete this barber? This action cannot be undone.')) {
+    if (confirm('Delete this barber? This will remove them from the system permanently.')) {
         fetch('delete_barber.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -235,10 +300,6 @@ function deleteBarber(id) {
             } else {
                 showNotification(data.message, 'danger');
             }
-        })
-        .catch(err => {
-            console.error('Error:', err);
-            showNotification('Failed to delete barber', 'danger');
         });
     }
 }
