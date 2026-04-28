@@ -21,3 +21,31 @@ Payload: {"amount":74.5,"currency":"ETB","email":"biniyamagegnehu2@gmail.com","f
 HTTP Code: 200
 Response: {"message":"Hosted Link","status":"success","data":{"checkout_url":"https:\/\/checkout.chapa.co\/checkout\/payment\/U0TN6kzEtQiNz19G8iZn36irBiSmFuRGDFqj3B3kWtmLv"}}
 
+--- 2026-04-28 08:04:47 ---
+Payload: {"amount":75,"currency":"ETB","email":"biniyamagegnehu2@gmail.com","first_name":"Biniyam","last_name":"Agegnehu","phone_number":"0919413008","tx_ref":"QC-1-1777356287-4d1678fa","callback_url":"http:\/\/localhost\/QuickCut\/booking\/verify_payment.php","return_url":"http:\/\/localhost\/QuickCut\/booking\/verify_payment.php?tx_ref=QC-1-1777356287-4d1678fa","customization":{"title":"QuickCut","description":"Deposit for beard on 2026-04-28"}}
+HTTP Code: 0
+Response: 
+
+--- 2026-04-28 08:04:49 ---
+Payload: {"amount":75,"currency":"ETB","email":"biniyamagegnehu2@gmail.com","first_name":"Biniyam","last_name":"Agegnehu","phone_number":"0919413008","tx_ref":"QC-1-1777356289-3093c34e","callback_url":"http:\/\/localhost\/QuickCut\/booking\/verify_payment.php","return_url":"http:\/\/localhost\/QuickCut\/booking\/verify_payment.php?tx_ref=QC-1-1777356289-3093c34e","customization":{"title":"QuickCut","description":"Deposit for beard on 2026-04-28"}}
+HTTP Code: 0
+Response: 
+
+--- 2026-04-28 08:05:02 ---
+Payload: {"amount":75,"currency":"ETB","email":"biniyamagegnehu2@gmail.com","first_name":"Biniyam","last_name":"Agegnehu","phone_number":"0919413008","tx_ref":"QC-1-1777356302-2b7195ae","callback_url":"http:\/\/localhost\/QuickCut\/booking\/verify_payment.php","return_url":"http:\/\/localhost\/QuickCut\/booking\/verify_payment.php?tx_ref=QC-1-1777356302-2b7195ae","customization":{"title":"QuickCut","description":"Deposit for beard on 2026-04-28"}}
+HTTP Code: 0
+Response: 
+
+--- 2026-04-28 09:18:35 ---
+Payload: {"amount":125,"currency":"ETB","email":"biniyamagegnehu2@gmail.com","first_name":"Biniyam","last_name":"Agegnehu","phone_number":"0919413008","tx_ref":"QC-1-1777360714-8fefbd45","callback_url":"http:\/\/localhost\/QuickCut\/booking\/verify_payment.php","return_url":"http:\/\/localhost\/QuickCut\/booking\/verify_payment.php?tx_ref=QC-1-1777360714-8fefbd45","customization":{"title":"QuickCut","description":"Deposit for haircut on 2026-04-30"}}
+HTTP Code: 200
+Response: {"message":"Hosted Link","status":"success","data":{"checkout_url":"https:\/\/checkout.chapa.co\/checkout\/payment\/o2b9nuvWXGFcJmpv4NocRdZg18tNKwJGSpu9Fs7XMIkRj"}}
+
+--- VERIFY_START 2026-04-28 09:18:51 ---
+GET PARAMS: {"tx_ref":"QC-1-1777360714-8fefbd45"}
+
+--- VERIFY 2026-04-28 09:18:53 ---
+TX_REF: QC-1-1777360714-8fefbd45
+HTTP Code: 200
+Response: {"message":"Payment details fetched successfully","status":"success","data":{"first_name":"Biniyam","last_name":"Agegnehu","email":"biniyamagegnehu2@gmail.com","phone_number":"251919413008","currency":"ETB","amount":125,"charge":3.13,"mode":"test","method":"test","type":"API","status":"success","reference":"APmjDUEJjpJWj","tx_ref":"QC-1-1777360714-8fefbd45","customization":{"title":"QuickCut","description":"Deposit for haircut on 2026-04-30","logo":null},"meta":null,"created_at":"2026-04-28T07:18:50.000000Z","updated_at":"2026-04-28T07:18:50.000000Z"}}
+

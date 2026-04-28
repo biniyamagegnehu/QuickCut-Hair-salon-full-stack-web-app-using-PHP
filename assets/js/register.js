@@ -67,10 +67,10 @@ document.addEventListener('DOMContentLoaded', function() {
         return passwordRegex.test(password);
     }
     
-    // Check if email already exists
-    function checkEmailExists(email) {
-        const users = JSON.parse(localStorage.getItem('quickcutUsers') || '[]');
-        return users.some(user => user.email.toLowerCase() === email.toLowerCase());
+    // Password validation - Updated to 6-digit numeric password
+    function validatePassword(password) {
+        const passwordRegex = /^\d{6}$/;
+        return passwordRegex.test(password);
     }
     
     // ========== REAL-TIME VALIDATION ==========
@@ -122,11 +122,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!validateEmail(email)) {
             showError(this, emailError, 'Please enter a valid email address');
-            return false;
-        }
-        
-        if (checkEmailExists(email)) {
-            showError(this, emailError, 'This email is already registered. Please login instead.');
             return false;
         }
         
@@ -333,11 +328,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
         
-        if (checkEmailExists(email)) {
-            showError(emailInput, emailError, 'This email is already registered. Please login instead.');
-            return false;
-        }
-        
         return true;
     }
     
@@ -421,11 +411,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const fullName = `${firstNameInput.value.trim()} ${lastNameInput.value.trim()}`;
         const email = emailInput.value.trim().toLowerCase();
+        const phone = phoneInput.value.trim();
         const password = passwordInput.value;
         const confirmPassword = confirmPasswordInput.value;
         
         // API call to registration endpoint
-        fetch('register.php', {
+        fetch('register_process.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -433,6 +424,7 @@ document.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify({
                 name: fullName,
                 email: email,
+                phone: phone,
                 password: password,
                 confirm_password: confirmPassword
             })

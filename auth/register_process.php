@@ -10,16 +10,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($input) {
         $name = isset($input['name']) ? trim($input['name']) : '';
         $email = isset($input['email']) ? trim($input['email']) : '';
+        $phone = isset($input['phone']) ? trim($input['phone']) : '';
         $password = isset($input['password']) ? $input['password'] : '';
         $confirm_password = isset($input['confirm_password']) ? $input['confirm_password'] : '';
     } else {
         $name = isset($_POST['name']) ? trim($_POST['name']) : '';
         $email = isset($_POST['email']) ? trim($_POST['email']) : '';
+        $phone = isset($_POST['phone']) ? trim($_POST['phone']) : '';
         $password = isset($_POST['password']) ? $_POST['password'] : '';
         $confirm_password = isset($_POST['confirm_password']) ? $_POST['confirm_password'] : '';
     }
 
-    if (empty($name) || empty($email) || empty($password) || empty($confirm_password)) {
+    if (empty($name) || empty($email) || empty($phone) || empty($password) || empty($confirm_password)) {
         echo json_encode(["success" => false, "message" => "All fields are required."]);
         exit;
     }
@@ -41,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Check for duplicate email
     try {
-        $stmt = $pdo->prepare("SELECT id FROM Users WHERE email = ?");
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->execute([$email]);
         if ($stmt->rowCount() > 0) {
             echo json_encode(["success" => false, "message" => "Email is already registered."]);
@@ -52,8 +54,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
         // Insert user
-        $stmt = $pdo->prepare("INSERT INTO Users (name, email, password, role) VALUES (?, ?, ?, 'customer')");
-        if ($stmt->execute([$name, $email, $hashed_password])) {
+        $stmt = $pdo->prepare("INSERT INTO users (name, email, phone, password, role) VALUES (?, ?, ?, ?, 'customer')");
+        if ($stmt->execute([$name, $email, $phone, $hashed_password])) {
             echo json_encode(["success" => true, "message" => "Registration successful."]);
         } else {
             echo json_encode(["success" => false, "message" => "Registration failed. Try again later."]);
