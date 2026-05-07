@@ -13,11 +13,11 @@ include 'includes/header.php';
     <!-- Hero Section -->
     <section class="hero-section" id="hero">
         <div class="container">
-            <div class="hero-content" data-aos="fade-up">
+            <div class="hero-content fade-in-up" data-aos="fade-up">
                 <h1 class="hero-title fw-bold">
-                    Master Your <span>Style</span>.
+                    Clean Cuts, Zero Wait.
                 </h1>
-                <p class="hero-subtitle">Premium grooming experiences tailored for the modern gentleman.</p>
+                <p class="hero-subtitle">A modern barbershop experience with quick booking and live queue tracking.</p>
                 <div class="hero-btns">
                     <a href="<?php echo $is_logged_in ? 'booking/bookappointment.php' : 'auth/login.php'; ?>" class="btn-premium btn-primary-cut">
                         Book Now
@@ -111,50 +111,6 @@ include 'includes/header.php';
             </div>
         </div>
     </section>
-
-    <!-- Footer -->
-    <footer class="footer-cut">
-        <div class="container">
-            <div class="row g-5 mb-5">
-                <div class="col-lg-4">
-                    <a href="#" class="footer-logo">QuickCut</a>
-                    <p class="text-white-50">Elevating the standard of professional grooming through technology and precision.</p>
-                    <div class="social-links mt-4">
-                        <a href="#" class="me-3 text-white"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="me-3 text-white"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="me-3 text-white"><i class="fab fa-twitter"></i></a>
-                    </div>
-                </div>
-                <div class="col-lg-2 offset-lg-1 footer-links">
-                    <h5>Navigate</h5>
-                    <ul>
-                        <li><a href="#hero">Home</a></li>
-                        <li><a href="#services">Services</a></li>
-                        <li><a href="<?php echo $is_logged_in ? 'queue/queuestatus.php' : 'auth/login.php'; ?>">Queue Status</a></li>
-                        <li><a href="aboutus.php">About Us</a></li>
-                    </ul>
-                </div>
-                <div class="col-lg-2 footer-links">
-                    <h5>Grooming</h5>
-                    <ul>
-                        <li><a href="#">Haircuts</a></li>
-                        <li><a href="#">Beard Trim</a></li>
-                        <li><a href="#">Facial Care</a></li>
-                        <li><a href="#">Styling</a></li>
-                    </ul>
-                </div>
-                <div class="col-lg-3 footer-links">
-                    <h5>Location</h5>
-                    <p class="text-white-50 mb-1">123 Barber Street, Suite 456</p>
-                    <p class="text-white-50 mb-1">Addis Ababa, Ethiopia</p>
-                    <p class="text-white-50">+251 911 234 567</p>
-                </div>
-            </div>
-            <div class="border-top border-white border-opacity-10 pt-4 text-center">
-                <p class="text-white-50 small mb-0">&copy; 2026 QuickCut Professional Grooming. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
 
 <?php include 'includes/footer.php'; ?>
 
