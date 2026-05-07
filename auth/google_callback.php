@@ -56,6 +56,8 @@ if (isset($_GET['code'])) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['role'] = $user['role'];
         $_SESSION['name'] = $user['name'];
+        $_SESSION['email'] = $user['email'];
+        $_SESSION['auth_provider'] = $user['auth_provider'] ?? 'google';
 
         // Redirect based on role
         if ($user['role'] === 'admin') {

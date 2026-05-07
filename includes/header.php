@@ -18,6 +18,7 @@ $is_logged_in = isset($_SESSION['user_id']);
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/home.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/theme.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/navbar.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/animations.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/notifications.css">
@@ -91,7 +92,7 @@ $is_logged_in = isset($_SESSION['user_id']);
                                 <span><?php echo explode(' ', $_SESSION['name'])[0]; ?></span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 rounded-3" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item py-2" href="<?php echo BASE_URL; ?>profile.php"><i class="fas fa-user-circle me-2"></i>My Profile</a></li>
+                                <li><a class="dropdown-item py-2" href="<?php echo BASE_URL; ?>profile/profile.php"><i class="fas fa-user-circle me-2"></i>My Profile</a></li>
                                 <li><a class="dropdown-item py-2" href="<?php echo BASE_URL; ?>booking/bookappointment.php"><i class="fas fa-calendar-check me-2"></i>My Bookings</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item py-2 text-danger" href="<?php echo BASE_URL; ?>auth/logout.php"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
