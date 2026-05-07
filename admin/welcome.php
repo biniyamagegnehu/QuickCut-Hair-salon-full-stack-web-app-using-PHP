@@ -11,9 +11,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
+        :root {
+            --primary: #BF3131;
+            --primary-dark: #7D0A0A;
+            --accent: #EAD196;
+            --light: #EEEEEE;
+            --black: #1a1a1a;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -22,11 +30,11 @@
         }
         
         .welcome-container {
-            background: white;
+            background: var(--light);
             border-radius: 20px;
             padding: 50px;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
             max-width: 600px;
             width: 100%;
         }
@@ -34,7 +42,7 @@
         .logo {
             width: 100px;
             height: 100px;
-            background: linear-gradient(135deg, #ff6b35, #e55a2b);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -45,20 +53,20 @@
         }
         
         h1 {
-            color: #333;
+            color: var(--primary-dark);
             margin-bottom: 20px;
             font-weight: 700;
         }
         
         p {
-            color: #666;
+            color: var(--black);
             margin-bottom: 30px;
             font-size: 1.1rem;
             line-height: 1.6;
         }
         
         .btn-admin {
-            background: linear-gradient(135deg, #ff6b35, #e55a2b);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             border: none;
             padding: 12px 30px;
             font-size: 1.1rem;
@@ -74,7 +82,7 @@
         
         .btn-admin:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
+            box-shadow: 0 5px 15px rgba(125, 10, 10, 0.3);
             color: white;
         }
         

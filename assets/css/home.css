@@ -74,7 +74,7 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--white);
     padding: 120px 0 64px;
     background-image: linear-gradient(rgba(20, 20, 20, 0.62), rgba(20, 20, 20, 0.62)),
-        url('https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&q=80&w=1920');
+        url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7z320g4h2yrrWlfYSzm8LoNtuUZFId5lS1A&s');
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;

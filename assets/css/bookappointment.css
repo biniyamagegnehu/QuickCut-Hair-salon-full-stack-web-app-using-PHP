@@ -14,7 +14,7 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)),
-                url('https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=2070&q=80') center/cover no-repeat fixed;
+                url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7z320g4h2yrrWlfYSzm8LoNtuUZFId5lS1A&s') center/cover no-repeat fixed;
     color: #333;
     min-height: 100vh;
     padding-top: 56px; /* For fixed navbar */
@@ -78,7 +78,7 @@ body {
 /* Booking Header */
 .booking-header {
     background: linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)),
-                url('https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=2070&q=80') center/cover no-repeat;
+                url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7z320g4h2yrrWlfYSzm8LoNtuUZFId5lS1A&s') center/cover no-repeat;
     color: white;
     padding: 4rem 0;
     position: relative;
@@ -768,7 +768,7 @@ body {
 /* Footer */
 .footer-section {
     background: linear-gradient(rgba(26, 26, 26, 0.95), rgba(26, 26, 26, 0.95)),
-                url('https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=2070&q=80') center/cover no-repeat;
+                url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7z320g4h2yrrWlfYSzm8LoNtuUZFId5lS1A&s') center/cover no-repeat;
     color: white;
     margin-top: 4rem;
     position: relative;

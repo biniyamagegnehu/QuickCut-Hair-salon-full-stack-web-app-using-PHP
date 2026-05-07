@@ -30,22 +30,10 @@ $services = $stmt->fetchAll();
 $stmt = $pdo->query("SELECT id, first_name, last_name, specialty, rating FROM barbers WHERE status = 'active' ORDER BY first_name ASC");
 $barbers = $stmt->fetchAll();
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Appointment - QuickCut</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Custom CSS -->
+<?php include '../includes/header.php'; ?>
+    <!-- Custom Booking Styles -->
     <link rel="stylesheet" href="../assets/css/bookappointment.css">
-    <link rel="stylesheet" href="../assets/css/notifications.css">
-    <script>
-        const BASE_URL = '<?php require_once "../includes/config.php"; echo BASE_URL; ?>';
-    </script>
+    
     <!-- Payment styles -->
     <style>
         .payment-section {
@@ -58,7 +46,7 @@ $barbers = $stmt->fetchAll();
 
         .payment-section h5 {
             font-weight: 600;
-            color: #0d6efd;
+            color: var(--primary);
         }
 
         .payment-section .form-check {
@@ -89,73 +77,6 @@ $barbers = $stmt->fetchAll();
             .payment-section { padding: 12px; }
         }
     </style>
-</head>
-<body id="booking-body">
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="booking-nav">
-        <div class="container">
-            <a class="navbar-brand logo" href="../welcome.php" id="booking-logo">
-                <i class="fas fa-cut me-2"></i>QuickCut
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" id="booking-menu-toggle">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto" id="booking-nav-menu">
-                    <li class="nav-item">
-                        <a class="nav-link" href="../welcome.php" id="nav-home"><i class="fas fa-home me-1"></i>Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="bookappointment.php" id="nav-book"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="../queue/queuestatus.php" id="nav-queue"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="../aboutus.php" id="nav-about"><i class="fas fa-info-circle me-1"></i>About</a>
-                    </li>
-                    <?php if ($is_logged_in): ?>
-                        <!-- Notification Bell -->
-                        <li class="nav-item">
-                            <div class="notification-bell-wrapper nav-link" id="notification-bell-wrapper">
-                                <i class="fas fa-bell"></i>
-                                <span class="notification-badge" id="notification-badge">0</span>
-                                
-                                <div class="notification-dropdown" id="notification-dropdown">
-                                    <div class="notification-header">
-                                        <h6>Notifications</h6>
-                                        <a href="#" class="mark-all-read" id="mark-all-read-btn">Mark all as read</a>
-                                    </div>
-                                    <div class="unread-status p-2 px-3 small text-muted border-bottom">
-                                        <span id="unread-count-text">0 New</span>
-                                    </div>
-                                    <div class="notification-list" id="notification-list">
-                                        <div class="no-notifications">
-                                            <i class="fas fa-bell-slash"></i>
-                                            <p>Loading...</p>
-                                        </div>
-                                    </div>
-                                    <div class="notification-footer">
-                                        <a href="#">View All</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="../auth/logout.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
-                        </li>
-                    <?php else: ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="../auth/login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-                <a href="bookappointment.php" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="booking-book-now">
-                    <i class="fas fa-scissors me-1"></i>Book Appointment
-                </a>
-            </div>
-        </div>
-    </nav>
 
     <!-- Main Content -->
     <main class="booking-page" id="booking-main">
@@ -481,92 +402,9 @@ $barbers = $stmt->fetchAll();
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="footer-section" id="booking-footer">
-        <div class="container py-5">
-            <div class="row">
-                <div class="col-lg-4 mb-4 mb-lg-0" id="footer-left">
-                    <h5 class="fw-bold mb-3" id="footer-logo">
-                        <i class="fas fa-cut me-2 text-primary"></i>QuickCut
-                    </h5>
-                    <p class="text-light small" id="footer-description">
-                        Skip the wait. Get the cut. QuickCut makes hair appointments fast, easy, and convenient.
-                    </p>
-                    <div class="social-links mt-3" id="footer-social">
-                        <a href="https://facebook.com" target="_blank" class="text-white me-3" id="footer-facebook">
-                            <i class="fab fa-facebook fa-lg"></i>
-                        </a>
-                        <a href="https://twitter.com" target="_blank" class="text-white me-3" id="footer-twitter">
-                            <i class="fab fa-twitter fa-lg"></i>
-                        </a>
-                        <a href="https://instagram.com" target="_blank" class="text-white me-3" id="footer-instagram">
-                            <i class="fab fa-instagram fa-lg"></i>
-                        </a>
-                        <a href="https://tiktok.com" target="_blank" class="text-white" id="footer-tiktok">
-                            <i class="fab fa-tiktok fa-lg"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="col-lg-4 mb-4 mb-lg-0" id="footer-middle">
-                    <h5 class="fw-bold mb-3">Contact Us</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2" id="contact-phone">
-                            <i class="fas fa-phone me-2 text-primary"></i>
-                            <span id="phone-number">(+251) 921456765</span>
-                        </li>
-                        <li class="mb-2" id="contact-email">
-                            <i class="fas fa-envelope me-2 text-primary"></i>
-                            <span id="email-address">quickcut@gmail.com</span>
-                        </li>
-                        <li id="contact-address">
-                            <i class="fas fa-map-marker-alt me-2 text-primary"></i>
-                            <span id="address">123 Main Street, Downtown</span>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="col-lg-4" id="footer-right">
-                    <h5 class="fw-bold mb-3">Working Hours</h5>
-                    <ul class="list-unstyled">
-                        <?php 
-                        $stmt = $pdo->query("SELECT day_of_week, open_time, close_time, is_closed FROM working_hours ORDER BY FIELD(day_of_week, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')");
-                        while($row = $stmt->fetch()):
-                            $time_range = $row['is_closed'] ? 'Closed' : date("g:i A", strtotime($row['open_time'])) . " - " . date("g:i A", strtotime($row['close_time']));
-                        ?>
-                        <li class="mb-1 small"><?php echo $row['day_of_week']; ?>: <?php echo $time_range; ?></li>
-                        <?php endwhile; ?>
-                    </ul>
-                </div>
-            </div>
-            
-            <hr class="bg-light my-4" id="footer-divider">
-            
-            <div class="text-center" id="footer-bottom">
-                <p class="mb-0" id="copyright">
-                    © 2025 QuickCut. All rights reserved. | 
-                    <a href="#" class="text-decoration-none text-primary" id="privacy-policy">Privacy Policy</a> | 
-                    <a href="#" class="text-decoration-none text-primary" id="terms-service">Terms of Service</a>
-                </p>
-            </div>
-        </div>
-    </footer>
+<?php include '../includes/footer.php'; ?>
     
-    <!-- Back to Top Button -->
-    <button class="btn btn-primary scroll-to-top" style="display: none;" id="back-to-top">
-        <i class="fas fa-chevron-up"></i>
-    </button>
-
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Auth (logout handling) -->
     <script src="../assets/js/auth.js"></script>
-    <!-- Custom JavaScript -->
-    <script>
-        const BASE_URL = '<?php echo BASE_URL; ?>';
-    </script>
     <script src="../assets/js/bookappointment.js?v=<?php echo time(); ?>"></script>
-    <!-- Notifications -->
-    <script src="../assets/js/notifications.js"></script>
 </body>
 </html>
