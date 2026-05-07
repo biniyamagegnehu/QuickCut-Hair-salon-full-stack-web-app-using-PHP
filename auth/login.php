@@ -181,7 +181,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <i class="fas fa-sign-in-alt me-2"></i>Log In
                             </button>
                             
-                            <div class="text-center mt-3" id="login-message"></div>
+                            <div class="divider d-flex align-items-center my-4">
+                                <p class="text-center fw-bold mx-3 mb-0 text-muted">OR</p>
+                            </div>
+
+                            <a href="google_login.php" class="btn btn-outline-dark btn-lg w-100 google-btn" id="google-login-btn">
+                                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" class="me-2">
+                                Continue with Google
+                            </a>
+                            
+                            <div class="text-center mt-3" id="login-message">
+                                <?php if (isset($_SESSION['login_error'])): ?>
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        <?php 
+                                            echo $_SESSION['login_error']; 
+                                            unset($_SESSION['login_error']);
+                                        ?>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
                         </form>
                         
                         <div class="text-center mt-4 pt-3 border-top" id="create-account-section">

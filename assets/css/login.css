@@ -434,3 +434,28 @@ footer a:hover {
     opacity: 0.7;
     cursor: not-allowed;
 }
+
+/* Google Login Button & Divider */
+.divider:after,
+.divider:before {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #eee;
+}
+
+.google-btn {
+    background-color: white;
+    border-color: #ddd;
+    color: #444;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.google-btn:hover {
+    background-color: #f8f9fa;
+    border-color: #ccc;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+    color: #333;
+}
