@@ -458,4 +458,25 @@ footer a:hover {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     transform: translateY(-2px);
     color: #333;
-}
+}
+
+/* Brand consistency layer */
+:root {
+    --primary-rgb: 191, 49, 49;
+}
+
+body {
+    background: linear-gradient(rgba(238, 238, 238, 0.9), rgba(238, 238, 238, 0.9)),
+                url('https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&q=80&w=1920') center/cover no-repeat fixed;
+}
+
+.navbar {
+    background: rgba(26, 26, 26, 0.95) !important;
+    border-bottom: 1px solid rgba(var(--primary-rgb), 0.35);
+}
+
+.login-btn:hover,
+.book-now-btn:hover,
+.create-account-btn:hover {
+    box-shadow: 0 10px 22px rgba(var(--primary-rgb), 0.3);
+}

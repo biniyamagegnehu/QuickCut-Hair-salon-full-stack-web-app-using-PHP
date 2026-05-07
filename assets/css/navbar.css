@@ -4,13 +4,14 @@
 
 .navbar {
     padding: 1rem 0;
-    background: transparent;
+    background: rgba(26, 26, 26, 0.95);
     transition: all 0.3s ease;
     z-index: 1030;
+    border-bottom: 1px solid rgba(191, 49, 49, 0.35);
 }
 
 .navbar.scrolled {
-    background: rgba(125, 10, 10, 0.95) !important;
+    background: rgba(26, 26, 26, 1) !important;
     backdrop-filter: blur(8px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
@@ -111,7 +112,7 @@
 
 @media (max-width: 991.98px) {
     .navbar {
-        background: rgba(125, 10, 10, 0.96) !important;
+        background: rgba(26, 26, 26, 0.97) !important;
     }
 
     .navbar-collapse {

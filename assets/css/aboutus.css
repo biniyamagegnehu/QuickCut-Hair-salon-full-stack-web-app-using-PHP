@@ -940,3 +940,17 @@ body[data-bg="2"] {
 body[data-bg="3"] {
     background-image: url('https://images.unsplash.com/photo-1580618672591-eb180b1a973f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
 }
+
+/* Brand consistency layer */
+:root {
+    --primary-rgb: 191, 49, 49;
+}
+
+body {
+    background-image: url('https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&q=80&w=1920');
+}
+
+.navbar {
+    background: rgba(26, 26, 26, 0.95) !important;
+    border-bottom: 2px solid rgba(var(--primary-rgb), 0.35);
+}

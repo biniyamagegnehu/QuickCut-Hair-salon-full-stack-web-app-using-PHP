@@ -3,16 +3,17 @@
 */
 
 document.addEventListener('DOMContentLoaded', () => {
-    const navbar = document.getElementById('main-nav');
+    const navbar = document.getElementById('main-nav') || document.querySelector('nav.navbar.fixed-top');
     if (!navbar) return;
 
-    const navLinks = Array.from(document.querySelectorAll('.nav-link[data-nav-target]'));
-    const navbarCollapse = document.getElementById('navbarNav');
+    const navLinks = Array.from(navbar.querySelectorAll('.nav-link[data-nav-target]'));
+    const navbarCollapse = navbar.querySelector('.navbar-collapse');
     const navbarToggler = document.querySelector('.navbar-toggler');
     const isWelcomePage = window.location.pathname.toLowerCase().includes('welcome.php');
 
     const setScrolledState = () => {
-        navbar.classList.toggle('scrolled', window.scrollY > 24);
+        const shouldBeSolid = !isWelcomePage || window.scrollY > 24;
+        navbar.classList.toggle('scrolled', shouldBeSolid);
     };
 
     const closeMobileNav = () => {

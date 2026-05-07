@@ -743,3 +743,24 @@ footer a:hover {
 .password-tooltip li i {
     margin-right: 0.5rem;
 }
+
+/* Brand consistency layer */
+:root {
+    --primary-rgb: 191, 49, 49;
+}
+
+body {
+    background: linear-gradient(rgba(238, 238, 238, 0.92), rgba(238, 238, 238, 0.92)),
+                url('https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&q=80&w=1920') center/cover no-repeat fixed;
+}
+
+.navbar {
+    background: rgba(26, 26, 26, 0.95) !important;
+    border-bottom: 1px solid rgba(var(--primary-rgb), 0.35);
+}
+
+.create-account-btn:hover,
+.book-now-btn:hover,
+.login-btn:hover {
+    box-shadow: 0 10px 22px rgba(var(--primary-rgb), 0.3);
+}
