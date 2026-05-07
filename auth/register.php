@@ -6,62 +6,11 @@ if (isset($_SESSION['user_id'])) {
 }
 $is_logged_in = false; // Always false if they reach here due to redirect above
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account - QuickCut</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="../assets/css/register.css">
-    <script>
-        const BASE_URL = '<?php require_once "../includes/config.php"; echo BASE_URL; ?>';
-    </script>
-</head>
-<body id="create-body">
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="create-nav">
-        <div class="container">
-            <a class="navbar-brand logo" href="../welcome.php" id="create-logo">
-                <i class="fas fa-cut me-2"></i>QuickCut
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" id="create-menu-toggle">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto" id="create-nav-menu">
-                    <li class="nav-item">
-                        <a class="nav-link" href="../welcome.php" id="nav-home"><i class="fas fa-home me-1"></i>Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo isset($_SESSION['user_id']) ? '../booking/bookappointment.php' : 'login.php'; ?>" id="nav-book-appointment"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo isset($_SESSION['user_id']) ? '../queue/queuestatus.php' : 'login.php'; ?>" id="nav-queue-status"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="../aboutus.php" id="nav-about"><i class="fas fa-info-circle me-1"></i>About</a>
-                    </li>
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="logout.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
-                        </li>
-                    <?php else: ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-                <a href="<?php echo isset($_SESSION['user_id']) ? '../booking/bookappointment.php' : 'login.php'; ?>" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="create-book-now">
-                    <i class="fas fa-scissors me-1"></i>Book Now
-                </a>
-            </div>
-        </div>
-    </nav>
+<?php
+$page_title = 'Create Account - QuickCut';
+$additional_css = ['../assets/css/register.css'];
+include '../includes/header.php';
+?>
 
     <!-- Main Content -->
     <main class="container mt-5 pt-5" id="create-main">
@@ -272,83 +221,11 @@ $is_logged_in = false; // Always false if they reach here due to redirect above
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="footer-section" id="create-footer">
-        <div class="container py-5">
-            <div class="row">
-                <div class="col-lg-4 mb-4 mb-lg-0" id="footer-left">
-                    <h5 class="fw-bold mb-3" id="footer-logo">
-                        <i class="fas fa-cut me-2 text-primary"></i>QuickCut
-                    </h5>
-                    <p class="text-light small" id="footer-description">
-                        Skip the wait. Get the cut. QuickCut makes hair appointments fast, easy, and convenient.
-                    </p>
-                    <div class="social-links mt-3" id="footer-social">
-                        <a href="https://facebook.com" target="_blank" class="text-white me-3" id="footer-facebook">
-                            <i class="fab fa-facebook fa-lg"></i>
-                        </a>
-                        <a href="https://twitter.com" target="_blank" class="text-white me-3" id="footer-twitter">
-                            <i class="fab fa-twitter fa-lg"></i>
-                        </a>
-                        <a href="https://instagram.com" target="_blank" class="text-white me-3" id="footer-instagram">
-                            <i class="fab fa-instagram fa-lg"></i>
-                        </a>
-                        <a href="https://tiktok.com" target="_blank" class="text-white" id="footer-tiktok">
-                            <i class="fab fa-tiktok fa-lg"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="col-lg-4 mb-4 mb-lg-0" id="footer-middle">
-                    <h5 class="fw-bold mb-3">Contact Us</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2" id="contact-phone">
-                            <i class="fas fa-phone me-2 text-primary"></i>
-                            <span id="phone-number"> (+251) 921456765</span>
-                        </li>
-                        <li class="mb-2" id="contact-email">
-                            <i class="fas fa-envelope me-2 text-primary"></i>
-                            <span id="email-address">quickcut@gmail.com</span>
-                        </li>
-                        <li id="contact-address">
-                            <i class="fas fa-map-marker-alt me-2 text-primary"></i>
-                            <span id="address">123 Main Street, Downtown</span>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="col-lg-4" id="footer-right">
-                    <h5 class="fw-bold mb-3">Working Hours</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2">Monday - Sunday: 6:00 AM - 6:00 PM</li>
-                       
-                    </ul>
-                </div>
-            </div>
-            
-            <hr class="bg-light my-4" id="footer-divider">
-            
-            <div class="text-center" id="footer-bottom">
-                <p class="mb-0" id="copyright">
-                    © 2025 QuickCut. All rights reserved. | 
-                    <a href="#" class="text-decoration-none text-primary" id="privacy-policy">Privacy Policy</a> | 
-                    <a href="#" class="text-decoration-none text-primary" id="terms-service">Terms of Service</a>
-                </p>
-            </div>
-        </div>
-    </footer>
-    
     <!-- Back to Top Button -->
     <button class="btn btn-primary scroll-to-top" style="display: none;" id="back-to-top">
         <i class="fas fa-chevron-up"></i>
     </button>
-
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Auth (logout handling) -->
-    <script src="../assets/js/auth.js"></script>
-    <script src="../assets/js/navbar.js"></script>
-    <!-- Custom JavaScript -->
-    <script src="../assets/js/register.js"></script>
-</body>
-</html>
+<?php
+$additional_scripts = ['../assets/js/auth.js', '../assets/js/register.js'];
+include '../includes/footer.php';
+?>
