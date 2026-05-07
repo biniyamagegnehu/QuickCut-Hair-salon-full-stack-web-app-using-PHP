@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     
     try {
-        $stmt = $pdo->prepare("SELECT id, name, password, role FROM users WHERE email = ?");
+        $stmt = $pdo->prepare("SELECT id, name, password, role, auth_provider FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
         
@@ -30,6 +30,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
             $_SESSION['name'] = $user['name'];
+            $_SESSION['auth_provider'] = $user['auth_provider'] ?? 'local';
+            $_SESSION['email'] = $email;
             
             // Redirect based on role
             $redirect = ($user['role'] === 'admin') ? '../admin/dashboard.php' : '../welcome.php';

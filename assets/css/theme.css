@@ -1,0 +1,89 @@
+:root {
+    --theme-bg: #EEEEEE;
+    --theme-bg-soft: #f6f6f6;
+    --theme-surface: #FFFFFF;
+    --theme-surface-2: #f3f4f6;
+    --theme-text: #1a1a1a;
+    --theme-text-muted: #5f6368;
+    --theme-border: rgba(125, 10, 10, 0.18);
+    --theme-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    --theme-overlay-dark: rgba(20, 20, 20, 0.62);
+    --theme-overlay-light: rgba(255, 255, 255, 0.9);
+    --primary-color: #BF3131;
+    --primary-dark: #7D0A0A;
+    --primary-light: #EAD196;
+}
+
+[data-theme="dark"] {
+    --theme-bg: #121212;
+    --theme-bg-soft: #1a1a1a;
+    --theme-surface: #1e1e1e;
+    --theme-surface-2: #2d2d2d;
+    --theme-text: #f3f4f6;
+    --theme-text-muted: #9aa0a6;
+    --theme-border: rgba(234, 209, 150, 0.1);
+    --theme-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --theme-overlay-dark: rgba(0, 0, 0, 0.85);
+    --theme-overlay-light: rgba(30, 30, 30, 0.9);
+}
+
+body {
+    background-color: var(--theme-bg);
+    color: var(--theme-text);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.bg-theme-surface {
+    background-color: var(--theme-surface) !important;
+}
+
+.bg-theme-surface-2 {
+    background-color: var(--theme-surface-2) !important;
+}
+
+.text-theme {
+    color: var(--theme-text) !important;
+}
+
+.text-theme-muted {
+    color: var(--theme-text-muted) !important;
+}
+
+.border-theme {
+    border-color: var(--theme-border) !important;
+}
+
+/* Common UI adjustments for dark mode */
+[data-theme="dark"] .card {
+    background-color: var(--theme-surface);
+    border-color: var(--theme-border);
+}
+
+[data-theme="dark"] .modal-content {
+    background-color: var(--theme-surface);
+    border-color: var(--theme-border);
+}
+
+[data-theme="dark"] .dropdown-menu {
+    background-color: var(--theme-surface);
+    border-color: var(--theme-border);
+}
+
+[data-theme="dark"] .dropdown-item {
+    color: var(--theme-text);
+}
+
+[data-theme="dark"] .dropdown-item:hover {
+    background-color: var(--theme-surface-2);
+}
+
+[data-theme="dark"] .form-control {
+    background-color: var(--theme-bg-soft);
+    border-color: var(--theme-border);
+    color: var(--theme-text);
+}
+
+[data-theme="dark"] .form-control:focus {
+    background-color: var(--theme-bg-soft);
+    color: var(--theme-text);
+}
