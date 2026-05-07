@@ -94,6 +94,11 @@ $working_hours = $stmt->fetchAll();
     <?php if (isset($_SESSION['user_id'])): ?>
     <script src="<?php echo BASE_URL; ?>assets/js/notifications.js"></script>
     <?php endif; ?>
+    <?php if (isset($additional_scripts) && is_array($additional_scripts)): ?>
+        <?php foreach ($additional_scripts as $script_path): ?>
+            <script src="<?php echo htmlspecialchars($script_path); ?>"></script>
+        <?php endforeach; ?>
+    <?php endif; ?>
     <script>
         AOS.init({
             duration: 1000,

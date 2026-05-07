@@ -9,7 +9,7 @@ $is_logged_in = isset($_SESSION['user_id']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuickCut - Professional Barber Services</title>
+    <title><?php echo isset($page_title) ? htmlspecialchars($page_title) : 'QuickCut - Professional Barber Services'; ?></title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome Icons -->
@@ -21,6 +21,11 @@ $is_logged_in = isset($_SESSION['user_id']);
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/navbar.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/animations.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/notifications.css">
+    <?php if (isset($additional_css) && is_array($additional_css)): ?>
+        <?php foreach ($additional_css as $css_path): ?>
+            <link rel="stylesheet" href="<?php echo htmlspecialchars($css_path); ?>">
+        <?php endforeach; ?>
+    <?php endif; ?>
     <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script>
