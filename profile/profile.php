@@ -41,18 +41,18 @@ include __DIR__ . '/../includes/header.php';
                     <div class="profile-info mt-4 pt-0">
                         <div class="nav flex-column nav-pills profile-tabs" id="v-pills-tab" role="tablist">
                             <button class="nav-link active text-start" id="v-pills-info-tab" data-bs-toggle="pill" data-bs-target="#v-pills-info" type="button" role="tab">
-                                <i class="fas fa-user-edit me-2"></i> Personal Info
+                                <i class="fas fa-user-edit me-2"></i><span> Personal Info</span>
                             </button>
                             <button class="nav-link text-start" id="v-pills-history-tab" data-bs-toggle="pill" data-bs-target="#v-pills-history" type="button" role="tab">
-                                <i class="fas fa-history me-2"></i> Booking History
+                                <i class="fas fa-history me-2"></i><span> Booking History</span>
                             </button>
                             <?php if ($_SESSION['auth_provider'] === 'local'): ?>
                             <button class="nav-link text-start" id="v-pills-password-tab" data-bs-toggle="pill" data-bs-target="#v-pills-password" type="button" role="tab">
-                                <i class="fas fa-key me-2"></i> Change Password
+                                <i class="fas fa-key me-2"></i><span> Change Password</span>
                             </button>
                             <?php endif; ?>
                             <a href="<?php echo BASE_URL; ?>auth/logout.php" class="nav-link text-start text-danger">
-                                <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                <i class="fas fa-sign-out-alt me-2"></i><span> Logout</span>
                             </a>
                         </div>
                     </div>

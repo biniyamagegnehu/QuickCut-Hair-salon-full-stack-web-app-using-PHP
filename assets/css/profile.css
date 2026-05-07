@@ -80,6 +80,11 @@
     display: flex;
     align-items: center;
     gap: 10px;
+} 
+
+.profile-tabs .nav-link i , span {
+    color: var(--theme-text);
+    background-color: var(--theme-surface-2);
 }
 
 .profile-tabs .nav-link:hover {
