@@ -1,7 +1,7 @@
 <?php
 // header.php - Main Website Header
-require_once 'db.php';
-require_once 'config.php';
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/config.php';
 $is_logged_in = isset($_SESSION['user_id']);
 ?>
 <!DOCTYPE html>
@@ -17,8 +17,12 @@ $is_logged_in = isset($_SESSION['user_id']);
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/welcome.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/home.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/navbar.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/animations.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/notifications.css">
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script>
         const BASE_URL = '<?php echo BASE_URL; ?>';
     </script>
@@ -30,64 +34,70 @@ $is_logged_in = isset($_SESSION['user_id']);
             <a class="navbar-brand logo" href="<?php echo BASE_URL; ?>welcome.php" id="logo">
                 <i class="fas fa-cut me-2"></i>QuickCut
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" id="menu-toggle">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-lg-center" id="nav-menu">
+                <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo BASE_URL; ?>welcome.php"><i class="fas fa-home me-1"></i>Home</a>
+                        <a class="nav-link" data-nav-target="hero" href="<?php echo BASE_URL; ?>welcome.php#hero">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo $is_logged_in ? BASE_URL.'booking/bookappointment.php' : BASE_URL.'auth/login.php'; ?>"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
+                        <a class="nav-link" data-nav-target="services" href="<?php echo BASE_URL; ?>welcome.php#services">Services</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo $is_logged_in ? BASE_URL.'queue/queuestatus.php' : BASE_URL.'auth/login.php'; ?>"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
+                        <a class="nav-link" href="<?php echo $is_logged_in ? BASE_URL.'queue/queuestatus.php' : BASE_URL.'auth/login.php'; ?>">Queue</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo BASE_URL; ?>aboutus.php"><i class="fas fa-info-circle me-1"></i>About</a>
+                        <a class="nav-link" href="<?php echo BASE_URL; ?>aboutus.php">About</a>
                     </li>
+                    
                     <?php if ($is_logged_in): ?>
                         <!-- Notification Bell -->
                         <li class="nav-item">
-                            <div class="notification-bell-wrapper nav-link" id="notification-bell-wrapper">
+                            <div class="notification-bell-wrapper nav-link" id="notification-bell-wrapper" style="cursor: pointer;">
                                 <i class="fas fa-bell"></i>
                                 <span class="notification-badge" id="notification-badge">0</span>
                                 
                                 <div class="notification-dropdown" id="notification-dropdown">
-                                    <div class="notification-header">
-                                        <h6>Notifications</h6>
-                                        <a href="#" class="mark-all-read" id="mark-all-read-btn">Mark all as read</a>
+                                    <div class="notification-header d-flex justify-content-between align-items-center p-3 border-bottom">
+                                        <h6 class="mb-0">Notifications</h6>
+                                        <a href="#" class="mark-all-read small text-primary" id="mark-all-read-btn">Mark all</a>
                                     </div>
-                                    <div class="unread-status p-2 px-3 small text-muted border-bottom">
-                                        <span id="unread-count-text">0 New</span>
-                                    </div>
-                                    <div class="notification-list" id="notification-list">
-                                        <!-- Notifications will be loaded here -->
-                                        <div class="no-notifications">
-                                            <i class="fas fa-bell-slash"></i>
-                                            <p>Loading...</p>
+                                    <div class="notification-list" id="notification-list" style="max-height: 300px; overflow-y: auto;">
+                                        <div class="p-4 text-center text-muted">
+                                            <i class="fas fa-bell-slash d-block mb-2 fa-2x"></i>
+                                            <p class="small mb-0">No new notifications</p>
                                         </div>
                                     </div>
-                                    <div class="notification-footer">
-                                        <a href="#">View All</a>
+                                    <div class="notification-footer p-2 text-center border-top">
+                                        <a href="#" class="small text-primary">View All</a>
                                     </div>
                                 </div>
                             </div>
                         </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?php echo BASE_URL; ?>auth/logout.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
+                        <!-- User Profile Dropdown -->
+                        <li class="nav-item dropdown ms-lg-2">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="avatar-sm me-2 bg-accent text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-weight: 700; border-radius: 50%;">
+                                    <?php echo strtoupper(substr($_SESSION['name'], 0, 1)); ?>
+                                </div>
+                                <span><?php echo explode(' ', $_SESSION['name'])[0]; ?></span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 rounded-3" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item py-2" href="<?php echo BASE_URL; ?>profile.php"><i class="fas fa-user-circle me-2"></i>My Profile</a></li>
+                                <li><a class="dropdown-item py-2" href="<?php echo BASE_URL; ?>booking/bookappointment.php"><i class="fas fa-calendar-check me-2"></i>My Bookings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item py-2 text-danger" href="<?php echo BASE_URL; ?>auth/logout.php"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                            </ul>
                         </li>
                     <?php else: ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?php echo BASE_URL; ?>auth/login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
+                        <li class="nav-item ms-lg-3">
+                            <a class="nav-link" href="<?php echo BASE_URL; ?>auth/login.php">Login</a>
                         </li>
                     <?php endif; ?>
                 </ul>
-                <a href="<?php echo $is_logged_in ? BASE_URL.'booking/bookappointment.php' : BASE_URL.'auth/login.php'; ?>" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="book-now-btn">
-                    <i class="fas fa-scissors me-1"></i>Book Now
-                </a>
             </div>
         </div>
     </nav>

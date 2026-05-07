@@ -1,11 +1,11 @@
 /* Custom Styles for QuickCut Login Page */
 :root {
-    --primary-color: #ff6b35;
-    --primary-dark: #e55a2b;
-    --primary-light: #ff8b5c;
+    --primary-color: #BF3131;
+    --primary-dark: #7D0A0A;
+    --primary-light: #EAD196;
     --secondary-color: #1a1a1a;
     --dark-color: #121212;
-    --light-color: #f8f9fa;
+    --light-color: #EEEEEE;
     --gray-color: #6c757d;
     --glass-bg: rgba(255, 255, 255, 0.1);
     --glass-border: rgba(255, 255, 255, 0.2);
@@ -458,4 +458,25 @@ footer a:hover {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     transform: translateY(-2px);
     color: #333;
-}
+}
+
+/* Brand consistency layer */
+:root {
+    --primary-rgb: 191, 49, 49;
+}
+
+body {
+    background: linear-gradient(rgba(238, 238, 238, 0.9), rgba(238, 238, 238, 0.9)),
+                url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7z320g4h2yrrWlfYSzm8LoNtuUZFId5lS1A&s') center/cover no-repeat fixed;
+}
+
+.navbar {
+    background: rgba(26, 26, 26, 0.95) !important;
+    border-bottom: 1px solid rgba(var(--primary-rgb), 0.35);
+}
+
+.login-btn:hover,
+.book-now-btn:hover,
+.create-account-btn:hover {
+    box-shadow: 0 10px 22px rgba(var(--primary-rgb), 0.3);
+}

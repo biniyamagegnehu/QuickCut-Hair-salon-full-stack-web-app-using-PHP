@@ -1,10 +1,10 @@
 /* common.css - Common styles for all admin pages */
 :root {
-    --primary-color: #ff6b35;
-    --primary-dark: #e55a2b;
-    --primary-light: #ff8b5c;
+    --primary-color: #BF3131;
+    --primary-dark: #7D0A0A;
+    --primary-light: #EAD196;
     --secondary-color: #1a1a1a;
-    --light-color: #f8f9fa;
+    --light-color: #EEEEEE;
     --dark-color: #121212;
     --success-color: #28a745;
     --danger-color: #dc3545;
@@ -394,7 +394,7 @@ body {
     color: var(--secondary-color);
     font-weight: 600;
     padding: 1rem;
-    background: #f8f9fa;
+    background: #EEEEEE;
 }
 
 .table tbody td {
@@ -611,7 +611,7 @@ body {
 /* Phone Display */
 .phone-display {
     font-family: monospace;
-    background: #f8f9fa;
+    background: #EEEEEE;
     padding: 0.25rem 0.5rem;
     border-radius: 5px;
     border: 1px solid #dee2e6;

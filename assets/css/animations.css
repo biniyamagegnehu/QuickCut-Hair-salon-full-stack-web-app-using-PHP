@@ -1,0 +1,32 @@
+/*
+    QuickCut - Light Animations
+*/
+
+[data-aos] {
+    pointer-events: none;
+}
+
+[data-aos].aos-animate {
+    pointer-events: auto;
+}
+
+.fade-in-up {
+    opacity: 0;
+    transform: translateY(14px);
+    animation: fadeInUp 0.8s ease forwards;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+a,
+button,
+.service-card,
+.step-card,
+.nav-link {
+    transition: all 0.25s ease;
+}

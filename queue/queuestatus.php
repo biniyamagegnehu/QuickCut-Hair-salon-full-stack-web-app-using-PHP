@@ -7,6 +7,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 include '../includes/header.php';
 ?>
+<link rel="stylesheet" href="../assets/css/queuestatus.css">
 <style>
     .queue-page-wrapper {
         padding-top: 120px;

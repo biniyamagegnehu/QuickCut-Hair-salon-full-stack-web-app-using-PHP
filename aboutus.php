@@ -2,59 +2,9 @@
 session_start();
 $is_logged_in = isset($_SESSION['user_id']);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us - QuickCut</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Custom CSS -->
+<?php include 'includes/header.php'; ?>
+    <!-- Custom About Styles -->
     <link rel="stylesheet" href="assets/css/aboutus.css">
-</head>
-<body id="about-body">
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="about-nav">
-        <div class="container">
-            <a class="navbar-brand logo" href="welcome.php" id="about-logo">
-                <i class="fas fa-cut me-2"></i>QuickCut
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" id="about-menu-toggle">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto" id="about-nav-menu">
-                    <li class="nav-item">
-                        <a class="nav-link" href="welcome.php" id="nav-home"><i class="fas fa-home me-1"></i>Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo $is_logged_in ? 'booking/bookappointment.php' : 'auth/login.php'; ?>" id="nav-book"><i class="fas fa-calendar-alt me-1"></i>Book Appointment</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo $is_logged_in ? 'queue/queuestatus.php' : 'auth/login.php'; ?>" id="nav-queue"><i class="fas fa-list-ol me-1"></i>Queue Status</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="aboutus.php" id="nav-about"><i class="fas fa-info-circle me-1"></i>About</a>
-                    </li>
-                    <?php if ($is_logged_in): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="auth/logout.php" id="nav-logout"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
-                        </li>
-                    <?php else: ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="auth/login.php" id="nav-login"><i class="fas fa-sign-in-alt me-1"></i>Login</a>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-                <a href="<?php echo $is_logged_in ? 'booking/bookappointment.php' : 'auth/login.php'; ?>" class="btn btn-primary ms-lg-3 mt-2 mt-lg-0 book-now-btn" id="about-book-now">
-                    <i class="fas fa-scissors me-1"></i>Book Now
-                </a>
-            </div>
-        </div>
-    </nav>
 
     <!-- Main Content -->
     <main class="container mt-5 pt-5" id="about-main">
@@ -259,82 +209,9 @@ $is_logged_in = isset($_SESSION['user_id']);
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-dark text-white mt-5" id="about-footer">
-        <div class="container py-5">
-            <div class="row">
-                <div class="col-lg-4 mb-4 mb-lg-0" id="footer-left">
-                    <h5 class="fw-bold mb-3" id="footer-logo">
-                        <i class="fas fa-cut me-2 text-primary"></i>QuickCut
-                    </h5>
-                    <p class="text-light small" id="footer-description">
-                        Skip the wait. Get the cut. QuickCut makes hair appointments fast, easy, and convenient.
-                    </p>
-                    <div class="social-links mt-3" id="footer-social">
-                        <a href="https://www.facebook.com" class="text-white me-3" target="_blank" rel="noopener noreferrer" aria-label="Facebook" id="facebook-link">
-                            <i class="fab fa-facebook-f fa-lg"></i>
-                        </a>
-                        <a href="https://www.twitter.com" class="text-white me-3" target="_blank" rel="noopener noreferrer" aria-label="Twitter" id="twitter-link">
-                            <i class="fab fa-twitter fa-lg"></i>
-                        </a>
-                        <a href="https://www.instagram.com" class="text-white me-3" target="_blank" rel="noopener noreferrer" aria-label="Instagram" id="instagram-link">
-                            <i class="fab fa-instagram fa-lg"></i>
-                        </a>
-                        <a href="https://www.tiktok.com" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="TikTok" id="tiktok-link">
-                            <i class="fab fa-tiktok fa-lg"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="col-lg-4 mb-4 mb-lg-0" id="footer-middle">
-                    <h5 class="fw-bold mb-3">Contact Us</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2" id="footer-phone">
-                            <i class="fas fa-phone me-2 text-primary"></i>
-                            <span id="footer-phone-number">(555) 123-4567</span>
-                        </li>
-                        <li class="mb-2" id="footer-email">
-                            <i class="fas fa-envelope me-2 text-primary"></i>
-                            <span id="footer-email-address">info@quickcut.com</span>
-                        </li>
-                        <li id="footer-address">
-                            <i class="fas fa-map-marker-alt me-2 text-primary"></i>
-                            <span id="footer-address-text">123 Main Street, Downtown</span>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="col-lg-4" id="footer-right">
-                    <h5 class="fw-bold mb-3">Working Hours</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2" id="footer-weekdays">Monday - Sunday: 6:00 AM - 6:00 PM</li>
-                       
-                    </ul>
-                </div>
-            </div>
-            
-            <hr class="bg-light my-4" id="footer-divider">
-            
-            <div class="text-center" id="footer-bottom">
-                <p class="mb-0" id="copyright">
-                    © 2025 QuickCut. All rights reserved. | 
-                    <a href="privacypolicy.php" class="text-decoration-none text-primary" id="privacy-policy">Privacy Policy</a> | 
-                    <a href="termsofservice.php" class="text-decoration-none text-primary" id="terms-service">Terms of Service</a>
-                </p>
-            </div>
-        </div>
-    </footer>
+<?php include 'includes/footer.php'; ?>
     
-    <!-- Back to Top Button -->
-    <button class="btn btn-primary scroll-to-top" style="display: none;" id="back-to-top">
-        <i class="fas fa-chevron-up"></i>
-    </button>
-
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Auth (logout handling) -->
-    <script src="assets/js/auth.js"></script>
-    <!-- Custom JavaScript -->
+    <!-- Custom About JavaScript -->
     <script src="assets/js/aboutus.js"></script>
 </body>
 </html>

@@ -1,11 +1,11 @@
 /* Custom Styles for QuickCut Book Appointment Page */
 :root {
-    --primary-color: #ff6b35;
-    --primary-dark: #e55a2b;
-    --primary-light: #ff8b5c;
+    --primary-color: #BF3131;
+    --primary-dark: #7D0A0A;
+    --primary-light: #EAD196;
     --secondary-color: #1a1a1a;
     --dark-color: #121212;
-    --light-color: #f8f9fa;
+    --light-color: #EEEEEE;
     --gray-color: #6c757d;
     --glass-bg: rgba(255, 255, 255, 0.1);
     --glass-border: rgba(255, 255, 255, 0.2);
@@ -14,7 +14,7 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.9)),
-                url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80') center/cover no-repeat fixed;
+                url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7z320g4h2yrrWlfYSzm8LoNtuUZFId5lS1A&s') center/cover no-repeat fixed;
     color: #333;
     min-height: 100vh;
     padding-top: 56px; /* For fixed navbar */
@@ -78,7 +78,7 @@ body {
 /* Booking Header */
 .booking-header {
     background: linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)),
-                url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80') center/cover no-repeat;
+                url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7z320g4h2yrrWlfYSzm8LoNtuUZFId5lS1A&s') center/cover no-repeat;
     color: white;
     padding: 4rem 0;
     position: relative;
@@ -381,7 +381,7 @@ body {
 .service-price .duration {
     font-size: 0.9rem;
     color: var(--gray-color);
-    background: #f8f9fa;
+    background: #EEEEEE;
     padding: 0.2rem 0.8rem;
     border-radius: 15px;
 }
@@ -683,7 +683,7 @@ body {
     display: flex;
     align-items: center;
     padding: 0.75rem;
-    background: #f8f9fa;
+    background: #EEEEEE;
     border-radius: 10px;
     transition: all 0.3s ease;
 }
@@ -744,7 +744,7 @@ body {
     align-items: center;
     text-align: center;
     padding: 1rem;
-    background: #f8f9fa;
+    background: #EEEEEE;
     border-radius: 10px;
     transition: all 0.3s ease;
 }
@@ -768,7 +768,7 @@ body {
 /* Footer */
 .footer-section {
     background: linear-gradient(rgba(26, 26, 26, 0.95), rgba(26, 26, 26, 0.95)),
-                url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80') center/cover no-repeat;
+                url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7z320g4h2yrrWlfYSzm8LoNtuUZFId5lS1A&s') center/cover no-repeat;
     color: white;
     margin-top: 4rem;
     position: relative;
@@ -1293,7 +1293,7 @@ input:required:valid {
 }
 
 .time-period-label i {
-    color: #ff6b35;
+    color: #BF3131;
     font-size: 1.2rem;
 }
 
@@ -1343,14 +1343,14 @@ input:required:valid {
 /* Available State */
 .time-slot:not(.disabled):hover label {
     transform: translateY(-3px) scale(1.03);
-    border-color: #ff8b5c;
+    border-color: #EAD196;
     box-shadow: 0 8px 20px rgba(255, 107, 53, 0.15);
 }
 
 /* Selected State */
 .time-slot input:checked + label {
-    background: #ff6b35;
-    border-color: #ff6b35;
+    background: #BF3131;
+    border-color: #BF3131;
     color: #fff;
     transform: translateY(-5px) scale(1.05);
     box-shadow: 0 10px 25px rgba(255, 107, 53, 0.35);
@@ -1367,7 +1367,7 @@ input:required:valid {
 
 /* Unavailable / Booked State */
 .time-slot.disabled label {
-    background: #f8f9fa;
+    background: #EEEEEE;
     border-color: #f1f3f5;
     cursor: not-allowed;
     opacity: 0.6;
@@ -1436,7 +1436,7 @@ input:required:valid {
 }
 
 .dt-section-header h5 i {
-    color: #ff6b35;
+    color: #BF3131;
 }
 
 /* Status / selected badge that appears in header */
@@ -1500,20 +1500,20 @@ input:required:valid {
 }
 
 .date-card:hover:not(.date-card--closed) {
-    border-color: #ff8b5c;
+    border-color: #EAD196;
     transform: translateY(-4px);
     box-shadow: 0 8px 22px rgba(255,107,53,.18);
 }
 
 .date-card--selected {
-    background: #ff6b35;
-    border-color: #ff6b35;
+    background: #BF3131;
+    border-color: #BF3131;
     transform: translateY(-5px);
     box-shadow: 0 10px 28px rgba(255,107,53,.32);
 }
 
 .date-card--closed {
-    background: #f8f9fa;
+    background: #EEEEEE;
     border-color: #f1f3f5;
     cursor: not-allowed;
     opacity: .6;
@@ -1553,7 +1553,7 @@ input:required:valid {
     padding: 2px 8px;
     border-radius: 20px;
     background: rgba(255,107,53,.1);
-    color: #ff6b35;
+    color: #BF3131;
     transition: all .2s;
 }
 
@@ -1581,14 +1581,14 @@ input:required:valid {
     gap: .4rem;
     font-size: .82rem;
     color: #495057;
-    background: #f8f9fa;
+    background: #EEEEEE;
     border: 1px solid #e9ecef;
     border-radius: 20px;
     padding: .35rem 1rem;
     margin-top: .25rem;
 }
 
-.date-info-chip i { color: #ff6b35; font-size: .75rem; }
+.date-info-chip i { color: #BF3131; font-size: .75rem; }
 .date-info-chip .chip-closed { color: #dc3545; font-weight: 700; }
 
 /* Real-time open/closed pill */
@@ -1618,7 +1618,7 @@ input:required:valid {
 }
 
 .ts-period__label i {
-    color: #ff6b35;
+    color: #BF3131;
     font-size: .9rem;
 }
 
@@ -1658,15 +1658,15 @@ input:required:valid {
 
 /* Hover – available */
 .ts-slot:not(.ts-slot--booked):not(.ts-slot--closed):hover label {
-    border-color: #ff8b5c;
+    border-color: #EAD196;
     transform: translateY(-3px) scale(1.04);
     box-shadow: 0 8px 20px rgba(255,107,53,.18);
 }
 
 /* Selected */
 .ts-slot input:checked + label {
-    background: #ff6b35;
-    border-color: #ff6b35;
+    background: #BF3131;
+    border-color: #BF3131;
     transform: translateY(-4px) scale(1.05);
     box-shadow: 0 10px 26px rgba(255,107,53,.32);
 }
@@ -1680,7 +1680,7 @@ input:required:valid {
 /* Booked / Closed */
 .ts-slot--booked label,
 .ts-slot--closed label {
-    background: #f8f9fa;
+    background: #EEEEEE;
     border-color: #f1f3f5;
     cursor: not-allowed;
     opacity: .62;

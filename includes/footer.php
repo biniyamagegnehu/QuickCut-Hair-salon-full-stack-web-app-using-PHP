@@ -15,10 +15,10 @@ $working_hours = $stmt->fetchAll();
                         Skip the wait. Get the cut. QuickCut makes hair appointments fast, easy, and convenient with our modern booking system.
                     </p>
                     <div class="social-links mt-4">
-                        <a href="#" class="social-link" id="facebook-link"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="social-link" id="twitter-link"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="social-link" id="instagram-link"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-link" id="tiktok-link"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" class="social-link" id="facebook-link" style="color: var(--primary);"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-link" id="twitter-link" style="color: var(--primary);"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link" id="instagram-link" style="color: var(--primary);"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link" id="tiktok-link" style="color: var(--primary);"><i class="fab fa-tiktok"></i></a>
                     </div>
                 </div>
                 
@@ -27,7 +27,7 @@ $working_hours = $stmt->fetchAll();
                     <ul class="list-unstyled">
                         <li class="mb-3">
                             <div class="d-flex align-items-center">
-                                <div class="contact-icon"><i class="fas fa-phone"></i></div>
+                                <div class="contact-icon" style="color: var(--primary);"><i class="fas fa-phone"></i></div>
                                 <div class="ms-3">
                                     <h6 class="fw-bold mb-0">Phone Number</h6>
                                     <p class="text-light small mb-0">(+251) 921456765</p>
@@ -36,7 +36,7 @@ $working_hours = $stmt->fetchAll();
                         </li>
                         <li class="mb-3">
                             <div class="d-flex align-items-center">
-                                <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+                                <div class="contact-icon" style="color: var(--primary);"><i class="fas fa-envelope"></i></div>
                                 <div class="ms-3">
                                     <h6 class="fw-bold mb-0">Email Address</h6>
                                     <p class="text-light small mb-0">quickcut@gmail.com</p>
@@ -45,7 +45,7 @@ $working_hours = $stmt->fetchAll();
                         </li>
                         <li>
                             <div class="d-flex align-items-center">
-                                <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+                                <div class="contact-icon" style="color: var(--primary);"><i class="fas fa-map-marker-alt"></i></div>
                                 <div class="ms-3">
                                     <h6 class="fw-bold mb-0">Location</h6>
                                     <p class="text-light small mb-0">123 Main Street, Downtown</p>
@@ -86,9 +86,20 @@ $working_hours = $stmt->fetchAll();
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AOS Animation Library JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="<?php echo BASE_URL; ?>assets/js/navbar.js"></script>
+    <script src="<?php echo BASE_URL; ?>assets/js/home.js"></script>
     <script src="<?php echo BASE_URL; ?>assets/js/welcome.js"></script>
     <?php if (isset($_SESSION['user_id'])): ?>
     <script src="<?php echo BASE_URL; ?>assets/js/notifications.js"></script>
     <?php endif; ?>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+    </script>
 </body>
 </html>
