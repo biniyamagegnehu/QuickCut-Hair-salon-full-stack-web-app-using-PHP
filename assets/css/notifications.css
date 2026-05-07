@@ -9,13 +9,13 @@
     position: absolute;
     top: -5px;
     right: -10px;
-    background: #ff3e3e;
+    background: #BF3131;
     color: white;
     border-radius: 50%;
     padding: 2px 6px;
     font-size: 10px;
     font-weight: bold;
-    border: 2px solid #121212;
+    border: 2px solid rgba(255, 255, 255, 0.2);
     display: none; /* Hidden by default, shown by JS */
 }
 
@@ -97,7 +97,7 @@
 }
 
 .notification-item.unread {
-    background: rgba(255, 165, 0, 0.05);
+    background: rgba(234, 209, 150, 0.05);
 }
 
 .notification-item.unread::before {
@@ -108,7 +108,7 @@
     transform: translateY(-50%);
     width: 6px;
     height: 6px;
-    background: #ffa500;
+    background: #EAD196;
     border-radius: 50%;
 }
 
@@ -121,7 +121,7 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    color: #ffa500;
+    color: #EAD196;
 }
 
 .notification-content {

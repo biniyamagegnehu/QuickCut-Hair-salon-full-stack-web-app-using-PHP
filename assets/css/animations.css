@@ -1,0 +1,62 @@
+/* 
+    QuickCut - Smooth Animations
+*/
+
+[data-aos] {
+    pointer-events: none;
+}
+
+[data-aos].aos-animate {
+    pointer-events: auto;
+}
+
+/* Custom Fade Up */
+.fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.fade-up.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Custom Fade Right */
+.fade-right {
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.fade-right.active {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Pulse Animation */
+@keyframes pulse-accent {
+    0% { box-shadow: 0 0 0 0 rgba(234, 209, 150, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(234, 209, 150, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(234, 209, 150, 0); }
+}
+
+.pulse-btn {
+    animation: pulse-accent 2s infinite;
+}
+
+/* Float Animation */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+.float {
+    animation: float 4s ease-in-out infinite;
+}
+
+/* Smooth Transition for all interactive elements */
+a, button, .card, .icon {
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}

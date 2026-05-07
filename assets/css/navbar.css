@@ -1,0 +1,158 @@
+/* 
+    QuickCut - Modern Navbar Styles
+*/
+
+.navbar {
+    padding: 1.5rem 0;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    background: transparent;
+    z-index: 1000;
+}
+
+.navbar.scrolled {
+    padding: 0.8rem 0;
+    background: rgba(125, 10, 10, 0.98) !important;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+.navbar-brand.logo {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--accent) !important;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-brand.logo i {
+    font-size: 1.5rem;
+}
+
+.nav-item {
+    margin: 0 0.5rem;
+}
+
+.nav-link {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--white) !important;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    position: relative;
+    padding: 0.5rem 1rem !important;
+    transition: all 0.3s ease;
+    opacity: 0.8;
+}
+
+.nav-link:hover, .nav-link.active {
+    opacity: 1;
+    color: var(--accent) !important;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--accent);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.nav-link:hover::after, .nav-link.active::after {
+    width: 70%;
+}
+
+/* User Profile & Notifications */
+.avatar-sm {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.nav-link:hover .avatar-sm {
+    border-color: var(--accent);
+    transform: scale(1.05);
+}
+
+.notification-bell-wrapper i {
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+.notification-bell-wrapper:hover i {
+    color: var(--accent);
+    transform: rotate(15deg);
+}
+
+/* Mobile Toggler */
+.navbar-toggler {
+    border: none;
+    padding: 0;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.navbar-toggler-icon {
+    width: 24px;
+    height: 2px;
+    background-color: var(--white);
+    display: block;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.navbar-toggler-icon::before, .navbar-toggler-icon::after {
+    content: '';
+    width: 24px;
+    height: 2px;
+    background-color: var(--white);
+    position: absolute;
+    left: 0;
+    transition: all 0.3s ease;
+}
+
+.navbar-toggler-icon::before { top: -8px; }
+.navbar-toggler-icon::after { top: 8px; }
+
+.navbar-toggler[aria-expanded="true"] .navbar-toggler-icon {
+    background-color: transparent;
+}
+
+.navbar-toggler[aria-expanded="true"] .navbar-toggler-icon::before {
+    transform: rotate(45deg);
+    top: 0;
+}
+
+.navbar-toggler[aria-expanded="true"] .navbar-toggler-icon::after {
+    transform: rotate(-45deg);
+    top: 0;
+}
+
+/* Responsive Alignment */
+@media (max-width: 991.98px) {
+    .navbar {
+        background: rgba(125, 10, 10, 0.98);
+        padding: 1rem 0;
+    }
+    
+    .navbar-collapse {
+        margin-top: 1rem;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 15px;
+        padding: 1rem;
+    }
+    
+    .nav-item {
+        margin: 0.5rem 0;
+        text-align: center;
+    }
+    
+    .nav-link::after {
+        display: none;
+    }
+}

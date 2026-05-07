@@ -13,190 +13,64 @@ include 'includes/header.php';
     <!-- Hero Section -->
     <section class="hero-section" id="hero">
         <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-7" data-aos="fade-right">
-                    <div class="hero-content">
-                        <h1 class="hero-title fw-bold">
-                            Elevate Your <span>Style</span>, Skip the Wait.
-                        </h1>
-                        <p class="hero-description">Experience the next generation of grooming. Book your session instantly and track your place in the queue in real-time. Professional cuts, zero waiting.</p>
-                        <div class="hero-btns d-flex flex-wrap gap-3">
-                            <a href="<?php echo $is_logged_in ? 'booking/bookappointment.php' : 'auth/login.php'; ?>" class="btn btn-accent">
-                                <i class="fas fa-scissors me-2"></i>Book Now
-                            </a>
-                            <a href="#how-it-works" class="btn btn-outline-white">
-                                <i class="fas fa-play me-2"></i>How It Works
-                            </a>
-                        </div>
-                        
-                        <!-- Animated Stats -->
-                        <div class="hero-stats mt-5 pt-4">
-                            <div class="row g-4">
-                                <div class="col-4">
-                                    <h3 class="fw-bold text-accent mb-0 stat-number" data-target="5000" data-suffix="+">0</h3>
-                                    <p class="small text-white-50">Happy Clients</p>
-                                </div>
-                                <div class="col-4">
-                                    <h3 class="fw-bold text-accent mb-0 stat-number" data-target="98" data-suffix="%">0</h3>
-                                    <p class="small text-white-50">Satisfaction</p>
-                                </div>
-                                <div class="col-4">
-                                    <h3 class="fw-bold text-accent mb-0 stat-number" data-target="15" data-suffix=" min">0</h3>
-                                    <p class="small text-white-50">Avg. Wait</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-5 mt-5 mt-lg-0" data-aos="fade-left">
-                    <div class="glass-card">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h4 class="mb-0 text-white"><i class="fas fa-users-viewfinder me-2"></i>Live Queue</h4>
-                            <span class="badge bg-danger rounded-pill px-3">LIVE</span>
-                        </div>
-                        <div class="text-center py-4">
-                            <p class="text-white-50 mb-1">Next Available Slot</p>
-                            <h2 class="display-3 fw-bold text-accent" id="next-slot-time">3:15 PM</h2>
-                        </div>
-                        <div class="queue-details bg-white bg-opacity-10 p-3 rounded-4 mb-4">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-0 text-white">Currently Waiting</h6>
-                                    <small class="text-white-50">Estimated wait time: 25 mins</small>
-                                </div>
-                                <div class="text-end">
-                                    <h2 class="mb-0 text-accent fw-bold" id="waiting-count">3</h2>
-                                </div>
-                            </div>
-                        </div>
-                        <a href="<?php echo $is_logged_in ? 'queue/queuestatus.php' : 'auth/login.php'; ?>" class="btn btn-accent w-100 py-3 fw-bold">
-                            View Full Queue
-                        </a>
-                    </div>
+            <div class="hero-content" data-aos="fade-up">
+                <h1 class="hero-title fw-bold">
+                    Master Your <span>Style</span>.
+                </h1>
+                <p class="hero-subtitle">Premium grooming experiences tailored for the modern gentleman.</p>
+                <div class="hero-btns">
+                    <a href="<?php echo $is_logged_in ? 'booking/bookappointment.php' : 'auth/login.php'; ?>" class="btn-premium btn-primary-cut">
+                        Book Now
+                    </a>
+                    <a href="<?php echo $is_logged_in ? 'queue/queuestatus.php' : 'auth/login.php'; ?>" class="btn-premium btn-outline-cut">
+                        View Queue
+                    </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section id="features" class="section-padding bg-light">
+    <!-- Queue Status Quick Look -->
+    <section class="bg-white py-4 shadow-sm border-bottom">
         <div class="container">
-            <div class="text-center mb-5" data-aos="fade-up">
-                <h6 class="text-primary text-uppercase fw-bold mb-2">Why QuickCut?</h6>
-                <h2 class="section-title">Smart Grooming Solutions</h2>
-            </div>
-            <div class="row g-4 mt-4">
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
-                    <div class="feature-card">
-                        <div class="feature-icon"><i class="fas fa-clock"></i></div>
-                        <h4 class="fw-bold">Real-time Queue</h4>
-                        <p class="text-muted">Track your place in line live from your phone. No more sitting in waiting rooms.</p>
-                    </div>
+            <div class="row align-items-center justify-content-center text-center">
+                <div class="col-md-3 border-end">
+                    <p class="text-muted small text-uppercase mb-0 ls-1">Currently Serving</p>
+                    <h5 class="fw-bold mb-0" id="next-slot-time">3:15 PM</h5>
                 </div>
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
-                    <div class="feature-card">
-                        <div class="feature-icon"><i class="fas fa-calendar-check"></i></div>
-                        <h4 class="fw-bold">Online Booking</h4>
-                        <p class="text-muted">Pick your favorite barber and service in seconds with our intuitive interface.</p>
-                    </div>
+                <div class="col-md-3 border-end">
+                    <p class="text-muted small text-uppercase mb-0 ls-1">Waiting</p>
+                    <h5 class="fw-bold mb-0"><span id="waiting-count">3</span> Clients</h5>
                 </div>
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
-                    <div class="feature-card">
-                        <div class="feature-icon"><i class="fas fa-bell"></i></div>
-                        <h4 class="fw-bold">Instant Alerts</h4>
-                        <p class="text-muted">Get notified exactly when it's your turn so you never miss your slot.</p>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
-                    <div class="feature-card">
-                        <div class="feature-icon"><i class="fas fa-shield-halved"></i></div>
-                        <h4 class="fw-bold">Secure Payments</h4>
-                        <p class="text-muted">Safe and easy online deposits via Chapa to secure your appointment.</p>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
-                    <div class="feature-card">
-                        <div class="feature-icon"><i class="fab fa-google"></i></div>
-                        <h4 class="fw-bold">Google Sign-In</h4>
-                        <p class="text-muted">Quick access to your account with Google integration. One click and you're in.</p>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
-                    <div class="feature-card">
-                        <div class="feature-icon"><i class="fas fa-star"></i></div>
-                        <h4 class="fw-bold">Top Professionals</h4>
-                        <p class="text-muted">Work with the best-rated barbers and stylists in the city.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- How It Works Section -->
-    <section id="how-it-works" class="section-padding how-it-works overflow-hidden">
-        <div class="container">
-            <div class="text-center mb-5" data-aos="fade-up">
-                <h6 class="text-accent text-uppercase fw-bold mb-2">Process</h6>
-                <h2 class="display-4 fw-bold text-white">How It Works</h2>
-            </div>
-            <div class="row g-0 mt-5">
-                <div class="col-lg-4" data-aos="fade-right" data-aos-delay="100">
-                    <div class="step-card text-center">
-                        <span class="step-number">01</span>
-                        <div class="feature-icon mx-auto" style="background: var(--accent); color: var(--black);"><i class="fas fa-search"></i></div>
-                        <h4 class="fw-bold mt-4">Select Service</h4>
-                        <p class="text-white-50">Browse our services and pick your favorite barber and available time slot.</p>
-                    </div>
-                </div>
-                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
-                    <div class="step-card text-center">
-                        <span class="step-number">02</span>
-                        <div class="feature-icon mx-auto" style="background: var(--accent); color: var(--black);"><i class="fas fa-credit-card"></i></div>
-                        <h4 class="fw-bold mt-4">Secure Deposit</h4>
-                        <p class="text-white-50">Pay a small commitment deposit securely to confirm your reservation.</p>
-                    </div>
-                </div>
-                <div class="col-lg-4" data-aos="fade-left" data-aos-delay="300">
-                    <div class="step-card text-center">
-                        <span class="step-number">03</span>
-                        <div class="feature-icon mx-auto" style="background: var(--accent); color: var(--black);"><i class="fas fa-chair"></i></div>
-                        <h4 class="fw-bold mt-4">Get Groomed</h4>
-                        <p class="text-white-50">Arrive on time, skip the waiting line, and enjoy your premium service.</p>
-                    </div>
+                <div class="col-md-3">
+                    <p class="text-muted small text-uppercase mb-0 ls-1">Est. Wait Time</p>
+                    <h5 class="fw-bold mb-0">~25 Mins</h5>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Services Section -->
-    <section id="services" class="section-padding">
+    <section class="section-padding" id="services">
         <div class="container">
-            <div class="text-center mb-5" data-aos="fade-up">
-                <h6 class="text-primary text-uppercase fw-bold mb-2">Menu</h6>
-                <h2 class="section-title">Premium Services</h2>
+            <div class="section-header" data-aos="fade-up">
+                <h2 class="section-title">Our Premium <span>Services</span></h2>
+                <p class="section-subtitle">Experience precision and luxury with our curated range of professional grooming services.</p>
             </div>
-            <div class="row g-4 mt-4">
-                <?php foreach ($services as $index => $service): 
-                    $delay = ($index + 1) * 100;
-                    $icon = 'fa-cut';
-                    $lower_name = strtolower($service['name']);
-                    if (strpos($lower_name, 'beard') !== false) $icon = 'fa-user-tie';
-                    elseif (strpos($lower_name, 'premium') !== false) $icon = 'fa-crown';
-                ?>
-                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
+            <div class="row g-4">
+                <?php foreach ($services as $index => $service): ?>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="<?php echo $index * 100; ?>">
                     <div class="service-card h-100">
-                        <div class="service-image" style="background-image: url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800');"></div>
-                        <div class="service-content">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <h4 class="fw-bold mb-0"><?php echo htmlspecialchars($service['name']); ?></h4>
-                                <div class="text-primary"><i class="fas <?php echo $icon; ?> fa-lg"></i></div>
-                            </div>
-                            <p class="text-muted small">Our master barbers provide premium treatment using high-end tools and products for a perfect look.</p>
-                            <div class="price-tag border-top pt-3">
-                                <div class="price"><?php echo $service['price']; ?> ETB</div>
-                                <div class="duration text-muted small"><i class="far fa-clock me-1"></i><?php echo $service['duration']; ?> min</div>
-                            </div>
-                            <a href="<?php echo $is_logged_in ? 'booking/bookappointment.php' : 'auth/login.php'; ?>" class="btn btn-primary w-100 rounded-pill py-2">Book Appointment</a>
+                        <div class="service-img">
+                            <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800" alt="<?php echo $service['name']; ?>">
+                        </div>
+                        <div class="service-body text-center">
+                            <h4 class="fw-bold mb-3"><?php echo htmlspecialchars($service['name']); ?></h4>
+                            <p class="text-muted small mb-4">Our master barbers provide premium treatment using high-end tools and products for a perfect look.</p>
+                            <div class="service-price">ETB <?php echo number_format($service['price'], 2); ?></div>
+                            <a href="<?php echo $is_logged_in ? 'booking/bookappointment.php' : 'auth/login.php'; ?>" class="btn-premium btn-primary-cut btn-sm py-2 px-4">
+                                Book Now
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -205,73 +79,82 @@ include 'includes/header.php';
         </div>
     </section>
 
-    <!-- Testimonials Section -->
-    <section class="section-padding bg-light">
+    <!-- Experience Section -->
+    <section class="section-padding bg-black text-white" id="how-it-works">
         <div class="container">
-            <div class="text-center mb-5" data-aos="fade-up">
-                <h6 class="text-primary text-uppercase fw-bold mb-2">Testimonials</h6>
-                <h2 class="section-title">What Our Clients Say</h2>
+            <div class="section-header" data-aos="fade-up">
+                <h2 class="section-title text-white">The <span>Experience</span></h2>
+                <p class="section-subtitle text-white-50">Modern grooming made simple. Three steps to looking your absolute best.</p>
             </div>
-            <div class="row mt-5">
+            <div class="row g-5">
+                <div class="col-md-4" data-aos="fade-up">
+                    <div class="step-card">
+                        <div class="step-number">01</div>
+                        <h4 class="fw-bold mb-3">Reserve</h4>
+                        <p class="text-white-50">Select your service and professional barber through our seamless booking interface.</p>
+                    </div>
+                </div>
                 <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
-                    <div class="testimonial-card">
-                        <div class="d-flex align-items-center mb-4">
-                            <img src="https://i.pravatar.cc/150?u=1" alt="User" class="user-img">
-                            <div>
-                                <h6 class="fw-bold mb-0">Dawit Tesfaye</h6>
-                                <div class="text-warning small">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <p class="text-muted italic">"The live queue system is a game changer. I booked from my office, arrived 5 minutes before my slot, and was in the chair immediately."</p>
+                    <div class="step-card">
+                        <div class="step-number">02</div>
+                        <h4 class="fw-bold mb-3">Track</h4>
+                        <p class="text-white-50">Monitor your position in our live queue in real-time from anywhere via your mobile device.</p>
                     </div>
                 </div>
                 <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
-                    <div class="testimonial-card">
-                        <div class="d-flex align-items-center mb-4">
-                            <img src="https://i.pravatar.cc/150?u=2" alt="User" class="user-img">
-                            <div>
-                                <h6 class="fw-bold mb-0">Samuel Bekele</h6>
-                                <div class="text-warning small">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <p class="text-muted italic">"Best haircut experience in the city. The barbers are truly professional and the web app makes everything so seamless."</p>
-                    </div>
-                </div>
-                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
-                    <div class="testimonial-card">
-                        <div class="d-flex align-items-center mb-4">
-                            <img src="https://i.pravatar.cc/150?u=3" alt="User" class="user-img">
-                            <div>
-                                <h6 class="fw-bold mb-0">Abel Girma</h6>
-                                <div class="text-warning small">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <p class="text-muted italic">"I love the transparent pricing and the easy payment system. No more carrying cash or waiting in line for hours."</p>
+                    <div class="step-card">
+                        <div class="step-number">03</div>
+                        <h4 class="fw-bold mb-3">Relax</h4>
+                        <p class="text-white-50">Arrive just in time for your appointment and enjoy a premium grooming experience.</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="section-padding bg-primary text-white text-center position-relative overflow-hidden">
-        <div class="container position-relative z-1">
-            <h2 class="display-4 fw-bold mb-4" data-aos="zoom-in">Ready to Transform Your Look?</h2>
-            <p class="lead mb-5 opacity-75" data-aos="fade-up" data-aos-delay="100">Join thousands of satisfied customers who have skipped the line with QuickCut.</p>
-            <div class="d-flex justify-content-center gap-3" data-aos="fade-up" data-aos-delay="200">
-                <a href="<?php echo $is_logged_in ? 'booking/bookappointment.php' : 'auth/login.php'; ?>" class="btn btn-accent btn-lg px-5 py-3 rounded-pill fw-bold">Book Now</a>
-                <a href="<?php echo BASE_URL; ?>aboutus.php" class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill fw-bold">Learn More</a>
+    <!-- Footer -->
+    <footer class="footer-cut">
+        <div class="container">
+            <div class="row g-5 mb-5">
+                <div class="col-lg-4">
+                    <a href="#" class="footer-logo">QuickCut</a>
+                    <p class="text-white-50">Elevating the standard of professional grooming through technology and precision.</p>
+                    <div class="social-links mt-4">
+                        <a href="#" class="me-3 text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="me-3 text-white"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="me-3 text-white"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 offset-lg-1 footer-links">
+                    <h5>Navigate</h5>
+                    <ul>
+                        <li><a href="#hero">Home</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="<?php echo $is_logged_in ? 'queue/queuestatus.php' : 'auth/login.php'; ?>">Queue Status</a></li>
+                        <li><a href="aboutus.php">About Us</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 footer-links">
+                    <h5>Grooming</h5>
+                    <ul>
+                        <li><a href="#">Haircuts</a></li>
+                        <li><a href="#">Beard Trim</a></li>
+                        <li><a href="#">Facial Care</a></li>
+                        <li><a href="#">Styling</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 footer-links">
+                    <h5>Location</h5>
+                    <p class="text-white-50 mb-1">123 Barber Street, Suite 456</p>
+                    <p class="text-white-50 mb-1">Addis Ababa, Ethiopia</p>
+                    <p class="text-white-50">+251 911 234 567</p>
+                </div>
+            </div>
+            <div class="border-top border-white border-opacity-10 pt-4 text-center">
+                <p class="text-white-50 small mb-0">&copy; 2026 QuickCut Professional Grooming. All rights reserved.</p>
             </div>
         </div>
-        <!-- Decorative shapes -->
-        <div class="position-absolute top-0 start-0 w-100 h-100 opacity-25" style="background: radial-gradient(circle at 10% 10%, var(--accent) 0%, transparent 40%);"></div>
-    </section>
+    </footer>
 
 <?php include 'includes/footer.php'; ?>
 

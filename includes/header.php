@@ -19,6 +19,8 @@ $is_logged_in = isset($_SESSION['user_id']);
     <!-- Custom CSS -->
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/welcome.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/home.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/navbar.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/animations.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/notifications.css">
     <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
@@ -42,10 +44,10 @@ $is_logged_in = isset($_SESSION['user_id']);
                         <a class="nav-link" href="<?php echo BASE_URL; ?>welcome.php">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo BASE_URL; ?>welcome.php#features">Features</a>
+                        <a class="nav-link" href="<?php echo BASE_URL; ?>welcome.php#services">Services</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo BASE_URL; ?>welcome.php#services">Services</a>
+                        <a class="nav-link" href="<?php echo $is_logged_in ? BASE_URL.'queue/queuestatus.php' : BASE_URL.'auth/login.php'; ?>">Queue</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="<?php echo BASE_URL; ?>aboutus.php">About</a>
@@ -79,7 +81,7 @@ $is_logged_in = isset($_SESSION['user_id']);
                         <!-- User Profile Dropdown -->
                         <li class="nav-item dropdown ms-lg-2">
                             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <div class="avatar-sm me-2 bg-accent text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-weight: 700;">
+                                <div class="avatar-sm me-2 bg-accent text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-weight: 700; border-radius: 50%;">
                                     <?php echo strtoupper(substr($_SESSION['name'], 0, 1)); ?>
                                 </div>
                                 <span><?php echo explode(' ', $_SESSION['name'])[0]; ?></span>
@@ -94,9 +96,6 @@ $is_logged_in = isset($_SESSION['user_id']);
                     <?php else: ?>
                         <li class="nav-item ms-lg-3">
                             <a class="nav-link" href="<?php echo BASE_URL; ?>auth/login.php">Login</a>
-                        </li>
-                        <li class="nav-item ms-lg-2">
-                            <a href="<?php echo BASE_URL; ?>auth/login.php" class="btn btn-accent rounded-pill px-4 fw-bold">Sign Up</a>
                         </li>
                     <?php endif; ?>
                 </ul>

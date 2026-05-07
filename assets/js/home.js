@@ -1,85 +1,57 @@
 /* 
-    QuickCut - Modern Homepage Interactions
+    QuickCut - Home Page Specific Interactions
 */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Navbar Scroll Effect
-    const navbar = document.querySelector('.navbar');
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
-            navbar.classList.add('scrolled');
-        } else {
-            navbar.classList.remove('scrolled');
-        }
-    });
-
-    // Smooth Scroll for Nav Links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                window.scrollTo({
-                    top: target.offsetTop - 80,
-                    behavior: 'smooth'
-                });
-            }
-        });
-    });
-
-    // Stats Animation (Counters)
-    const stats = document.querySelectorAll('.stat-number');
-    const statsSection = document.querySelector('.hero-stats');
-    
-    let animated = false;
-    const animateStats = () => {
-        if (!statsSection) return;
-        
-        const sectionTop = statsSection.getBoundingClientRect().top;
+    // Reveal animations on scroll
+    const revealElements = () => {
+        const elements = document.querySelectorAll('.fade-up, .fade-right');
         const windowHeight = window.innerHeight;
         
-        if (sectionTop < windowHeight && !animated) {
-            stats.forEach(stat => {
-                const target = parseInt(stat.getAttribute('data-target'));
-                let count = 0;
-                const increment = target / 50;
-                
-                const updateCount = () => {
-                    if (count < target) {
-                        count += increment;
-                        stat.innerText = Math.ceil(count) + (stat.getAttribute('data-suffix') || '');
-                        setTimeout(updateCount, 30);
-                    } else {
-                        stat.innerText = target + (stat.getAttribute('data-suffix') || '');
-                    }
-                };
-                updateCount();
-            });
-            animated = true;
-        }
+        elements.forEach(el => {
+            const elementTop = el.getBoundingClientRect().top;
+            const elementVisible = 150;
+            
+            if (elementTop < windowHeight - elementVisible) {
+                el.classList.add('active');
+            }
+        });
     };
-
-    window.addEventListener('scroll', animateStats);
-    animateStats(); // Run once on load
-
-    // Hover effect for feature cards
-    const featureCards = document.querySelectorAll('.feature-card');
-    featureCards.forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            // Add any specific JS-driven animation if needed
-        });
-    });
-
-    // Refresh Queue logic (if needed, but already handled in welcome.php logic usually)
-    const refreshBtn = document.getElementById('refresh-queue');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', (e) => {
-            // Add a spinning animation to the icon
-            const icon = refreshBtn.querySelector('i');
-            icon.classList.add('fa-spin');
-            setTimeout(() => {
-                icon.classList.remove('fa-spin');
-            }, 1000);
-        });
+    
+    window.addEventListener('scroll', revealElements);
+    revealElements(); // Initial check
+    
+    // Stats Counter Animation (if applicable)
+    const counters = document.querySelectorAll('.stat-number');
+    if (counters.length > 0) {
+        const options = {
+            threshold: 0.5
+        };
+        
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const counter = entry.target;
+                    const target = parseInt(counter.getAttribute('data-target'));
+                    const duration = 2000;
+                    const step = target / (duration / 16);
+                    let current = 0;
+                    
+                    const update = () => {
+                        current += step;
+                        if (current < target) {
+                            counter.innerText = Math.floor(current);
+                            requestAnimationFrame(update);
+                        } else {
+                            counter.innerText = target + (counter.getAttribute('data-suffix') || '');
+                        }
+                    };
+                    update();
+                    observer.unobserve(counter);
+                }
+            });
+        }, options);
+        
+        counters.forEach(counter => observer.observe(counter));
     }
 });

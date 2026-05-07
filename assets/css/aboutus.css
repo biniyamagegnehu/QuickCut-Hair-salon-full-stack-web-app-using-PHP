@@ -1,9 +1,9 @@
 /* Custom Styles for QuickCut About Page */
 :root {
-    --primary-color: #ff6b35;
-    --primary-dark: #e55a2b;
+    --primary-color: #BF3131;
+    --primary-dark: #7D0A0A;
     --secondary-color: #1a1a1a;
-    --light-gray: #f8f9fa;
+    --light-gray: #EEEEEE;
     --dark-gray: #6c757d;
 }
 
@@ -385,7 +385,7 @@ body::before {
 }
 
 .map-placeholder {
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    background: linear-gradient(135deg, #EEEEEE, #e9ecef);
     border-radius: 8px;
     padding: 2rem;
     text-align: center;

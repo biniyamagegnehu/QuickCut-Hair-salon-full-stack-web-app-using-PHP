@@ -20,14 +20,15 @@
 body {
     font-family: 'Poppins', sans-serif;
     background-color: var(--light-color);
-    color: #333;
+    color: var(--secondary-color);
     overflow-x: hidden;
 }
 
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Playfair Display', serif;
-    font-weight: 600;
+    font-weight: 700;
+    color: var(--primary-dark);
 }
 
 .display-1 {
