@@ -1,73 +1,70 @@
-/* 
+/*
     QuickCut - Navbar Interactions
 */
 
 document.addEventListener('DOMContentLoaded', () => {
-    const navbar = document.querySelector('.navbar');
-    const navLinks = document.querySelectorAll('.nav-link');
+    const navbar = document.getElementById('main-nav');
+    if (!navbar) return;
+
+    const navLinks = Array.from(document.querySelectorAll('.nav-link[data-nav-target]'));
+    const navbarCollapse = document.getElementById('navbarNav');
     const navbarToggler = document.querySelector('.navbar-toggler');
-    
-    // Navbar Scroll Effect
-    const handleScroll = () => {
-        if (window.scrollY > 50) {
-            navbar.classList.add('scrolled');
-        } else {
-            navbar.classList.remove('scrolled');
+    const isWelcomePage = window.location.pathname.toLowerCase().includes('welcome.php');
+
+    const setScrolledState = () => {
+        navbar.classList.toggle('scrolled', window.scrollY > 24);
+    };
+
+    const closeMobileNav = () => {
+        if (!navbarCollapse || !navbarToggler) return;
+        if (window.innerWidth < 992 && navbarCollapse.classList.contains('show')) {
+            navbarToggler.click();
         }
     };
-    
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Check on load
-    
-    // Smooth Scroll for Nav Links
-    navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            const href = this.getAttribute('href');
-            
-            // Only handle internal links
-            if (href.startsWith('#') || (href.includes('welcome.php#'))) {
-                e.preventDefault();
-                const targetId = href.split('#')[1];
-                const targetElement = document.getElementById(targetId);
-                
-                if (targetElement) {
-                    const offset = 80;
-                    const bodyRect = document.body.getBoundingClientRect().top;
-                    const elementRect = targetElement.getBoundingClientRect().top;
-                    const elementPosition = elementRect - bodyRect;
-                    const offsetPosition = elementPosition - offset;
 
-                    window.scrollTo({
-                        top: offsetPosition,
-                        behavior: 'smooth'
-                    });
-                    
-                    // Close mobile menu if open
-                    if (window.innerWidth < 992 && navbarToggler.getAttribute('aria-expanded') === 'true') {
-                        navbarToggler.click();
-                    }
-                }
-            }
-        });
-    });
-    
-    // Active link highlighting on scroll
-    const sections = document.querySelectorAll('section[id]');
-    const spyScroll = () => {
-        const scrollY = window.pageYOffset;
-        
-        sections.forEach(current => {
-            const sectionHeight = current.offsetHeight;
-            const sectionTop = current.offsetTop - 100;
-            const sectionId = current.getAttribute('id');
-            
-            if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
-                document.querySelector(`.nav-link[href*="${sectionId}"]`)?.classList.add('active');
-            } else {
-                document.querySelector(`.nav-link[href*="${sectionId}"]`)?.classList.remove('active');
-            }
+    const setActive = (sectionId = 'hero') => {
+        navLinks.forEach((link) => {
+            const active = link.dataset.navTarget === sectionId;
+            link.classList.toggle('active', active);
         });
     };
-    
-    window.addEventListener('scroll', spyScroll);
+
+    if (isWelcomePage) {
+        const sectionIds = ['hero', 'services', 'how-it-works'];
+        const sections = sectionIds
+            .map((id) => document.getElementById(id))
+            .filter(Boolean);
+
+        navLinks.forEach((link) => {
+            link.addEventListener('click', (event) => {
+                const sectionId = link.dataset.navTarget;
+                const target = document.getElementById(sectionId);
+                if (!target) return;
+                event.preventDefault();
+                const offset = navbar.offsetHeight + 10;
+                const top = target.getBoundingClientRect().top + window.scrollY - offset;
+                window.scrollTo({ top, behavior: 'smooth' });
+                setActive(sectionId);
+                closeMobileNav();
+                history.replaceState(null, '', `#${sectionId}`);
+            });
+        });
+
+        const updateActiveOnScroll = () => {
+            let activeSection = 'hero';
+            const viewportTrigger = window.scrollY + navbar.offsetHeight + 22;
+            for (const section of sections) {
+                if (viewportTrigger >= section.offsetTop) {
+                    activeSection = section.id;
+                }
+            }
+            setActive(activeSection);
+        };
+
+        window.addEventListener('scroll', updateActiveOnScroll);
+        updateActiveOnScroll();
+    }
+
+    window.addEventListener('scroll', setScrolledState);
+    setScrolledState();
 });

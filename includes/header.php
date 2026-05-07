@@ -1,7 +1,7 @@
 <?php
 // header.php - Main Website Header
-require_once 'db.php';
-require_once 'config.php';
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/config.php';
 $is_logged_in = isset($_SESSION['user_id']);
 ?>
 <!DOCTYPE html>
@@ -17,7 +17,6 @@ $is_logged_in = isset($_SESSION['user_id']);
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/welcome.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/home.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/navbar.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/animations.css">
@@ -35,16 +34,16 @@ $is_logged_in = isset($_SESSION['user_id']);
             <a class="navbar-brand logo" href="<?php echo BASE_URL; ?>welcome.php" id="logo">
                 <i class="fas fa-cut me-2"></i>QuickCut
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo BASE_URL; ?>welcome.php">Home</a>
+                        <a class="nav-link" data-nav-target="hero" href="<?php echo BASE_URL; ?>welcome.php#hero">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo BASE_URL; ?>welcome.php#services">Services</a>
+                        <a class="nav-link" data-nav-target="services" href="<?php echo BASE_URL; ?>welcome.php#services">Services</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="<?php echo $is_logged_in ? BASE_URL.'queue/queuestatus.php' : BASE_URL.'auth/login.php'; ?>">Queue</a>
