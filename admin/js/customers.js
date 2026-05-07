@@ -57,7 +57,7 @@ function loadCustomers() {
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <button class="action-btn view" disabled>
+                            <button class="action-btn view" onclick="window.location.href='customer_profile.php?id=${customer.id}'" title="View Profile">
                                 <i class="fas fa-eye"></i>
                             </button>
                             <button class="action-btn edit" disabled>
