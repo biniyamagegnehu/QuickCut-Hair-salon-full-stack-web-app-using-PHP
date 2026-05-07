@@ -13,79 +13,155 @@ include 'includes/header.php';
     <!-- Hero Section -->
     <section class="hero-section" id="hero">
         <div class="container">
-            <div class="row align-items-center min-vh-100">
-                <div class="col-lg-7">
+            <div class="row align-items-center">
+                <div class="col-lg-7" data-aos="fade-right">
                     <div class="hero-content">
-                        <h1 class="display-1 fw-bold mb-4" id="hero-title">
-                            Welcome to <span class="text-primary">QuickCut</span>
+                        <h1 class="hero-title fw-bold">
+                            Elevate Your <span>Style</span>, Skip the Wait.
                         </h1>
-                        <h2 class="display-4 fw-light mb-4" id="hero-tagline">Skip the wait. <span class="fw-bold">Get the cut.</span></h2>
-                        <p class="lead mb-5" id="hero-description">Professional grooming services tailored for the modern man. Book online and avoid long queues with our real-time scheduling system.</p>
-                        <div class="d-flex flex-wrap gap-3 hero-buttons">
-                            <a href="<?php echo $is_logged_in ? 'booking/bookappointment.php' : 'auth/login.php'; ?>" class="btn btn-primary btn-lg px-5 py-3" id="book-appointment-btn">
-                                <i class="fas fa-calendar-check me-2"></i>Book Appointment Now
+                        <p class="hero-description">Experience the next generation of grooming. Book your session instantly and track your place in the queue in real-time. Professional cuts, zero waiting.</p>
+                        <div class="hero-btns d-flex flex-wrap gap-3">
+                            <a href="<?php echo $is_logged_in ? 'booking/bookappointment.php' : 'auth/login.php'; ?>" class="btn btn-accent">
+                                <i class="fas fa-scissors me-2"></i>Book Now
                             </a>
-                            <a href="<?php echo $is_logged_in ? 'queue/queuestatus.php' : 'auth/login.php'; ?>" class="btn btn-outline-light btn-lg px-5 py-3" id="view-queue-btn">
-                                <i class="fas fa-clock me-2"></i>View Live Queue
+                            <a href="#how-it-works" class="btn btn-outline-white">
+                                <i class="fas fa-play me-2"></i>How It Works
                             </a>
                         </div>
-                        <div class="hero-stats mt-5 pt-4" id="hero-stats">
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <h3 class="fw-bold text-primary" id="clients-count">5000+</h3>
-                                    <p class="text-light">Happy Clients</p>
+                        
+                        <!-- Animated Stats -->
+                        <div class="hero-stats mt-5 pt-4">
+                            <div class="row g-4">
+                                <div class="col-4">
+                                    <h3 class="fw-bold text-accent mb-0 stat-number" data-target="5000" data-suffix="+">0</h3>
+                                    <p class="small text-white-50">Happy Clients</p>
                                 </div>
-                                <div class="col-md-3">
-                                    <h3 class="fw-bold text-primary" id="satisfaction-rate">98%</h3>
-                                    <p class="text-light">Satisfaction Rate</p>
+                                <div class="col-4">
+                                    <h3 class="fw-bold text-accent mb-0 stat-number" data-target="98" data-suffix="%">0</h3>
+                                    <p class="small text-white-50">Satisfaction</p>
                                 </div>
-                                <div class="col-md-3">
-                                    <h3 class="fw-bold text-primary" id="wait-time">15 min</h3>
-                                    <p class="text-light">Avg. Wait Time</p>
-                                </div>
-                                <div class="col-md-3">
-                                    <h3 class="fw-bold text-primary" id="barbers-count">50+</h3>
-                                    <p class="text-light">Expert Barbers</p>
+                                <div class="col-4">
+                                    <h3 class="fw-bold text-accent mb-0 stat-number" data-target="15" data-suffix=" min">0</h3>
+                                    <p class="small text-white-50">Avg. Wait</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-5">
-                    <div class="hero-image-container">
-                        <div class="queue-card glass-card" id="queue-card">
-                            <div class="queue-header">
-                                <h3 class="text-white">
-                                    <i class="fas fa-users me-2"></i>Live Queue Status
-                                </h3>
-                                <div class="live-indicator">
-                                    <span class="dot"></span>
-                                    <small>LIVE</small>
+                <div class="col-lg-5 mt-5 mt-lg-0" data-aos="fade-left">
+                    <div class="glass-card">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="mb-0 text-white"><i class="fas fa-users-viewfinder me-2"></i>Live Queue</h4>
+                            <span class="badge bg-danger rounded-pill px-3">LIVE</span>
+                        </div>
+                        <div class="text-center py-4">
+                            <p class="text-white-50 mb-1">Next Available Slot</p>
+                            <h2 class="display-3 fw-bold text-accent" id="next-slot-time">3:15 PM</h2>
+                        </div>
+                        <div class="queue-details bg-white bg-opacity-10 p-3 rounded-4 mb-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0 text-white">Currently Waiting</h6>
+                                    <small class="text-white-50">Estimated wait time: 25 mins</small>
                                 </div>
-                            </div>
-                            <div class="queue-body">
-                                <div class="next-slot text-center mb-4">
-                                    <h4 class="text-light">Next Available Slot</h4>
-                                    <h2 class="display-3 fw-bold text-primary" id="next-slot-time">3:15 PM</h2>
+                                <div class="text-end">
+                                    <h2 class="mb-0 text-accent fw-bold" id="waiting-count">3</h2>
                                 </div>
-                                <div class="queue-info">
-                                    <div class="queue-item">
-                                        <div class="d-flex justify-content-between">
-                                            <div>
-                                                <h5 class="fw-bold text-light">Currently Waiting</h5>
-                                                <p class="text-muted">In queue right now</p>
-                                            </div>
-                                            <div class="text-end">
-                                                <h2 class="fw-bold text-primary" id="waiting-count">3</h2>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <a href="<?php echo $is_logged_in ? 'queuestatus.php' : 'login.php'; ?>" class="btn btn-light w-100 py-3 mt-4" id="refresh-queue">
-                                    <i class="fas fa-sync-alt me-2"></i>Refresh Queue Status
-                                </a>
                             </div>
                         </div>
+                        <a href="<?php echo $is_logged_in ? 'queue/queuestatus.php' : 'auth/login.php'; ?>" class="btn btn-accent w-100 py-3 fw-bold">
+                            View Full Queue
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="section-padding bg-light">
+        <div class="container">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h6 class="text-primary text-uppercase fw-bold mb-2">Why QuickCut?</h6>
+                <h2 class="section-title">Smart Grooming Solutions</h2>
+            </div>
+            <div class="row g-4 mt-4">
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-clock"></i></div>
+                        <h4 class="fw-bold">Real-time Queue</h4>
+                        <p class="text-muted">Track your place in line live from your phone. No more sitting in waiting rooms.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-calendar-check"></i></div>
+                        <h4 class="fw-bold">Online Booking</h4>
+                        <p class="text-muted">Pick your favorite barber and service in seconds with our intuitive interface.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-bell"></i></div>
+                        <h4 class="fw-bold">Instant Alerts</h4>
+                        <p class="text-muted">Get notified exactly when it's your turn so you never miss your slot.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-shield-halved"></i></div>
+                        <h4 class="fw-bold">Secure Payments</h4>
+                        <p class="text-muted">Safe and easy online deposits via Chapa to secure your appointment.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fab fa-google"></i></div>
+                        <h4 class="fw-bold">Google Sign-In</h4>
+                        <p class="text-muted">Quick access to your account with Google integration. One click and you're in.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fas fa-star"></i></div>
+                        <h4 class="fw-bold">Top Professionals</h4>
+                        <p class="text-muted">Work with the best-rated barbers and stylists in the city.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="section-padding how-it-works overflow-hidden">
+        <div class="container">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h6 class="text-accent text-uppercase fw-bold mb-2">Process</h6>
+                <h2 class="display-4 fw-bold text-white">How It Works</h2>
+            </div>
+            <div class="row g-0 mt-5">
+                <div class="col-lg-4" data-aos="fade-right" data-aos-delay="100">
+                    <div class="step-card text-center">
+                        <span class="step-number">01</span>
+                        <div class="feature-icon mx-auto" style="background: var(--accent); color: var(--black);"><i class="fas fa-search"></i></div>
+                        <h4 class="fw-bold mt-4">Select Service</h4>
+                        <p class="text-white-50">Browse our services and pick your favorite barber and available time slot.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="step-card text-center">
+                        <span class="step-number">02</span>
+                        <div class="feature-icon mx-auto" style="background: var(--accent); color: var(--black);"><i class="fas fa-credit-card"></i></div>
+                        <h4 class="fw-bold mt-4">Secure Deposit</h4>
+                        <p class="text-white-50">Pay a small commitment deposit securely to confirm your reservation.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4" data-aos="fade-left" data-aos-delay="300">
+                    <div class="step-card text-center">
+                        <span class="step-number">03</span>
+                        <div class="feature-icon mx-auto" style="background: var(--accent); color: var(--black);"><i class="fas fa-chair"></i></div>
+                        <h4 class="fw-bold mt-4">Get Groomed</h4>
+                        <p class="text-white-50">Arrive on time, skip the waiting line, and enjoy your premium service.</p>
                     </div>
                 </div>
             </div>
@@ -93,33 +169,34 @@ include 'includes/header.php';
     </section>
 
     <!-- Services Section -->
-    <section id="services" class="services-section py-5">
-        <div class="container py-5">
-            <div class="text-center mb-5">
-                <h6 class="text-primary text-uppercase fw-bold">Our Premium Services</h6>
-                <h2 class="display-4 fw-bold">Professional Grooming</h2>
-                <p class="lead text-muted">Tailored for the modern man</p>
+    <section id="services" class="section-padding">
+        <div class="container">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h6 class="text-primary text-uppercase fw-bold mb-2">Menu</h6>
+                <h2 class="section-title">Premium Services</h2>
             </div>
-            <div class="row g-4">
+            <div class="row g-4 mt-4">
                 <?php foreach ($services as $index => $service): 
-                    $featured = ($index === 1) ? 'featured' : '';
+                    $delay = ($index + 1) * 100;
                     $icon = 'fa-cut';
                     $lower_name = strtolower($service['name']);
                     if (strpos($lower_name, 'beard') !== false) $icon = 'fa-user-tie';
                     elseif (strpos($lower_name, 'premium') !== false) $icon = 'fa-crown';
                 ?>
-                <div class="col-lg-4">
-                    <div class="service-card <?php echo $featured; ?>" id="service-card-<?php echo $service['id']; ?>">
-                        <div class="service-image" style="background-image: url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=800');"></div>
+                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
+                    <div class="service-card h-100">
+                        <div class="service-image" style="background-image: url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800');"></div>
                         <div class="service-content">
-                            <div class="service-icon"><i class="fas <?php echo $icon; ?>"></i></div>
-                            <h4 class="fw-bold"><?php echo htmlspecialchars($service['name']); ?></h4>
-                            <div class="price-tag">
-                                <span class="price"><?php echo $service['price']; ?> Birr</span>
-                                <span class="duration"><?php echo $service['duration']; ?> min</span>
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h4 class="fw-bold mb-0"><?php echo htmlspecialchars($service['name']); ?></h4>
+                                <div class="text-primary"><i class="fas <?php echo $icon; ?> fa-lg"></i></div>
                             </div>
-                            <p class="text-muted">Professional salon service tailored for your needs.</p>
-                            <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn <?php echo $featured ? 'btn-primary' : 'btn-outline-primary'; ?> w-100 mt-3">Book This Service</a>
+                            <p class="text-muted small">Our master barbers provide premium treatment using high-end tools and products for a perfect look.</p>
+                            <div class="price-tag border-top pt-3">
+                                <div class="price"><?php echo $service['price']; ?> ETB</div>
+                                <div class="duration text-muted small"><i class="far fa-clock me-1"></i><?php echo $service['duration']; ?> min</div>
+                            </div>
+                            <a href="<?php echo $is_logged_in ? 'booking/bookappointment.php' : 'auth/login.php'; ?>" class="btn btn-primary w-100 rounded-pill py-2">Book Appointment</a>
                         </div>
                     </div>
                 </div>
@@ -128,40 +205,73 @@ include 'includes/header.php';
         </div>
     </section>
 
-    <!-- Why Choose Us Section -->
-    <section class="why-section py-5 bg-dark text-white" id="why-us">
-        <div class="container py-5">
-            <div class="row align-items-center">
-                <div class="col-lg-6 mb-5 mb-lg-0">
-                    <div class="why-image" style="height: 400px; background: url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80') center/cover no-repeat; border-radius: 15px;"></div>
-                </div>
-                <div class="col-lg-6">
-                    <h6 class="text-primary text-uppercase fw-bold mb-3">Why Choose Us</h6>
-                    <h2 class="display-5 fw-bold mb-4">Experience the <span class="text-primary">QuickCut</span> Difference</h2>
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <div class="feature-box p-4 bg-white bg-opacity-10 rounded-3">
-                                <i class="fas fa-user-tie fa-2x text-primary mb-3"></i>
-                                <h5 class="fw-bold">Expert Barbers</h5>
-                                <p class="small opacity-75">Skilled professionals with years of experience.</p>
+    <!-- Testimonials Section -->
+    <section class="section-padding bg-light">
+        <div class="container">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h6 class="text-primary text-uppercase fw-bold mb-2">Testimonials</h6>
+                <h2 class="section-title">What Our Clients Say</h2>
+            </div>
+            <div class="row mt-5">
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="testimonial-card">
+                        <div class="d-flex align-items-center mb-4">
+                            <img src="https://i.pravatar.cc/150?u=1" alt="User" class="user-img">
+                            <div>
+                                <h6 class="fw-bold mb-0">Dawit Tesfaye</h6>
+                                <div class="text-warning small">
+                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="feature-box p-4 bg-white bg-opacity-10 rounded-3">
-                                <i class="fas fa-clock fa-2x text-primary mb-3"></i>
-                                <h5 class="fw-bold">No Long Waits</h5>
-                                <p class="small opacity-75">Real-time queue system that saves your time.</p>
-                            </div>
-                        </div>
+                        <p class="text-muted italic">"The live queue system is a game changer. I booked from my office, arrived 5 minutes before my slot, and was in the chair immediately."</p>
                     </div>
-                    <div class="mt-5">
-                        <a href="<?php echo $is_logged_in ? 'bookappointment.php' : 'login.php'; ?>" class="btn btn-primary btn-lg px-5 py-3">
-                            <i class="fas fa-calendar-plus me-2"></i>Book Your First Appointment
-                        </a>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="testimonial-card">
+                        <div class="d-flex align-items-center mb-4">
+                            <img src="https://i.pravatar.cc/150?u=2" alt="User" class="user-img">
+                            <div>
+                                <h6 class="fw-bold mb-0">Samuel Bekele</h6>
+                                <div class="text-warning small">
+                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-muted italic">"Best haircut experience in the city. The barbers are truly professional and the web app makes everything so seamless."</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="testimonial-card">
+                        <div class="d-flex align-items-center mb-4">
+                            <img src="https://i.pravatar.cc/150?u=3" alt="User" class="user-img">
+                            <div>
+                                <h6 class="fw-bold mb-0">Abel Girma</h6>
+                                <div class="text-warning small">
+                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-muted italic">"I love the transparent pricing and the easy payment system. No more carrying cash or waiting in line for hours."</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- CTA Section -->
+    <section class="section-padding bg-primary text-white text-center position-relative overflow-hidden">
+        <div class="container position-relative z-1">
+            <h2 class="display-4 fw-bold mb-4" data-aos="zoom-in">Ready to Transform Your Look?</h2>
+            <p class="lead mb-5 opacity-75" data-aos="fade-up" data-aos-delay="100">Join thousands of satisfied customers who have skipped the line with QuickCut.</p>
+            <div class="d-flex justify-content-center gap-3" data-aos="fade-up" data-aos-delay="200">
+                <a href="<?php echo $is_logged_in ? 'booking/bookappointment.php' : 'auth/login.php'; ?>" class="btn btn-accent btn-lg px-5 py-3 rounded-pill fw-bold">Book Now</a>
+                <a href="<?php echo BASE_URL; ?>aboutus.php" class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill fw-bold">Learn More</a>
+            </div>
+        </div>
+        <!-- Decorative shapes -->
+        <div class="position-absolute top-0 start-0 w-100 h-100 opacity-25" style="background: radial-gradient(circle at 10% 10%, var(--accent) 0%, transparent 40%);"></div>
+    </section>
+
 <?php include 'includes/footer.php'; ?>
+
