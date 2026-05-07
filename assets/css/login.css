@@ -26,7 +26,7 @@ body {
     backdrop-filter: blur(10px);
     padding: 1rem 0;
     transition: all 0.3s ease;
-    border-bottom: 1px solid rgba(255, 107, 53, 0.2);
+    border-bottom: 1px solid rgba(191, 49, 49, 0.25);
 }
 
 .navbar.scrolled {
@@ -65,12 +65,12 @@ body {
     border-radius: 30px;
     font-weight: 600;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    box-shadow: 0 4px 15px rgba(191, 49, 49, 0.3);
 }
 
 .book-now-btn:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+    box-shadow: 0 6px 20px rgba(191, 49, 49, 0.4);
     background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
     color: white;
 }
@@ -113,7 +113,7 @@ body {
 
 .form-control:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem rgba(255, 107, 53, 0.25);
+    box-shadow: 0 0 0 0.25rem rgba(191, 49, 49, 0.22);
 }
 
 /* Password Toggle Button */
@@ -154,7 +154,7 @@ body {
 .login-btn:hover {
     background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(255, 107, 53, 0.4);
+    box-shadow: 0 10px 25px rgba(191, 49, 49, 0.35);
 }
 
 /* Create Account Button */
@@ -191,7 +191,7 @@ body {
 .feature-icon {
     width: 60px;
     height: 60px;
-    background: rgba(255, 107, 53, 0.1);
+    background: rgba(191, 49, 49, 0.12);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -326,13 +326,13 @@ footer a:hover {
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    box-shadow: 0 4px 15px rgba(191, 49, 49, 0.3);
     transition: all 0.3s ease;
 }
 
 .scroll-to-top:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+    box-shadow: 0 6px 20px rgba(191, 49, 49, 0.4);
 }
 
 /* Validation Error Styles */
@@ -453,7 +453,7 @@ footer a:hover {
 }
 
 .google-btn:hover {
-    background-color: #f8f9fa;
+    background-color: var(--light-color);
     border-color: #ccc;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     transform: translateY(-2px);
