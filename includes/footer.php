@@ -86,7 +86,17 @@ $working_hours = $stmt->fetchAll();
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AOS Animation Library JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+    </script>
     <script src="<?php echo BASE_URL; ?>assets/js/welcome.js"></script>
+    <script src="<?php echo BASE_URL; ?>assets/js/home.js"></script>
     <?php if (isset($_SESSION['user_id'])): ?>
     <script src="<?php echo BASE_URL; ?>assets/js/notifications.js"></script>
     <?php endif; ?>
