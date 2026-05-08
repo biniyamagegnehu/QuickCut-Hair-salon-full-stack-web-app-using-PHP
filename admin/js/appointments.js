@@ -78,7 +78,13 @@ function loadAppointments(dateFilter = '', statusFilter = '') {
                 else if (appointment.payment_status === 'pending') payBadgeClass = 'bg-warning text-dark';
                 else if (appointment.payment_status === 'failed') payBadgeClass = 'bg-danger';
                 
-                const paymentBadge = `<span class="badge ${payBadgeClass}">${(appointment.payment_status || 'none').toUpperCase()}</span>`;
+                const paymentBadge = `<span class="badge rounded-pill px-3 py-2 ${payBadgeClass} bg-opacity-75">${(appointment.payment_status || 'none').toUpperCase()}</span>`;
+                
+                let statusColorClass = 'border-secondary text-secondary';
+                if (appointment.status === 'completed') statusColorClass = 'border-success text-success fw-bold bg-success bg-opacity-10';
+                else if (appointment.status === 'in_progress') statusColorClass = 'border-primary text-primary fw-bold bg-primary bg-opacity-10';
+                else if (appointment.status === 'waiting') statusColorClass = 'border-warning text-dark fw-bold bg-warning bg-opacity-10';
+                else if (appointment.status === 'cancelled') statusColorClass = 'border-danger text-danger fw-bold bg-danger bg-opacity-10';
                 
                 row.innerHTML = `
                     <td>${appointment.id}</td>
@@ -87,11 +93,11 @@ function loadAppointments(dateFilter = '', statusFilter = '') {
                     <td>${appointment.service_name}</td>
                     <td>${appointment.barber_name || '<span class="text-muted">Any</span>'}</td>
                     <td>${appointment.appointment_date}<br><small>${appointment.appointment_time}</small></td>
-                    <td>${parseFloat(appointment.service_price).toFixed(2)}</td>
-                    <td class="text-primary fw-bold">${parseFloat(appointment.paid_amount || 0).toFixed(2)}</td>
+                    <td>ETB ${parseFloat(appointment.service_price).toFixed(2)}</td>
+                    <td class="text-primary fw-bold">ETB ${parseFloat(appointment.paid_amount || 0).toFixed(2)}</td>
                     <td>${paymentBadge}</td>
                     <td>
-                        <select class="form-select form-select-sm status-dropdown ${appointment.status}" 
+                        <select class="form-select form-select-sm shadow-none ${statusColorClass}" style="border-radius: 20px; cursor: pointer;"
                                 data-id="${appointment.id}"
                                 onchange="updateAppointmentStatusAPI(${appointment.id}, this.value)">
                             <option value="pending" ${appointment.status === 'pending' ? 'selected' : ''}>Pending Pay</option>
@@ -103,11 +109,8 @@ function loadAppointments(dateFilter = '', statusFilter = '') {
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn btn-sm btn-outline-info me-1" onclick="viewAppointmentDetails(${appointment.id})" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteAppointment(${appointment.id})" title="Delete" disabled>
-                                <i class="fas fa-trash"></i>
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewAppointmentDetails(${appointment.id})" title="View Details">
+                                <i class="fas fa-eye me-1"></i> View Details
                             </button>
                         </div>
                     </td>

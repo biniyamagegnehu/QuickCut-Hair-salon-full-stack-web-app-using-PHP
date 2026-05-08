@@ -164,8 +164,8 @@ check_admin_page();
             </div>
             
             <!-- Appointments Table -->
-            <div class="card">
-            <div class="card-header">
+            <div class="card shadow-sm border-0" style="border-radius: 16px; overflow: hidden;">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-3">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                     <h5 class="card-title mb-0">All Appointments</h5>
                     <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
@@ -180,8 +180,8 @@ check_admin_page();
             </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table" id="appointments-table">
-                            <thead>
+                        <table class="table table-hover align-middle mb-0" id="appointments-table">
+                            <thead class="table-light">
                                 <tr>
                                     <th>ID</th>
                                     <th>Customer</th>
