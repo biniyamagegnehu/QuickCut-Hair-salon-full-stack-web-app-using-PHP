@@ -158,6 +158,43 @@ include __DIR__ . '/../includes/header.php';
     </div>
 </div>
 
+<!-- Rating Modal -->
+<div class="modal fade" id="ratingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-dark text-white border-0">
+                <h5 class="modal-title fw-bold">Rate Your Barber</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <h6 class="text-muted mb-1" id="rating-barber-name">Barber Name</h6>
+                    <p class="small text-muted" id="rating-appointment-info">Service Date & Time</p>
+                    <div class="rating-stars-input fs-2 text-warning mb-2" id="star-rating">
+                        <i class="far fa-star star-btn" data-value="1"></i>
+                        <i class="far fa-star star-btn" data-value="2"></i>
+                        <i class="far fa-star star-btn" data-value="3"></i>
+                        <i class="far fa-star star-btn" data-value="4"></i>
+                        <i class="far fa-star star-btn" data-value="5"></i>
+                    </div>
+                    <p class="small fw-bold text-primary" id="rating-desc">Select a rating</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Tell us about your experience (optional)</label>
+                    <textarea class="form-control rounded-3" id="rating-review" rows="3" placeholder="How was the service?"></textarea>
+                </div>
+                <input type="hidden" id="rating-appointment-id">
+                <input type="hidden" id="rating-barber-id">
+                <input type="hidden" id="rating-value" value="0">
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" id="submit-rating-btn" disabled>Submit Rating</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php 
 include __DIR__ . '/../includes/footer.php'; 
 ?>

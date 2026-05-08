@@ -67,3 +67,16 @@ TX_REF: QC-1-1778087447-5dd82813
 HTTP Code: 200
 Response: {"message":"Payment details fetched successfully","status":"success","data":{"first_name":"Biniyam","last_name":"Agegnehu","email":"biniyamagegnehu2@gmail.com","phone_number":"251919413008","currency":"ETB","amount":75,"charge":1.88,"mode":"test","method":"test","type":"API","status":"success","reference":"APypjDfKwWPaO","tx_ref":"QC-1-1778087447-5dd82813","customization":{"title":"QuickCut","description":"Deposit for beard on 2026-05-07","logo":null},"meta":null,"created_at":"2026-05-06T17:10:56.000000Z","updated_at":"2026-05-06T17:10:56.000000Z"}}
 
+--- 2026-05-08 19:47:09 ---
+Payload: {"amount":75,"currency":"ETB","email":"abebe@gmail.com","first_name":"Abebe","last_name":"Kebede","phone_number":"0912345678","tx_ref":"QC-5-1778262428-c2b9cf4a","callback_url":"http:\/\/localhost\/QuickCut\/booking\/verify_payment.php","return_url":"http:\/\/localhost\/QuickCut\/booking\/verify_payment.php?tx_ref=QC-5-1778262428-c2b9cf4a","customization":{"title":"QuickCut","description":"Deposit for Buzz Cut on 2026-05-09"}}
+HTTP Code: 200
+Response: {"message":"Hosted Link","status":"success","data":{"checkout_url":"https:\/\/checkout.chapa.co\/checkout\/payment\/CkWrK58nxJE1WAUGToBJbVqveIYA96T4mhDTRUOqK8Iht"}}
+
+--- VERIFY_START 2026-05-08 19:47:20 ---
+GET PARAMS: {"tx_ref":"QC-5-1778262428-c2b9cf4a"}
+
+--- VERIFY 2026-05-08 19:47:21 ---
+TX_REF: QC-5-1778262428-c2b9cf4a
+HTTP Code: 200
+Response: {"message":"Payment details fetched successfully","status":"success","data":{"first_name":"Abebe","last_name":"Kebede","email":"abebe@gmail.com","phone_number":"251912345678","currency":"ETB","amount":75,"charge":1.88,"mode":"test","method":"test","type":"API","status":"success","reference":"APDc2iPUDC07p","tx_ref":"QC-5-1778262428-c2b9cf4a","customization":{"title":"QuickCut","description":"Deposit for Buzz Cut on 2026-05-09","logo":null},"meta":null,"created_at":"2026-05-08T17:47:17.000000Z","updated_at":"2026-05-08T17:47:17.000000Z"}}
+

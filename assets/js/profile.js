@@ -137,25 +137,45 @@ async function fetchBookingHistory() {
         const data = await response.json();
         
         if (data.success && data.bookings.length > 0) {
-            historyContainer.innerHTML = data.bookings.map(booking => `
-                <div class="history-card p-3 mb-3 bg-theme-surface-2 border-0 shadow-sm fade-in-up">
-                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <div class="d-flex align-items-center">
-                            <div class="service-icon-sm bg-accent text-dark p-2 rounded-3 me-3">
-                                <i class="fas fa-cut"></i>
+            historyContainer.innerHTML = data.bookings.map(booking => {
+                const isCompleted = booking.status.toLowerCase() === 'completed';
+                const isRated = booking.rating_id !== null;
+                const barberInfo = booking.barber_name ? `<p class="small text-muted mb-0">Barber: <strong>${booking.barber_name}</strong></p>` : '';
+                
+                let actionBtn = '';
+                if (isCompleted && !isRated && booking.barber_id) {
+                    actionBtn = `
+                        <button class="btn btn-warning btn-sm rounded-pill px-3 mt-2" 
+                                onclick="openRatingModal(${booking.id}, ${booking.barber_id}, '${booking.barber_name}', '${booking.service_name} - ${booking.appointment_date}')">
+                            <i class="fas fa-star me-1"></i> Rate Barber
+                        </button>
+                    `;
+                } else if (isRated) {
+                    actionBtn = `<span class="badge bg-light text-warning border mt-2"><i class="fas fa-check-circle me-1"></i> Rated</span>`;
+                }
+
+                return `
+                    <div class="history-card p-3 mb-3 bg-theme-surface-2 border-0 shadow-sm fade-in-up">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div class="d-flex align-items-center">
+                                <div class="service-icon-sm bg-accent text-dark p-2 rounded-3 me-3">
+                                    <i class="fas fa-cut"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold">${booking.service_name}</h6>
+                                    <p class="small text-muted mb-0"><i class="far fa-calendar-alt me-1"></i> ${booking.appointment_date} at ${booking.appointment_time}</p>
+                                    ${barberInfo}
+                                </div>
                             </div>
-                            <div>
-                                <h6 class="mb-0 fw-bold">${booking.service_name}</h6>
-                                <p class="small text-muted mb-0"><i class="far fa-calendar-alt me-1"></i> ${booking.appointment_date} at ${booking.appointment_time}</p>
+                            <div class="text-end">
+                                <span class="status-badge status-${booking.status.toLowerCase()} mb-2 d-inline-block">${booking.status}</span>
+                                <p class="small fw-bold mb-0">${booking.amount} ETB</p>
+                                ${actionBtn}
                             </div>
-                        </div>
-                        <div class="text-end">
-                            <span class="status-badge status-${booking.status.toLowerCase()} mb-2 d-inline-block">${booking.status}</span>
-                            <p class="small fw-bold mb-0">${booking.amount} ETB</p>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         } else {
             historyContainer.innerHTML = `
                 <div class="text-center py-5">
@@ -170,6 +190,111 @@ async function fetchBookingHistory() {
         historyContainer.innerHTML = '<p class="text-center text-danger">Error loading booking history.</p>';
     }
 }
+
+function openRatingModal(appId, barberId, barberName, appInfo) {
+    document.getElementById('rating-appointment-id').value = appId;
+    document.getElementById('rating-barber-id').value = barberId;
+    document.getElementById('rating-barber-name').textContent = barberName;
+    document.getElementById('rating-appointment-info').textContent = appInfo;
+    
+    // Reset stars
+    const stars = document.querySelectorAll('.star-btn');
+    stars.forEach(s => {
+        s.classList.remove('fas');
+        s.classList.add('far');
+    });
+    document.getElementById('rating-value').value = 0;
+    document.getElementById('rating-desc').textContent = 'Select a rating';
+    document.getElementById('submit-rating-btn').disabled = true;
+    document.getElementById('rating-review').value = '';
+
+    const modal = new bootstrap.Modal(document.getElementById('ratingModal'));
+    modal.show();
+}
+
+// Global scope for onclick
+window.openRatingModal = openRatingModal;
+
+// Rating star logic
+document.addEventListener('DOMContentLoaded', () => {
+    const stars = document.querySelectorAll('.star-btn');
+    const ratingValue = document.getElementById('rating-value');
+    const ratingDesc = document.getElementById('rating-desc');
+    const submitBtn = document.getElementById('submit-rating-btn');
+    
+    const descMap = {
+        1: 'Poor',
+        2: 'Fair',
+        3: 'Good',
+        4: 'Very Good',
+        5: 'Excellent'
+    };
+
+    stars.forEach(star => {
+        star.addEventListener('click', () => {
+            const val = parseInt(star.dataset.value);
+            ratingValue.value = val;
+            ratingDesc.textContent = descMap[val];
+            submitBtn.disabled = false;
+            
+            stars.forEach((s, index) => {
+                if (index < val) {
+                    s.classList.remove('far');
+                    s.classList.add('fas');
+                } else {
+                    s.classList.remove('fas');
+                    s.classList.add('far');
+                }
+            });
+        });
+
+        star.addEventListener('mouseover', () => {
+            const val = parseInt(star.dataset.value);
+            stars.forEach((s, index) => {
+                if (index < val) s.classList.add('text-primary');
+            });
+        });
+
+        star.addEventListener('mouseout', () => {
+            stars.forEach(s => s.classList.remove('text-primary'));
+        });
+    });
+
+    submitBtn?.addEventListener('click', async () => {
+        const payload = {
+            appointment_id: document.getElementById('rating-appointment-id').value,
+            barber_id: document.getElementById('rating-barber-id').value,
+            rating: document.getElementById('rating-value').value,
+            review: document.getElementById('rating-review').value
+        };
+
+        try {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+            
+            const response = await fetch('../barber_ratings/add_barber_rating.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast(data.message, 'success');
+                bootstrap.Modal.getInstance(document.getElementById('ratingModal')).hide();
+                fetchBookingHistory(); // Refresh list
+            } else {
+                showToast(data.message, 'danger');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Failed to submit rating', 'danger');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Rating';
+        }
+    });
+});
 
 function showToast(message, type = 'success') {
     // Check if toast container exists
