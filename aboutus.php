@@ -1,6 +1,15 @@
 <?php
 session_start();
+require_once 'includes/db.php';
 $is_logged_in = isset($_SESSION['user_id']);
+
+// Fetch About Content
+try {
+    $stmt = $pdo->query("SELECT * FROM about_content LIMIT 1");
+    $about_content = $stmt->fetch();
+} catch (PDOException $e) {
+    $about_content = null;
+}
 ?>
 <?php include 'includes/header.php'; ?>
     <!-- Custom About Styles -->
@@ -10,8 +19,8 @@ $is_logged_in = isset($_SESSION['user_id']);
     <main class="container mt-5 pt-5" id="about-main">
         <!-- Page Header -->
         <div class="page-header text-center mb-5" id="page-header">
-            <h1 class="display-4 fw-bold" id="page-title">About QuickCut</h1>
-            <p class="lead text-muted" id="page-subtitle">Your premier destination for modern men's grooming</p>
+            <h1 class="display-4 fw-bold" id="page-title"><?php echo htmlspecialchars($about_content['about_title'] ?? 'About QuickCut'); ?></h1>
+            <p class="lead text-muted" id="page-subtitle"><?php echo htmlspecialchars($about_content['about_description'] ?? 'Your premier destination for modern men\'s grooming'); ?></p>
             <div class="header-divider" id="header-divider">
                 <i class="fas fa-scissors"></i>
             </div>
@@ -27,25 +36,24 @@ $is_logged_in = isset($_SESSION['user_id']);
                             <i class="fas fa-history me-2 text-primary"></i>Our Story
                         </h2>
                         <div class="our-story-content" id="our-story-content">
-                            <p class="lead mb-4" id="story-paragraph-1">
-                                QuickCut was founded with a simple mission: to provide top-quality 
-                                grooming services without the long wait times. We understand that 
-                                modern men value their time, and we've built our business around 
-                                respecting that.
-                            </p>
-                            
-                            <p class="mb-4" id="story-paragraph-2">
-                                Our team of expert barbers brings decades of combined experience, 
-                                ensuring every client leaves looking sharp and feeling confident. 
-                                We specialize in classic and contemporary men's haircuts, precision 
-                                beard trims, and complete grooming packages.
-                            </p>
-                            
-                            <p class="mb-0" id="story-paragraph-3">
-                                With our innovative online booking and real-time queue system, 
-                                you can skip the wait and get the cut you deserve.
+                            <p class="mb-4">
+                                <?php echo nl2br(htmlspecialchars($about_content['story'] ?? 'QuickCut was founded with a simple mission...')); ?>
                             </p>
                         </div>
+                        
+                        <?php if (!empty($about_content['mission'])): ?>
+                        <div class="mission-vision mt-5">
+                            <h3 class="fw-bold mb-3"><i class="fas fa-bullseye me-2 text-primary"></i>Our Mission</h3>
+                            <p><?php echo nl2br(htmlspecialchars($about_content['mission'])); ?></p>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <?php if (!empty($about_content['vision'])): ?>
+                        <div class="mission-vision mt-4">
+                            <h3 class="fw-bold mb-3"><i class="fas fa-eye me-2 text-primary"></i>Our Vision</h3>
+                            <p><?php echo nl2br(htmlspecialchars($about_content['vision'])); ?></p>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -127,18 +135,22 @@ $is_logged_in = isset($_SESSION['user_id']);
                         <div class="location-info mb-4" id="location-info">
                             <p class="mb-3" id="location-address">
                                 <i class="fas fa-map-pin me-2 text-primary"></i>
-                                <strong id="address-text">123 Main Street, Downtown</strong>
+                                <strong id="address-text"><?php echo htmlspecialchars($salon_settings['address'] ?? '123 Main Street, Downtown'); ?></strong>
                             </p>
-                            <a href="https://www.google.com/maps?q=123+Main+Street+Downtown" 
-                               class="btn btn-outline-primary btn-lg w-100 mb-3"
-                               target="_blank" rel="noopener noreferrer" id="google-maps-btn">
-                                <i class="fas fa-map-marked-alt me-2"></i>Open in Google Maps
+                            <a href="<?php echo htmlspecialchars($salon_settings['map_link'] ?? 'https://www.google.com/maps?q=' . urlencode($salon_settings['address'] ?? '123 Main Street, Downtown')); ?>" 
+                                class="btn btn-outline-primary btn-lg w-100 mb-3"
+                                target="_blank" rel="noopener noreferrer" id="google-maps-btn">
+                                 <i class="fas fa-map-marked-alt me-2"></i>Open in Google Maps
                             </a>
                             <div class="location-preview" id="location-preview">
-                                <div class="map-placeholder" id="map-placeholder">
-                                    <i class="fas fa-map fa-3x text-muted"></i>
-                                    <p class="small mt-2">Location Preview</p>
-                                </div>
+                                <?php if (!empty($about_content['about_image'])): ?>
+                                    <img src="<?php echo htmlspecialchars($about_content['about_image']); ?>" alt="Salon" class="img-fluid rounded">
+                                <?php else: ?>
+                                    <div class="map-placeholder" id="map-placeholder">
+                                        <i class="fas fa-map fa-3x text-muted"></i>
+                                        <p class="small mt-2">Location Preview</p>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -156,9 +168,8 @@ $is_logged_in = isset($_SESSION['user_id']);
                                 <h5 class="fw-bold mb-2">
                                     <i class="fas fa-map-marker-alt me-2 text-primary"></i>Location
                                 </h5>
-                                <p class="mb-1" id="contact-address-line1">123 Main Street, Downtown</p>
-                                <p class="mb-1" id="contact-address-line2">City, State 12345</p>
-                                <a href="https://www.google.com/maps?q=123+Main+Street+Downtown+City+State+12345" 
+                                <p class="mb-1"><?php echo htmlspecialchars($salon_settings['address'] ?? '123 Main Street, Downtown'); ?></p>
+                                <a href="<?php echo htmlspecialchars($salon_settings['map_link'] ?? 'https://www.google.com/maps?q=' . urlencode($salon_settings['address'] ?? '123 Main Street, Downtown')); ?>" 
                                    class="text-primary small"
                                    target="_blank" rel="noopener noreferrer" id="view-maps-link">
                                     <i class="fas fa-external-link-alt me-1"></i>View on Google Maps
@@ -169,15 +180,14 @@ $is_logged_in = isset($_SESSION['user_id']);
                                 <h5 class="fw-bold mb-2">
                                     <i class="fas fa-phone me-2 text-primary"></i>Phone
                                 </h5>
-                                <p class="mb-1" id="phone-number">(+251) 921456765</p>
-                                <p class="text-muted small" id="phone-hours">Mon-Sat: 9AM - 8PM</p>
+                                <p class="mb-1"><?php echo htmlspecialchars($salon_settings['phone'] ?? '(+251) 921456765'); ?></p>
                             </div>
                             
                             <div class="contact-item" id="contact-email-section">
                                 <h5 class="fw-bold mb-2">
                                     <i class="fas fa-envelope me-2 text-primary"></i>Email
                                 </h5>
-                                <p class="mb-0" id="email-address">quickcut@gmail.com</p>
+                                <p class="mb-0"><?php echo htmlspecialchars($salon_settings['email'] ?? 'quickcut@gmail.com'); ?></p>
                             </div>
                         </div>
                     </div>
