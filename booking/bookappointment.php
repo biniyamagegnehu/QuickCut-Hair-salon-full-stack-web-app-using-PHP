@@ -26,8 +26,15 @@ if ($user) {
 $stmt = $pdo->query("SELECT id, name, duration, price, image_path, description FROM services WHERE status = 'active' ORDER BY name ASC");
 $services = $stmt->fetchAll();
 
-// Fetch active barbers
-$stmt = $pdo->query("SELECT id, first_name, last_name, specialty, rating FROM barbers WHERE status = 'active' ORDER BY first_name ASC");
+// Fetch active barbers with ratings
+$stmt = $pdo->query("
+    SELECT b.*, 
+           (SELECT COALESCE(AVG(rating), 0) FROM barber_ratings WHERE barber_id = b.id) as avg_rating,
+           (SELECT COUNT(*) FROM barber_ratings WHERE barber_id = b.id) as review_count
+    FROM barbers b
+    WHERE b.status = 'active'
+    ORDER BY b.first_name ASC
+");
 $barbers = $stmt->fetchAll();
 ?>
 <?php include '../includes/header.php'; ?>
@@ -219,18 +226,33 @@ $barbers = $stmt->fetchAll();
                                         <input type="radio" name="barber" id="barber<?php echo $barber['id']; ?>" 
                                                value="<?php echo htmlspecialchars($full_name); ?>" 
                                                data-specialty="<?php echo htmlspecialchars($barber['specialty']); ?>"
-                                               data-rating="<?php echo $barber['rating']; ?>"
+                                               data-rating="<?php echo round($barber['avg_rating'], 1); ?>"
+                                               data-reviews="<?php echo $barber['review_count']; ?>"
                                                required>
                                         <label for="barber<?php echo $barber['id']; ?>">
                                             <div class="barber-avatar">
-                                                <i class="fas fa-user-tie"></i>
+                                                <?php if (!empty($barber['profile_image'])): ?>
+                                                    <img src="../<?php echo htmlspecialchars($barber['profile_image']); ?>" alt="<?php echo htmlspecialchars($full_name); ?>">
+                                                <?php else: ?>
+                                                    <i class="fas fa-user-tie"></i>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="barber-info">
                                                 <h5 id="barber-<?php echo $barber['id']; ?>-name"><?php echo htmlspecialchars($full_name); ?></h5>
                                                 <p id="barber-<?php echo $barber['id']; ?>-specialty"><?php echo htmlspecialchars($barber['specialty']); ?></p>
                                                 <div class="rating">
-                                                    <i class="fas fa-star text-warning"></i>
-                                                    <span id="barber-<?php echo $barber['id']; ?>-rating"><?php echo $barber['rating']; ?></span>
+                                                    <div class="stars text-warning me-2">
+                                                        <?php 
+                                                        $rating = round($barber['avg_rating']);
+                                                        for($i=1; $i<=5; $i++) {
+                                                            echo $i <= $rating ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+                                                        }
+                                                        ?>
+                                                    </div>
+                                                    <span class="rating-text" id="barber-<?php echo $barber['id']; ?>-rating">
+                                                        <?php echo round($barber['avg_rating'], 1); ?> 
+                                                        <small class="text-muted">(<?php echo $barber['review_count']; ?>)</small>
+                                                    </span>
                                                 </div>
                                             </div>
                                         </label>

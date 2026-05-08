@@ -1783,3 +1783,146 @@ input:required:valid {
     transform: scale(1.1);
 }
 
+
+
+/* Barber Selection Grid */
+.barber-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.barber-card-option {
+    position: relative;
+    cursor: pointer;
+}
+
+.barber-card-option input {
+    display: none;
+}
+
+.barber-card-content {
+    background: #fff;
+    border: 2px solid #eef2f7;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.barber-card-option:hover .barber-card-content {
+    border-color: var(--primary-color);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+.barber-card-option input:checked + .barber-card-content {
+    border-color: var(--primary-color);
+    background: rgba(255, 107, 53, 0.02);
+    box-shadow: 0 10px 25px rgba(255, 107, 53, 0.1);
+}
+
+.barber-card-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 12px;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.barber-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.barber-avatar-placeholder {
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+.barber-card-info h6 {
+    margin: 0 0 4px 0;
+    font-weight: 700;
+    color: #1a202c;
+}
+
+.barber-card-info .specialty {
+    font-size: 0.75rem;
+    color: #718096;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.barber-card-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: #f6ad55;
+    background: #fffaf0;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.barber-card-rating .count {
+    color: #a0aec0;
+    font-size: 0.7rem;
+}
+
+.selection-check {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    background: var(--primary-color);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
+    z-index: 2;
+}
+
+.barber-card-option input:checked ~ .selection-check {
+    opacity: 1;
+    transform: scale(1);
+}
+
+
+
+/* Fix for large barber images */
+.barber-avatar, .barber-card-image {
+    width: 60px !important;
+    height: 60px !important;
+    min-width: 60px !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.barber-avatar img, .barber-card-image img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
