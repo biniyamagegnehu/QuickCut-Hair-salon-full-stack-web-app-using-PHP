@@ -9,16 +9,26 @@ $working_hours = $stmt->fetchAll();
             <div class="row">
                 <div class="col-lg-4 mb-4 mb-lg-0">
                     <h4 class="fw-bold mb-3 logo" id="footer-logo">
-                        <i class="fas fa-cut me-2"></i>QuickCut
+                        <?php if ($salon_logo): ?>
+                            <img src="<?php echo BASE_URL . $salon_logo; ?>" alt="<?php echo htmlspecialchars($salon_name); ?>" height="30" class="me-2">
+                        <?php else: ?>
+                            <i class="fas fa-cut me-2"></i>
+                        <?php endif; ?>
+                        <?php echo htmlspecialchars($salon_name); ?>
                     </h4>
                     <p class="text-light small mb-3" id="footer-description">
-                        Skip the wait. Get the cut. QuickCut makes hair appointments fast, easy, and convenient with our modern booking system.
+                        <?php echo htmlspecialchars($salon_settings['tagline'] ?? 'Skip the wait. Get the cut. QuickCut makes hair appointments fast, easy, and convenient.'); ?>
                     </p>
                     <div class="social-links mt-4">
-                        <a href="#" class="social-link" id="facebook-link" style="color: var(--primary);"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="social-link" id="twitter-link" style="color: var(--primary);"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="social-link" id="instagram-link" style="color: var(--primary);"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-link" id="tiktok-link" style="color: var(--primary);"><i class="fab fa-tiktok"></i></a>
+                        <?php if (!empty($salon_settings['facebook_link'])): ?>
+                            <a href="<?php echo htmlspecialchars($salon_settings['facebook_link']); ?>" class="social-link" id="facebook-link" style="color: var(--primary);"><i class="fab fa-facebook-f"></i></a>
+                        <?php endif; ?>
+                        <?php if (!empty($salon_settings['instagram_link'])): ?>
+                            <a href="<?php echo htmlspecialchars($salon_settings['instagram_link']); ?>" class="social-link" id="instagram-link" style="color: var(--primary);"><i class="fab fa-instagram"></i></a>
+                        <?php endif; ?>
+                        <?php if (!empty($salon_settings['telegram_link'])): ?>
+                            <a href="<?php echo htmlspecialchars($salon_settings['telegram_link']); ?>" class="social-link" id="telegram-link" style="color: var(--primary);"><i class="fab fa-telegram"></i></a>
+                        <?php endif; ?>
                     </div>
                 </div>
                 
@@ -30,7 +40,7 @@ $working_hours = $stmt->fetchAll();
                                 <div class="contact-icon" style="color: var(--primary);"><i class="fas fa-phone"></i></div>
                                 <div class="ms-3">
                                     <h6 class="fw-bold mb-0">Phone Number</h6>
-                                    <p class="text-light small mb-0">(+251) 921456765</p>
+                                    <p class="text-light small mb-0"><?php echo htmlspecialchars($salon_settings['phone'] ?? '(+251) 921456765'); ?></p>
                                 </div>
                             </div>
                         </li>
@@ -39,7 +49,7 @@ $working_hours = $stmt->fetchAll();
                                 <div class="contact-icon" style="color: var(--primary);"><i class="fas fa-envelope"></i></div>
                                 <div class="ms-3">
                                     <h6 class="fw-bold mb-0">Email Address</h6>
-                                    <p class="text-light small mb-0">quickcut@gmail.com</p>
+                                    <p class="text-light small mb-0"><?php echo htmlspecialchars($salon_settings['email'] ?? 'quickcut@gmail.com'); ?></p>
                                 </div>
                             </div>
                         </li>
@@ -48,7 +58,7 @@ $working_hours = $stmt->fetchAll();
                                 <div class="contact-icon" style="color: var(--primary);"><i class="fas fa-map-marker-alt"></i></div>
                                 <div class="ms-3">
                                     <h6 class="fw-bold mb-0">Location</h6>
-                                    <p class="text-light small mb-0">123 Main Street, Downtown</p>
+                                    <p class="text-light small mb-0"><?php echo htmlspecialchars($salon_settings['address'] ?? '123 Main Street, Downtown'); ?></p>
                                 </div>
                             </div>
                         </li>

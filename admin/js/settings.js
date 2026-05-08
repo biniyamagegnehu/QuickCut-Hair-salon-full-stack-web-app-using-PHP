@@ -1,325 +1,285 @@
-// settings.js - Settings specific JavaScript
 document.addEventListener('DOMContentLoaded', function() {
-    initSettings();
+    // Load all settings
+    loadAdminProfile();
+    loadSalonSettings();
+    loadAboutContent();
+
+    // Tab Event Listeners (Optional: reload data when switching tabs)
+    const tabs = document.querySelectorAll('#settings-tabs button');
+    tabs.forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function (event) {
+            const targetId = event.target.getAttribute('data-bs-target');
+            if (targetId === '#content-account') loadAdminProfile();
+            if (targetId === '#content-salon') loadSalonSettings();
+            if (targetId === '#content-about') loadAboutContent();
+        });
+    });
+
+    // --- Account Settings ---
+    const adminProfileForm = document.getElementById('admin-profile-form');
+    const profileImageInput = document.getElementById('admin-profile-image');
+    const profilePreview = document.getElementById('admin-profile-preview');
+
+    profileImageInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                profilePreview.src = e.target.result;
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    adminProfileForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        fetch('api/settings/update_admin_profile.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                // Update sidebar info
+                document.getElementById('sidebar-admin-name').textContent = formData.get('name');
+                document.getElementById('admin-display-name').textContent = formData.get('name');
+            } else {
+                showToast(data.message, 'danger');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('An error occurred while updating profile', 'danger');
+        });
+    });
+
+    // --- Change Password ---
+    const adminPasswordForm = document.getElementById('admin-password-form');
+    const newPasswordInput = document.getElementById('new-password');
+    const strengthBar = document.getElementById('password-strength-bar');
+    const strengthText = document.getElementById('password-strength-text');
+
+    newPasswordInput.addEventListener('input', function() {
+        const val = this.value;
+        let strength = 0;
+        if (val.length >= 6) strength += 25;
+        if (val.match(/[a-z]/) && val.match(/[A-Z]/)) strength += 25;
+        if (val.match(/[0-9]/)) strength += 25;
+        if (val.match(/[^a-zA-Z0-9]/)) strength += 25;
+
+        strengthBar.style.width = strength + '%';
+        if (strength < 50) {
+            strengthBar.className = 'progress-bar bg-danger';
+            strengthText.textContent = 'Weak';
+        } else if (strength < 100) {
+            strengthBar.className = 'progress-bar bg-warning';
+            strengthText.textContent = 'Medium';
+        } else {
+            strengthBar.className = 'progress-bar bg-success';
+            strengthText.textContent = 'Strong';
+        }
+    });
+
+    adminPasswordForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+
+        if (data.new_password !== data.confirm_password) {
+            showToast('New passwords do not match', 'danger');
+            return;
+        }
+
+        fetch('api/settings/change_admin_password.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                adminPasswordForm.reset();
+                strengthBar.style.width = '0%';
+                strengthText.textContent = '';
+            } else {
+                showToast(data.message, 'danger');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('An error occurred', 'danger');
+        });
+    });
+
+    // --- Salon Settings ---
+    const salonSettingsForm = document.getElementById('salon-settings-form');
+    const salonLogoInput = document.getElementById('salon-logo-input');
+    const salonLogoPreview = document.getElementById('salon-logo-preview');
+
+    salonLogoInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                salonLogoPreview.src = e.target.result;
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    salonSettingsForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        fetch('api/settings/update_salon_settings.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+            } else {
+                showToast(data.message, 'danger');
+            }
+        });
+    });
+
+    // --- About Content ---
+    const aboutContentForm = document.getElementById('about-content-form');
+    const aboutImageInput = document.getElementById('about-image-input');
+    const aboutImagePreview = document.getElementById('about-image-preview');
+
+    aboutImageInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                aboutImagePreview.src = e.target.result;
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    aboutContentForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        fetch('api/settings/update_about_content.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+            } else {
+                showToast(data.message, 'danger');
+            }
+        });
+    });
+
+
+
+    // Toggle Password Visibility
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const input = this.parentElement.querySelector('input');
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+    });
+
+    // --- Helper Functions ---
+
+    function loadAdminProfile() {
+        fetch('api/settings/get_admin_profile.php')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const admin = data.data;
+                document.getElementById('admin-name').value = admin.name;
+                document.getElementById('admin-email').value = admin.email;
+                document.getElementById('admin-phone').value = admin.phone || '';
+                document.getElementById('admin-display-name').textContent = admin.name;
+                if (admin.profile_image) {
+                    document.getElementById('admin-profile-preview').src = '../' + admin.profile_image;
+                }
+            }
+        });
+    }
+
+    function loadSalonSettings() {
+        fetch('api/settings/get_salon_settings.php')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const s = data.data;
+                document.getElementById('salon-name').value = s.salon_name;
+                document.getElementById('salon-tagline').value = s.tagline || '';
+                document.getElementById('salon-address').value = s.address || '';
+                document.getElementById('salon-phone').value = s.phone || '';
+                document.getElementById('salon-email').value = s.email || '';
+                document.getElementById('salon-facebook').value = s.facebook_link || '';
+                document.getElementById('salon-instagram').value = s.instagram_link || '';
+                document.getElementById('salon-telegram').value = s.telegram_link || '';
+                document.getElementById('salon-map').value = s.map_link || '';
+                if (s.logo) {
+                    document.getElementById('salon-logo-preview').src = '../' + s.logo;
+                }
+            }
+        });
+    }
+
+    function loadAboutContent() {
+        fetch('api/settings/get_about_content.php')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const a = data.data;
+                document.getElementById('about-title').value = a.about_title;
+                document.getElementById('about-description').value = a.about_description || '';
+                document.getElementById('about-mission').value = a.mission || '';
+                document.getElementById('about-vision').value = a.vision || '';
+                document.getElementById('about-story').value = a.story || '';
+                if (a.about_image) {
+                    document.getElementById('about-image-preview').src = '../' + a.about_image;
+                }
+            }
+        });
+    }
+
+    // Theme initialization (removed from settings UI but kept for global support)
+    const savedTheme = localStorage.getItem('admin-theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+    }
 });
 
-// Initialize settings
-function initSettings() {
-    loadSettings();
-    setupSettingsEventListeners();
-    setupPasswordChangeListeners(); // Add this line
-}
-
-// Add new function for password change listeners
-function setupPasswordChangeListeners() {
-    // Password change form
-    const changePasswordForm = document.getElementById('changePasswordForm');
-    if (changePasswordForm) {
-        changePasswordForm.addEventListener('submit', handlePasswordChange);
-    }
-    
-    // Toggle password visibility buttons
-    document.getElementById('toggleCurrentPassword')?.addEventListener('click', function() {
-        togglePasswordVisibility('current-password', this);
-    });
-    
-    document.getElementById('toggleNewPassword')?.addEventListener('click', function() {
-        togglePasswordVisibility('new-password', this);
-    });
-    
-    document.getElementById('toggleConfirmPassword')?.addEventListener('click', function() {
-        togglePasswordVisibility('confirm-password', this);
-    });
-    
-    // Password strength checker
-    const newPasswordInput = document.getElementById('new-password');
-    if (newPasswordInput) {
-        newPasswordInput.addEventListener('input', checkPasswordStrength);
-    }
-}
-
-// Toggle password visibility
-function togglePasswordVisibility(inputId, button) {
-    const input = document.getElementById(inputId);
-    const icon = button.querySelector('i');
-    
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-    } else {
-        input.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-    }
-}
-
-// Check password strength
-function checkPasswordStrength() {
-    const password = document.getElementById('new-password').value;
-    const strengthBar = document.getElementById('password-strength-bar');
-    const strengthText = document.getElementById('password-strength-text');
-    
-    if (!strengthBar || !strengthText) return;
-    
-    // Reset
-    strengthBar.className = 'strength-bar';
-    strengthText.textContent = '';
-    
-    if (password.length === 0) return;
-    
-    // Calculate strength
-    let strength = 0;
-    let text = '';
-    let className = '';
-    
-    // Length check
-    if (password.length >= 8) strength += 25;
-    
-    // Lowercase check
-    if (/[a-z]/.test(password)) strength += 25;
-    
-    // Uppercase check
-    if (/[A-Z]/.test(password)) strength += 25;
-    
-    // Number/Special character check
-    if (/[0-9]/.test(password) || /[^A-Za-z0-9]/.test(password)) strength += 25;
-    
-    // Determine strength level
-    if (strength < 50) {
-        text = 'Weak password';
-        className = 'weak';
-    } else if (strength < 75) {
-        text = 'Fair password';
-        className = 'fair';
-    } else {
-        text = 'Strong password';
-        className = 'good';
-    }
-    
-    // Update display
-    strengthBar.classList.add(className);
-    strengthText.textContent = text;
-    strengthText.className = `form-text ${className === 'weak' ? 'text-danger' : className === 'fair' ? 'text-warning' : 'text-success'}`;
-}
-
-// Handle password change
-function handlePasswordChange(e) {
-    e.preventDefault();
-    
-    const currentPassword = document.getElementById('current-password').value;
-    const newPassword = document.getElementById('new-password').value;
-    const confirmPassword = document.getElementById('confirm-password').value;
-    
-    // Get current credentials
-    const currentCredentials = JSON.parse(localStorage.getItem('quickcut-admin-credentials')) || {
-        username: 'admin',
-        password: 'admin123'
-    };
-    
-    // Validate current password
-    if (currentPassword !== currentCredentials.password) {
-        showPasswordError('Current password is incorrect');
-        return;
-    }
-    
-    // Validate new password
-    if (newPassword.length < 6) {
-        showPasswordError('New password must be at least 6 characters long');
-        return;
-    }
-    
-    // Validate password match
-    if (newPassword !== confirmPassword) {
-        showPasswordError('New passwords do not match');
-        return;
-    }
-    
-    // Check if new password is same as current
-    if (newPassword === currentCredentials.password) {
-        showPasswordError('New password must be different from current password');
-        return;
-    }
-    
-    // Update password
-    currentCredentials.password = newPassword;
-    localStorage.setItem('quickcut-admin-credentials', JSON.stringify(currentCredentials));
-    
-    // Show success message
-    showPasswordSuccess('Password changed successfully!');
-    
-    // Reset form
-    document.getElementById('changePasswordForm').reset();
-    
-    // Reset strength meter
-    const strengthBar = document.getElementById('password-strength-bar');
-    const strengthText = document.getElementById('password-strength-text');
-    if (strengthBar) strengthBar.className = 'strength-bar';
-    if (strengthText) strengthText.textContent = '';
-}
-
-// Show password error
-function showPasswordError(message) {
-    // Create error alert if it doesn't exist
-    let errorAlert = document.getElementById('passwordErrorAlert');
-    
-    if (!errorAlert) {
-        errorAlert = document.createElement('div');
-        errorAlert.id = 'passwordErrorAlert';
-        errorAlert.className = 'alert alert-danger alert-dismissible fade show';
-        errorAlert.innerHTML = `
-            <div class="d-flex align-items-center">
-                <i class="fas fa-exclamation-circle me-2"></i>
-                <span id="passwordErrorMessage"></span>
+function showToast(message, type = 'info') {
+    const toastContainer = document.querySelector('.toast-container');
+    const toastHtml = `
+        <div class="toast show align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
-            <button type="button" class="btn-close" onclick="this.parentElement.classList.remove('show')"></button>
-        `;
-        
-        const form = document.getElementById('changePasswordForm');
-        if (form) {
-            form.parentNode.insertBefore(errorAlert, form);
-        }
-    }
-    
-    document.getElementById('passwordErrorMessage').textContent = message;
-    errorAlert.classList.add('show');
-    
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-        errorAlert.classList.remove('show');
-    }, 5000);
-}
-
-// Show password success
-function showPasswordSuccess(message) {
-    // Create success alert if it doesn't exist
-    let successAlert = document.getElementById('passwordSuccessAlert');
-    
-    if (!successAlert) {
-        successAlert = document.createElement('div');
-        successAlert.id = 'passwordSuccessAlert';
-        successAlert.className = 'alert alert-success alert-dismissible fade show';
-        successAlert.innerHTML = `
-            <div class="d-flex align-items-center">
-                <i class="fas fa-check-circle me-2"></i>
-                <span id="passwordSuccessMessage"></span>
-            </div>
-            <button type="button" class="btn-close" onclick="this.parentElement.classList.remove('show')"></button>
-        `;
-        
-        const form = document.getElementById('changePasswordForm');
-        if (form) {
-            form.parentNode.insertBefore(successAlert, form);
-        }
-    }
-    
-    document.getElementById('passwordSuccessMessage').textContent = message;
-    successAlert.classList.add('show');
-    
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-        successAlert.classList.remove('show');
-    }, 5000);
-}
-
-// Load settings from localStorage
-function loadSettings() {
-    // Load general settings
-    const savedSettings = JSON.parse(localStorage.getItem('quickcut-settings')) || {};
-    
-    if (Object.keys(savedSettings).length > 0) {
-        document.getElementById('shop-name').value = savedSettings.shopName || 'QuickCut Barber Shop';
-        document.getElementById('shop-phone').value = savedSettings.shopPhone || '0912345678';
-        document.getElementById('shop-address').value = savedSettings.shopAddress || '123 Main Street, Downtown';
-        document.getElementById('opening-time').value = savedSettings.openingTime || '09:00';
-        document.getElementById('closing-time').value = savedSettings.closingTime || '20:00';
-        document.getElementById('slot-duration').value = savedSettings.slotDuration || 30;
-        document.getElementById('max-appointments').value = savedSettings.maxAppointments || 3;
-        document.getElementById('shop-description').value = savedSettings.shopDescription || 'Skip the wait. Get the cut. QuickCut makes hair appointments fast, easy, and convenient.';
-    }
-    
-    // Load notification settings
-    const notificationSettings = JSON.parse(localStorage.getItem('quickcut-notifications')) || {};
-    
-    document.getElementById('email-notifications').checked = notificationSettings.email !== false;
-    document.getElementById('sms-notifications').checked = notificationSettings.sms !== false;
-    document.getElementById('appointment-reminders').checked = notificationSettings.reminders !== false;
-}
-
-// Setup settings event listeners
-function setupSettingsEventListeners() {
-    // General settings form
-    const settingsForm = document.getElementById('settings-form');
-    if (settingsForm) {
-        settingsForm.addEventListener('submit', saveGeneralSettings);
-    }
-    
-    // Notification settings button
-    const saveNotificationsBtn = document.getElementById('save-notifications');
-    if (saveNotificationsBtn) {
-        saveNotificationsBtn.addEventListener('click', saveNotificationSettings);
-    }
-    
-    // System status check button
-    const checkStatusBtn = document.getElementById('check-status');
-    if (checkStatusBtn) {
-        checkStatusBtn.addEventListener('click', checkSystemStatus);
-    }
-}
-
-// Save general settings
-function saveGeneralSettings(e) {
-    e.preventDefault();
-    
-    const settings = {
-        shopName: document.getElementById('shop-name').value,
-        shopPhone: document.getElementById('shop-phone').value,
-        shopAddress: document.getElementById('shop-address').value,
-        openingTime: document.getElementById('opening-time').value,
-        closingTime: document.getElementById('closing-time').value,
-        slotDuration: parseInt(document.getElementById('slot-duration').value),
-        maxAppointments: parseInt(document.getElementById('max-appointments').value),
-        shopDescription: document.getElementById('shop-description').value
-    };
-    
-    // Save to localStorage
-    localStorage.setItem('quickcut-settings', JSON.stringify(settings));
-    
-    showNotification('Settings saved successfully!', 'success');
-}
-
-// Save notification settings
-function saveNotificationSettings() {
-    const notificationSettings = {
-        email: document.getElementById('email-notifications').checked,
-        sms: document.getElementById('sms-notifications').checked,
-        reminders: document.getElementById('appointment-reminders').checked
-    };
-    
-    // Save to localStorage
-    localStorage.setItem('quickcut-notifications', JSON.stringify(notificationSettings));
-    
-    showNotification('Notification settings saved!', 'success');
-}
-
-// Check system status
-function checkSystemStatus() {
-    // Simulate system check with animation
-    const statusIndicators = document.querySelectorAll('.status-indicator');
-    
-    statusIndicators.forEach(indicator => {
-        indicator.classList.remove('active');
-        indicator.style.animation = 'none';
-    });
+        </div>
+    `;
+    const toastElement = document.createElement('div');
+    toastElement.innerHTML = toastHtml;
+    toastContainer.appendChild(toastElement);
     
     setTimeout(() => {
-        statusIndicators.forEach((indicator, index) => {
-            setTimeout(() => {
-                indicator.classList.add('active');
-                indicator.style.animation = 'pulse 2s infinite';
-            }, index * 300);
-        });
-    }, 100);
-    
-    showNotification('System status checked - All systems operational', 'success');
+        toastElement.remove();
+    }, 4000);
 }

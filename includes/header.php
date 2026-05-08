@@ -3,6 +3,16 @@
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/config.php';
 $is_logged_in = isset($_SESSION['user_id']);
+
+// Fetch Salon Settings for CMS
+try {
+    $stmt = $pdo->query("SELECT * FROM salon_settings LIMIT 1");
+    $salon_settings = $stmt->fetch();
+} catch (PDOException $e) {
+    $salon_settings = null;
+}
+$salon_name = $salon_settings['salon_name'] ?? 'QuickCut';
+$salon_logo = $salon_settings['logo'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -38,7 +48,12 @@ $is_logged_in = isset($_SESSION['user_id']);
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="main-nav">
         <div class="container">
             <a class="navbar-brand logo" href="<?php echo BASE_URL; ?>welcome.php" id="logo">
-                <i class="fas fa-cut me-2"></i>QuickCut
+                <?php if ($salon_logo): ?>
+                    <img src="<?php echo BASE_URL . $salon_logo; ?>" alt="<?php echo htmlspecialchars($salon_name); ?>" height="40" class="me-2">
+                <?php else: ?>
+                    <i class="fas fa-cut me-2"></i>
+                <?php endif; ?>
+                <?php echo htmlspecialchars($salon_name); ?>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
