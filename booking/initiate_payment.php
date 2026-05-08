@@ -70,15 +70,32 @@ if ($time_24 < $working_hours['open_time'] || $time_24 >= $working_hours['close_
     exit;
 }
 
+// ── Fetch barber id ───────────────────────────────────────────
+$barber_id = null;
+if (!empty($barber_name)) {
+    $parts = explode(' ', $barber_name, 2);
+    $first = $parts[0] ?? '';
+    $last  = $parts[1] ?? '';
+    $stmt  = $pdo->prepare("SELECT id FROM barbers WHERE first_name = ? AND last_name = ? AND status = 'active'");
+    $stmt->execute([$first, $last]);
+    $barber_row = $stmt->fetch();
+    if ($barber_row) $barber_id = (int) $barber_row['id'];
+}
+
+if (!$barber_id) {
+    echo json_encode(['success' => false, 'message' => 'Invalid barber selected.']);
+    exit;
+}
+
 // ── Duplicate-slot guard ──────────────────────────────────────
 $stmt = $pdo->prepare(
     "SELECT COUNT(*) FROM appointments 
-     WHERE appointment_date = ? AND appointment_time = ? 
+     WHERE appointment_date = ? AND appointment_time = ? AND barber_id = ?
        AND status IN ('waiting','scheduled','confirmed','in_progress')"
 );
-$stmt->execute([$date_sql, $time_24]);
+$stmt->execute([$date_sql, $time_24, $barber_id]);
 if ((int) $stmt->fetchColumn() > 0) {
-    echo json_encode(['success' => false, 'message' => 'That time slot is already booked. Please choose another time.']);
+    echo json_encode(['success' => false, 'message' => 'This barber is already booked for the selected time. Please choose another barber or time.']);
     exit;
 }
 
@@ -95,18 +112,6 @@ if (!$service) {
 $service_id     = (int) $service['id'];
 $service_price  = (float) $service['price'];
 $deposit_amount = round($service_price * DEPOSIT_PERCENT, 2);
-
-// ── Fetch barber id (optional, non-blocking) ──────────────────
-$barber_id = null;
-if (!empty($barber_name)) {
-    $parts = explode(' ', $barber_name, 2);
-    $first = $parts[0] ?? '';
-    $last  = $parts[1] ?? '';
-    $stmt  = $pdo->prepare("SELECT id FROM barbers WHERE first_name = ? AND last_name = ? AND status = 'active'");
-    $stmt->execute([$first, $last]);
-    $barber_row = $stmt->fetch();
-    if ($barber_row) $barber_id = (int) $barber_row['id'];
-}
 
 // ── Update user phone if missing ──────────────────────────────
 if (!empty($phone)) {

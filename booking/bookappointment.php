@@ -23,11 +23,18 @@ if ($user) {
 }
 
 // Fetch services
-$stmt = $pdo->query("SELECT id, name, duration, price FROM services ORDER BY name ASC");
+$stmt = $pdo->query("SELECT id, name, duration, price, image_path, description FROM services WHERE status = 'active' ORDER BY name ASC");
 $services = $stmt->fetchAll();
 
-// Fetch active barbers
-$stmt = $pdo->query("SELECT id, first_name, last_name, specialty, rating FROM barbers WHERE status = 'active' ORDER BY first_name ASC");
+// Fetch active barbers with ratings
+$stmt = $pdo->query("
+    SELECT b.*, 
+           (SELECT COALESCE(AVG(rating), 0) FROM barber_ratings WHERE barber_id = b.id) as avg_rating,
+           (SELECT COUNT(*) FROM barber_ratings WHERE barber_id = b.id) as review_count
+    FROM barbers b
+    WHERE b.status = 'active'
+    ORDER BY b.first_name ASC
+");
 $barbers = $stmt->fetchAll();
 ?>
 <?php include '../includes/header.php'; ?>
@@ -186,12 +193,18 @@ $barbers = $stmt->fetchAll();
                                     <div class="service-option" id="service-option-<?php echo $service['id']; ?>">
                                         <input type="radio" name="service" id="service<?php echo $service['id']; ?>" value="<?php echo htmlspecialchars($service['name']); ?>" data-price="<?php echo $service['price']; ?> Birr" required>
                                         <label for="service<?php echo $service['id']; ?>">
-                                            <div class="service-icon <?php echo $icon_class; ?>">
-                                                <i class="fas <?php echo $icon_fa; ?>"></i>
+                                            <div class="service-icon-wrapper">
+                                                <?php if ($service['image_path']): ?>
+                                                <img src="../<?php echo htmlspecialchars($service['image_path']); ?>" class="service-option-img" alt="<?php echo htmlspecialchars($service['name']); ?>">
+                                                <?php else: ?>
+                                                <div class="service-icon <?php echo $icon_class; ?>">
+                                                    <i class="fas <?php echo $icon_fa; ?>"></i>
+                                                </div>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="service-info">
                                                 <h4 id="service-<?php echo $service['id']; ?>-title"><?php echo htmlspecialchars($service['name']); ?></h4>
-                                                <p id="service-<?php echo $service['id']; ?>-desc">Professional salon service</p>
+                                                <p id="service-<?php echo $service['id']; ?>-desc"><?php echo htmlspecialchars($service['description'] ?: 'Professional salon service'); ?></p>
                                                 <div class="service-price">
                                                     <span class="price" id="service-<?php echo $service['id']; ?>-price"><?php echo $service['price']; ?> Birr</span>
                                                     <span class="duration" id="service-<?php echo $service['id']; ?>-duration"><?php echo $service['duration']; ?> min</span>
@@ -213,18 +226,33 @@ $barbers = $stmt->fetchAll();
                                         <input type="radio" name="barber" id="barber<?php echo $barber['id']; ?>" 
                                                value="<?php echo htmlspecialchars($full_name); ?>" 
                                                data-specialty="<?php echo htmlspecialchars($barber['specialty']); ?>"
-                                               data-rating="<?php echo $barber['rating']; ?>"
+                                               data-rating="<?php echo round($barber['avg_rating'], 1); ?>"
+                                               data-reviews="<?php echo $barber['review_count']; ?>"
                                                required>
                                         <label for="barber<?php echo $barber['id']; ?>">
                                             <div class="barber-avatar">
-                                                <i class="fas fa-user-tie"></i>
+                                                <?php if (!empty($barber['profile_image'])): ?>
+                                                    <img src="../<?php echo htmlspecialchars($barber['profile_image']); ?>" alt="<?php echo htmlspecialchars($full_name); ?>">
+                                                <?php else: ?>
+                                                    <i class="fas fa-user-tie"></i>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="barber-info">
                                                 <h5 id="barber-<?php echo $barber['id']; ?>-name"><?php echo htmlspecialchars($full_name); ?></h5>
                                                 <p id="barber-<?php echo $barber['id']; ?>-specialty"><?php echo htmlspecialchars($barber['specialty']); ?></p>
                                                 <div class="rating">
-                                                    <i class="fas fa-star text-warning"></i>
-                                                    <span id="barber-<?php echo $barber['id']; ?>-rating"><?php echo $barber['rating']; ?></span>
+                                                    <div class="stars text-warning me-2">
+                                                        <?php 
+                                                        $rating = round($barber['avg_rating']);
+                                                        for($i=1; $i<=5; $i++) {
+                                                            echo $i <= $rating ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+                                                        }
+                                                        ?>
+                                                    </div>
+                                                    <span class="rating-text" id="barber-<?php echo $barber['id']; ?>-rating">
+                                                        <?php echo round($barber['avg_rating'], 1); ?> 
+                                                        <small class="text-muted">(<?php echo $barber['review_count']; ?>)</small>
+                                                    </span>
                                                 </div>
                                             </div>
                                         </label>

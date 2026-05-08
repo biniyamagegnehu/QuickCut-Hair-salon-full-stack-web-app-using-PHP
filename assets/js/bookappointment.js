@@ -145,8 +145,12 @@ document.addEventListener('DOMContentLoaded', function() {
         loadBookedSlots(dateInfo, rerender = true) {
             if (!dateInfo) return Promise.resolve();
             const dateStr = dateInfo.date.toISOString().split('T')[0];
+            
+            // Get selected barber ID
+            const selectedBarber = document.querySelector('input[name="barber"]:checked');
+            const barberId = selectedBarber ? selectedBarber.id.replace('barber', '') : '';
 
-            return fetch(`get_booked_slots.php?date=${dateStr}`)
+            return fetch(`get_booked_slots.php?date=${dateStr}&barber_id=${barberId}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -616,7 +620,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (barber && !barber.disabled && card) {
             document.getElementById('selected-barber-name').textContent = barber.value;
             document.getElementById('selected-barber-specialty').textContent = barber.dataset.specialty || '';
-            document.getElementById('selected-barber-exp').textContent = 'Rating: ' + (barber.dataset.rating || 'N/A');
+            
+            const rating = barber.dataset.rating || '0.0';
+            const reviews = barber.dataset.reviews || '0';
+            document.getElementById('selected-barber-exp').innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-star text-warning me-1"></i>
+                    <strong>${rating}</strong>
+                    <span class="ms-1 text-muted">(${reviews} reviews)</span>
+                </div>
+            `;
             card.style.display = 'block';
         } else if (card) {
             card.style.display = 'none';
@@ -627,7 +640,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.name === 'service' || e.target.name === 'barber') {
             updateProgress();
             updateBookingSummary();
-            if (e.target.name === 'barber') updateSelectedBarberInfo();
+            if (e.target.name === 'barber') {
+                updateSelectedBarberInfo();
+                // Reload slots for the selected barber if a date is already selected
+                if (window.dateConfig && window.dateConfig.selectedDate) {
+                    window.dateConfig.loadBookedSlots(window.dateConfig.selectedDate, true);
+                    showToast('Availability Updated', 'Showing available slots for ' + e.target.value, 'info');
+                }
+            }
         }
     });
 

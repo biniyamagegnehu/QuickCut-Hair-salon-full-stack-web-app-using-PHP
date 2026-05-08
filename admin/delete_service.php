@@ -13,6 +13,18 @@ if (!$id) {
 }
 
 try {
+    // Get image path before deleting
+    $stmt = $pdo->prepare("SELECT image_path FROM services WHERE id = ?");
+    $stmt->execute([$id]);
+    $service = $stmt->fetch();
+    
+    if ($service && $service['image_path']) {
+        $file_path = '../' . $service['image_path'];
+        if (file_exists($file_path)) {
+            unlink($file_path);
+        }
+    }
+
     $stmt = $pdo->prepare("DELETE FROM services WHERE id = ?");
     $stmt->execute([$id]);
     
@@ -21,3 +33,4 @@ try {
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }
 ?>
+

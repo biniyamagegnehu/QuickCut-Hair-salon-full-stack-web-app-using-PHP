@@ -6,7 +6,7 @@ check_admin();
 header('Content-Type: application/json');
 
 try {
-    $stmt = $pdo->prepare("SELECT id, name, duration, price, created_at FROM services ORDER BY name ASC");
+    $stmt = $pdo->prepare("SELECT * FROM services ORDER BY name ASC");
     $stmt->execute();
     $services = $stmt->fetchAll();
     
@@ -15,3 +15,4 @@ try {
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }
 ?>
+

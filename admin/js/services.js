@@ -1,4 +1,6 @@
 // services.js - Services specific JavaScript
+let allServices = [];
+
 document.addEventListener('DOMContentLoaded', function() {
     initServices();
 });
@@ -7,6 +9,26 @@ document.addEventListener('DOMContentLoaded', function() {
 function initServices() {
     loadServices();
     setupServiceEventListeners();
+    setupImagePreview();
+}
+
+// Setup image preview
+function setupImagePreview() {
+    const imageInput = document.getElementById('service-image');
+    const previewContainer = document.getElementById('service-image-preview');
+
+    if (imageInput && previewContainer) {
+        imageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewContainer.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
 }
 
 // Load services
@@ -18,9 +40,9 @@ function loadServices() {
         .then(response => response.json())
         .then(data => {
             if (!data.success) return;
-            const fetchedServices = data.services;
+            allServices = data.services;
             
-            if (fetchedServices.length === 0) {
+            if (allServices.length === 0) {
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="6" class="text-center py-4">
@@ -37,29 +59,34 @@ function loadServices() {
             
             tbody.innerHTML = '';
             
-            fetchedServices.forEach(service => {
+            allServices.forEach(service => {
                 const row = document.createElement('tr');
-                // Backend doesn't have category/description by default, leaving placeholders or empty string if not available
+                const imageHtml = service.image_path 
+                    ? `<img src="../${service.image_path}" class="service-img" alt="${service.name}">`
+                    : `<div class="service-img-placeholder"><i class="fas fa-image"></i></div>`;
+                
                 row.innerHTML = `
                     <td>
-                        <strong>${service.name}</strong>
+                        <div class="d-flex align-items-center gap-3">
+                            ${imageHtml}
+                            <strong>${service.name}</strong>
+                        </div>
                     </td>
                     <td class="service-description">
-                        -
+                        ${service.description || '-'}
                     </td>
                     <td>
                         <span class="service-duration">${service.duration} min</span>
                     </td>
                     <td>
-                        <span class="currency">${service.price}</span>
+                        <span class="currency">${service.price} ETB</span>
                     </td>
                     <td>
-                        <span class="badge bg-success">Active</span>
+                        <span class="badge ${service.status === 'active' ? 'bg-success' : 'bg-secondary'}">${service.status}</span>
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <!-- Backend edit not implemented natively yet without full row re-fetch -->
-                            <button class="action-btn edit" onclick="editService(${service.id}, '${service.name}', ${service.duration}, ${service.price})">
+                            <button class="action-btn edit" onclick="editServiceById(${service.id})">
                                 <i class="fas fa-edit"></i>
                             </button>
                             <button class="action-btn delete" onclick="deleteService(${service.id})">
@@ -79,92 +106,151 @@ function setupServiceEventListeners() {
     // Add service form
     const addServiceForm = document.getElementById('addServiceForm');
     if (addServiceForm) {
-        addServiceForm.addEventListener('submit', addNewService);
+        addServiceForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const serviceId = document.getElementById('edit-service-id').value;
+            if (serviceId) {
+                updateServiceDetails(serviceId);
+            } else {
+                addNewService();
+            }
+        });
+    }
+
+    // Reset modal when closed
+    const modal = document.getElementById('addServiceModal');
+    if (modal) {
+        modal.addEventListener('hidden.bs.modal', function() {
+            document.getElementById('addServiceForm').reset();
+            document.getElementById('edit-service-id').value = '';
+            document.querySelector('#addServiceModal .modal-title').textContent = 'Add New Service';
+            document.getElementById('service-image-preview').innerHTML = `
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Click to upload or drag & drop</p>
+            `;
+        });
     }
 }
 
 // Add new service
-function addNewService(e) {
-    e.preventDefault();
+function addNewService() {
+    const formData = new FormData();
     
-    const newService = {
-        name: document.getElementById('service-name').value,
-        duration: parseInt(document.getElementById('service-duration').value),
-        price: parseInt(document.getElementById('service-price').value)
-    };
+    formData.append('name', document.getElementById('service-name').value);
+    formData.append('description', document.getElementById('service-description').value);
+    formData.append('duration', document.getElementById('service-duration').value);
+    formData.append('price', document.getElementById('service-price').value);
+    formData.append('status', document.getElementById('service-status').value);
     
+    const imageFile = document.getElementById('service-image').files[0];
+    if (imageFile) {
+        formData.append('image', imageFile);
+    }
+    
+    const saveBtn = document.getElementById('save-service-btn');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
     fetch('add_service.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newService)
+        body: formData
     })
     .then(response => response.json())
     .then(data => {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = 'Save Service';
         if (data.success) {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addServiceModal'));
+            const modalElement = document.getElementById('addServiceModal');
+            const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
             modal.hide();
-            document.getElementById('addServiceForm').reset();
             loadServices();
             showNotification('New service added successfully!', 'success');
         } else {
             showNotification(data.message, 'danger');
         }
     })
-    .catch(err => console.error(err));
+    .catch(err => {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = 'Save Service';
+        console.error(err);
+    });
+}
+
+// Edit service by ID
+function editServiceById(id) {
+    const service = allServices.find(s => s.id == id);
+    if (service) {
+        editService(service);
+    }
 }
 
 // Edit service
-function editService(id, name, duration, price) {
-    localStorage.setItem('edit-service-id', id);
+function editService(service) {
+    document.getElementById('edit-service-id').value = service.id;
+    document.getElementById('service-name').value = service.name;
+    document.getElementById('service-description').value = service.description || '';
+    document.getElementById('service-duration').value = service.duration;
+    document.getElementById('service-price').value = service.price;
+    document.getElementById('service-status').value = service.status || 'active';
     
-    document.getElementById('service-name').value = name;
-    document.getElementById('service-duration').value = duration;
-    document.getElementById('service-price').value = price;
+    if (service.image_path) {
+        document.getElementById('service-image-preview').innerHTML = `<img src="../${service.image_path}" alt="Preview">`;
+    } else {
+        document.getElementById('service-image-preview').innerHTML = `
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Click to upload or drag & drop</p>
+        `;
+    }
     
     document.querySelector('#addServiceModal .modal-title').textContent = 'Edit Service';
     
-    const form = document.getElementById('addServiceForm');
-    form.onsubmit = function(e) {
-        e.preventDefault();
-        updateServiceDetails(id);
-    };
-    
-    const modal = new bootstrap.Modal(document.getElementById('addServiceModal'));
+    const modalElement = document.getElementById('addServiceModal');
+    const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
     modal.show();
 }
 
 // Update service details
 function updateServiceDetails(id) {
-    const updatedService = {
-        id: id,
-        name: document.getElementById('service-name').value,
-        duration: parseInt(document.getElementById('service-duration').value),
-        price: parseInt(document.getElementById('service-price').value)
-    };
+    const formData = new FormData();
+    formData.append('id', id);
+    formData.append('name', document.getElementById('service-name').value);
+    formData.append('description', document.getElementById('service-description').value);
+    formData.append('duration', document.getElementById('service-duration').value);
+    formData.append('price', document.getElementById('service-price').value);
+    formData.append('status', document.getElementById('service-status').value);
     
+    const imageFile = document.getElementById('service-image').files[0];
+    if (imageFile) {
+        formData.append('image', imageFile);
+    }
+    
+    const saveBtn = document.getElementById('save-service-btn');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
+
     fetch('update_service.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedService)
+        body: formData
     })
     .then(response => response.json())
     .then(data => {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = 'Save Service';
         if (data.success) {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addServiceModal'));
+            const modalElement = document.getElementById('addServiceModal');
+            const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
             modal.hide();
-            
-            document.getElementById('addServiceForm').reset();
-            document.querySelector('#addServiceModal .modal-title').textContent = 'Add New Service';
-            document.getElementById('addServiceForm').onsubmit = addNewService;
-            
             loadServices();
             showNotification(data.message, 'success');
-            localStorage.removeItem('edit-service-id');
         } else {
             showNotification(data.message, 'danger');
         }
     })
-    .catch(err => console.error(err));
+    .catch(err => {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = 'Save Service';
+        console.error(err);
+    });
 }
 
 // Delete service
@@ -187,3 +273,4 @@ function deleteService(id) {
         .catch(err => console.error(err));
     }
 }
+
