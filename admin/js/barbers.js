@@ -35,9 +35,13 @@ function loadBarbers() {
                     specialty: b.specialty,
                     rate: b.rate,
                     status: b.status,
+                    bio: b.bio || '',
+                    profileImage: b.profile_image || '',
+                    experience: b.experience_years || 0,
                     appointments: parseInt(b.appointments) || 0,
                     earnings: parseFloat(b.earnings) || 0,
-                    rating: parseFloat(b.rating) || 0.0
+                    rating: parseFloat(b.avg_rating) || 0.0,
+                    reviews: parseInt(b.review_count) || 0
                 }));
                 
                 updateStats();
@@ -118,13 +122,86 @@ function setupEventListeners() {
         form.onsubmit = function(e) {
             e.preventDefault();
             const id = form.getAttribute('data-edit-id');
-            if (id) {
-                saveBarber(id);
-            } else {
-                saveBarber();
-            }
+            saveBarber(id);
         };
     }
+
+    // Image upload preview
+    const imageInput = document.getElementById('barber-image');
+    const imagePreview = document.getElementById('barber-image-preview');
+    if (imageInput && imagePreview) {
+        imageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Reset form when opening modal for adding
+    const addBtn = document.querySelector('[data-bs-target="#addBarberModal"]');
+    if (addBtn) {
+        addBtn.addEventListener('click', () => {
+            const form = document.getElementById('addBarberForm');
+            form.reset();
+            form.removeAttribute('data-edit-id');
+            document.getElementById('modalTitle').textContent = 'Add New Barber';
+            document.getElementById('barber-image-preview').innerHTML = '<i class="fas fa-cloud-upload-alt"></i><p>Click to upload profile image</p>';
+        });
+    }
+}
+
+function viewReviews(id, name) {
+    const list = document.getElementById('reviews-list');
+    document.getElementById('reviewModalTitle').textContent = `Reviews for ${name}`;
+    list.innerHTML = '<div class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div></div>';
+    
+    const modalEl = document.getElementById('viewReviewsModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+
+    const fetchUrl = (typeof BASE_URL !== 'undefined') ? BASE_URL + 'barber_ratings/get_barber_ratings.php' : '../barber_ratings/get_barber_ratings.php';
+
+    fetch(`${fetchUrl}?barber_id=${id}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (data.ratings && data.ratings.length > 0) {
+                    list.innerHTML = data.ratings.map(r => {
+                        let stars = '';
+                        const rating = parseInt(r.rating) || 0;
+                        for(let i=1; i<=5; i++) {
+                            stars += `<i class="${i <= rating ? 'fas' : 'far'} fa-star text-warning small"></i>`;
+                        }
+                        const customerName = r.customer_name || 'Anonymous Customer';
+                        const reviewDate = r.created_at ? new Date(r.created_at).toLocaleDateString() : 'Unknown Date';
+                        
+                        return `
+                            <div class="review-item p-3 border-bottom">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <h6 class="mb-0 small fw-bold">${customerName}</h6>
+                                    <span class="text-muted small">${reviewDate}</span>
+                                </div>
+                                <div class="mb-2">${stars}</div>
+                                <p class="mb-0 small text-muted">${r.review || 'No written review'}</p>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    list.innerHTML = '<div class="text-center py-5 text-muted"><i class="fas fa-comment-slash d-block mb-2 fa-2x opacity-25"></i>No reviews yet for this barber</div>';
+                }
+            } else {
+                list.innerHTML = `<div class="text-center py-5 text-danger">${data.message || 'Error loading reviews'}</div>`;
+            }
+        })
+        .catch(err => {
+            console.error('Fetch Error:', err);
+            list.innerHTML = `<div class="text-center py-5 text-danger">Network error: ${err.message}. Please check your connection.</div>`;
+        });
 }
 
 function applyFilters() {
@@ -170,18 +247,31 @@ function renderBarbersGrid(data) {
         const pillClass = barber.status === 'active' ? 'text-success bg-success-soft' : 
                          (barber.status === 'vacation' ? 'text-warning bg-warning-soft' : 'text-secondary bg-secondary-soft');
 
+        // Rating stars
+        let stars = '';
+        const rating = Math.round(barber.rating);
+        for(let i=1; i<=5; i++) {
+            stars += `<i class="${i <= rating ? 'fas' : 'far'} fa-star"></i>`;
+        }
+
         col.innerHTML = `
             <div class="barber-card">
                 <div class="barber-header">
                     <div class="barber-avatar-wrapper">
                         <div class="barber-avatar">
-                            <i class="fas fa-user-tie"></i>
+                            ${barber.profileImage ? 
+                                `<img src="../${barber.profileImage}" alt="${barber.firstName}">` : 
+                                '<i class="fas fa-user-tie"></i>'}
                         </div>
                         <div class="status-indicator ${statusClass}"></div>
                     </div>
                     <div class="barber-info">
                         <h5>${barber.firstName} ${barber.lastName}</h5>
                         <p>${barber.specialty}</p>
+                        <div class="rating-stars mb-2">
+                            ${stars}
+                            <span class="rating-text">(${barber.rating} • ${barber.reviews} rev)</span>
+                        </div>
                         <span class="barber-status-pill ${pillClass}">${statusLabel}</span>
                     </div>
                 </div>
@@ -195,15 +285,15 @@ function renderBarbersGrid(data) {
                             <i class="fas fa-phone"></i>
                             <span>${barber.phone}</span>
                         </div>
+                        <div class="meta-item">
+                            <i class="fas fa-award"></i>
+                            <span>${barber.experience} Years Exp.</span>
+                        </div>
                     </div>
                     <div class="barber-stats-grid">
                         <div class="stat-item">
                             <span class="val">${barber.appointments}</span>
                             <span class="lbl">Bookings</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="val">${barber.rating}</span>
-                            <span class="lbl">Rating</span>
                         </div>
                         <div class="stat-item">
                             <span class="val">${barber.rate}</span>
@@ -215,8 +305,11 @@ function renderBarbersGrid(data) {
                         </div>
                     </div>
                     <div class="barber-actions">
-                        <button class="btn btn-light border flex-grow-1" onclick="editBarber(${barber.id})">
-                            <i class="fas fa-edit me-2 text-primary"></i> Edit
+                        <button class="btn btn-light border" onclick="editBarber(${barber.id})">
+                            <i class="fas fa-edit text-primary"></i>
+                        </button>
+                        <button class="btn btn-light border flex-grow-1" onclick="viewReviews(${barber.id}, '${barber.firstName}')">
+                            <i class="fas fa-star text-warning me-1"></i> Reviews
                         </button>
                         <button class="btn btn-light border text-danger" onclick="deleteBarber(${barber.id})">
                             <i class="fas fa-trash"></i>
@@ -230,39 +323,49 @@ function renderBarbersGrid(data) {
 }
 
 function saveBarber(id = null) {
-    const barberData = {
-        firstName: document.getElementById('barber-first-name').value,
-        lastName: document.getElementById('barber-last-name').value,
-        email: document.getElementById('barber-email').value,
-        phone: document.getElementById('barber-phone').value,
-        specialty: document.getElementById('barber-specialty').value,
-        rate: parseInt(document.getElementById('barber-rate').value),
-        status: document.getElementById('barber-status').value
-    };
+    const formData = new FormData();
+    if (id) formData.append('id', id);
+    
+    formData.append('firstName', document.getElementById('barber-first-name').value);
+    formData.append('lastName', document.getElementById('barber-last-name').value);
+    formData.append('email', document.getElementById('barber-email').value);
+    formData.append('phone', document.getElementById('barber-phone').value);
+    formData.append('specialty', document.getElementById('barber-specialty').value);
+    formData.append('experience', document.getElementById('barber-experience').value);
+    formData.append('rate', document.getElementById('barber-rate').value);
+    formData.append('status', document.getElementById('barber-status').value);
+    formData.append('bio', document.getElementById('barber-bio').value);
 
-    if (id) barberData.id = id;
+    const imageFile = document.getElementById('barber-image').files[0];
+    if (imageFile) {
+        formData.append('profile_image', imageFile);
+    }
 
     const endpoint = id ? 'update_barber.php' : 'add_barber.php';
 
     fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(barberData)
+        body: formData
     })
     .then(response => response.json())
     .then(data => {
+        const form = document.getElementById('addBarberForm');
         if (data.success) {
             showNotification(data.message, 'success');
-            bootstrap.Modal.getInstance(document.getElementById('addBarberModal')).hide();
-            document.getElementById('addBarberForm').reset();
+            const modalEl = document.getElementById('addBarberModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+            form.reset();
+            document.getElementById('barber-image-preview').innerHTML = '<i class="fas fa-cloud-upload-alt"></i><p>Click to upload profile image</p>';
+            form.removeAttribute('data-edit-id');
             loadBarbers();
         } else {
             showNotification(data.message, 'danger');
         }
     })
     .catch(err => {
-        console.error('Error:', err);
-        showNotification('Operation failed', 'danger');
+        console.error('Fetch Error:', err);
+        showNotification('Operation failed: ' + err.message, 'danger');
     });
 }
 
@@ -279,10 +382,21 @@ function editBarber(id) {
     document.getElementById('barber-email').value = barber.email;
     document.getElementById('barber-phone').value = barber.phone;
     document.getElementById('barber-specialty').value = barber.specialty;
+    document.getElementById('barber-experience').value = barber.experience;
     document.getElementById('barber-rate').value = barber.rate;
     document.getElementById('barber-status').value = barber.status;
+    document.getElementById('barber-bio').value = barber.bio;
 
-    new bootstrap.Modal(document.getElementById('addBarberModal')).show();
+    const preview = document.getElementById('barber-image-preview');
+    if (barber.profileImage) {
+        preview.innerHTML = `<img src="../${barber.profileImage}" alt="Profile">`;
+    } else {
+        preview.innerHTML = '<i class="fas fa-cloud-upload-alt"></i><p>Click to upload profile image</p>';
+    }
+
+    const modalEl = document.getElementById('addBarberModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
 }
 
 function deleteBarber(id) {

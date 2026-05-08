@@ -249,21 +249,42 @@
                                 <label class="form-label">Phone *</label>
                                 <input type="tel" class="form-control" id="barber-phone" required>
                             </div>
-                            <div class="col-12">
+                            <div class="col-md-6">
                                 <label class="form-label">Specialty *</label>
                                 <input type="text" class="form-control" id="barber-specialty" required>
                             </div>
-                            <div class="col-12">
+                            <div class="col-md-6">
+                                <label class="form-label">Experience (Years) *</label>
+                                <input type="number" class="form-control" id="barber-experience" min="0" required>
+                            </div>
+                            <div class="col-md-6">
                                 <label class="form-label">Hourly Rate (ETB) *</label>
                                 <input type="number" class="form-control" id="barber-rate" step="1" required>
                             </div>
-                            <div class="col-12">
+                            <div class="col-md-6">
                                 <label class="form-label">Status</label>
                                 <select class="form-select" id="barber-status">
                                     <option value="active">Active</option>
                                     <option value="inactive">Inactive</option>
                                     <option value="vacation">On Vacation</option>
                                 </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Bio</label>
+                                <textarea class="form-control" id="barber-bio" rows="3" placeholder="Short biography about the barber..."></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Profile Image</label>
+                                <div class="image-upload-wrapper">
+                                    <div class="image-preview" id="barber-image-preview">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <p>Click to upload profile image</p>
+                                    </div>
+                                    <input type="file" class="form-control" id="barber-image" accept="image/*" hidden>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm w-100" onclick="document.getElementById('barber-image').click()">
+                                        <i class="fas fa-image me-2"></i>Select Image
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -272,6 +293,20 @@
                         <button type="submit" class="btn btn-primary">Save Barber</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+    <!-- View Reviews Modal -->
+    <div class="modal fade" id="viewReviewsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="reviewModalTitle">Barber Reviews</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0" id="reviews-list">
+                    <!-- Reviews loaded by JS -->
+                </div>
             </div>
         </div>
     </div>
