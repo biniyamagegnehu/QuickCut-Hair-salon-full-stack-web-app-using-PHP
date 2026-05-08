@@ -180,8 +180,8 @@ check_admin_page();
                                 <input type="text" class="form-control" id="service-name" required>
                             </div>
                             <div class="col-12">
-                                <label class="form-label">Description *</label>
-                                <textarea class="form-control" id="service-description" rows="3" required></textarea>
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" id="service-description" rows="3"></textarea>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Duration (minutes) *</label>
@@ -192,26 +192,32 @@ check_admin_page();
                                 <input type="number" class="form-control" id="service-price" step="1" required>
                             </div>
                             <div class="col-12">
-                                <label class="form-label">Category *</label>
-                                <select class="form-select" id="service-category" required>
-                                    <option value="haircut">Haircut</option>
-                                    <option value="beard">Beard</option>
-                                    <option value="package">Package</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Status</label>
-                                <select class="form-select" id="service-status">
+                                <label class="form-label">Status *</label>
+                                <select class="form-select" id="service-status" required>
                                     <option value="active">Active</option>
                                     <option value="inactive">Inactive</option>
                                 </select>
                             </div>
+                            <div class="col-12">
+                                <label class="form-label">Service Image</label>
+                                <div class="image-upload-wrapper">
+                                    <div class="image-preview" id="service-image-preview">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <p>Click to upload or drag & drop</p>
+                                    </div>
+                                    <input type="file" class="form-control" id="service-image" accept="image/*" hidden>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm w-100" onclick="document.getElementById('service-image').click()">
+                                        <i class="fas fa-image me-2"></i>Select Image
+                                    </button>
+                                </div>
+                                <small class="text-muted">Recommended: Square image, max 2MB. (JPG, PNG, WEBP)</small>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
+                        <input type="hidden" id="edit-service-id">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Service</button>
+                        <button type="submit" class="btn btn-primary" id="save-service-btn">Save Service</button>
                     </div>
                 </form>
             </div>
