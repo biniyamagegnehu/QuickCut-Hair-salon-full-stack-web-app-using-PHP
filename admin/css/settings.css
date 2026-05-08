@@ -1,194 +1,214 @@
-/* settings.css - Settings specific styles */
+/* Admin Settings Styles */
 
-/* System Status */
-.system-status {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+.settings-container {
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-.status-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem;
-    background: rgba(0, 0, 0, 0.02);
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
-
-.status-item:hover {
-    background: rgba(0, 0, 0, 0.04);
-}
-
-.status-label {
-    font-weight: 500;
-    color: var(--secondary-color);
-}
-
-.status-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-}
-
-.status-indicator.active {
-    background: var(--success-color);
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}
-
-/* Form Switches */
-.form-check-input:checked {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-}
-
-.form-check-input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem rgba(255, 107, 53, 0.25);
-}
-
-/* Settings Sections */
-.settings-section {
-    margin-bottom: 2rem;
-}
-
-.settings-section:last-child {
-    margin-bottom: 0;
-}
-
-.settings-section h5 {
-    color: var(--secondary-color);
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--light-color);
-}
-
-/* Time Inputs */
-input[type="time"] {
-    font-family: monospace;
-}
-
-/* Form Help Text */
-.form-text {
-    font-size: 0.85rem;
-    color: #6c757d;
-}
-
-/* Save Button */
-#save-settings {
-    min-width: 150px;
-}
-
-/* Reset Button */
-.btn-reset {
-    color: var(--danger-color);
-    border-color: var(--danger-color);
-}
-
-.btn-reset:hover {
-    background-color: var(--danger-color);
-    color: white;
-}
-
-/* Password Strength Meter */
-.password-strength {
-    margin-top: 10px;
-}
-
-.strength-meter {
-    height: 5px;
-    background: #e9ecef;
-    border-radius: 3px;
+/* Sidebar Tabs */
+.settings-sidebar-card {
+    border-radius: 15px;
     overflow: hidden;
-    margin-bottom: 5px;
+    position: sticky;
+    top: 100px;
 }
 
-.strength-bar {
+.settings-sidebar-card .nav-link {
+    padding: 1rem 1.5rem;
+    color: var(--secondary-color);
+    border-radius: 0;
+    border-left: 3px solid transparent;
+    text-align: left;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.settings-sidebar-card .nav-link:hover {
+    background-color: rgba(191, 49, 49, 0.05);
+    color: var(--primary-color);
+    padding-left: 1.75rem;
+}
+
+.settings-sidebar-card .nav-link.active {
+    background-color: rgba(191, 49, 49, 0.1);
+    color: var(--primary-color);
+    border-left-color: var(--primary-color);
+    font-weight: 700;
+}
+
+.settings-sidebar-card .nav-link i {
+    width: 24px;
+    font-size: 1.1rem;
+}
+
+/* Profile Image Upload */
+.profile-image-wrapper {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+#admin-profile-preview {
+    width: 100%;
     height: 100%;
-    width: 0%;
-    background: #dc3545;
-    border-radius: 3px;
+    object-fit: cover;
+    border: 4px solid white;
+}
+
+.profile-image-upload {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 36px;
+    height: 36px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 3px solid white;
     transition: all 0.3s ease;
 }
 
-.strength-bar.weak {
-    width: 33%;
-    background: #dc3545;
+.profile-image-upload:hover {
+    transform: scale(1.1);
+    background: var(--primary-dark);
 }
 
-.strength-bar.fair {
-    width: 66%;
-    background: #ffc107;
+/* Password Strength */
+.password-strength-meter {
+    margin-top: 8px;
 }
 
-.strength-bar.good {
-    width: 100%;
-    background: #28a745;
+/* Appearance Settings */
+.theme-option {
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-/* Password Requirements */
-.password-requirements {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 15px;
-    margin-top: 20px;
+.theme-option:hover {
+    border-color: var(--primary-color) !important;
 }
 
-.password-requirements h6 {
-    font-size: 0.9rem;
-    color: var(--secondary-color);
-    margin-bottom: 10px;
+.theme-option.active {
+    border-color: var(--primary-color) !important;
+    background-color: rgba(191, 49, 49, 0.05);
 }
 
-.requirement-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.theme-preview {
+    width: 50px;
+    height: 35px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
 }
 
-.requirement-list li {
-    display: flex;
-    align-items: center;
-    margin-bottom: 5px;
-    font-size: 0.85rem;
-    color: #6c757d;
+.light-preview { background-color: #f8f9fa; }
+.dark-preview { background-color: #212529; }
+
+.color-swatch {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: all 0.2s ease;
 }
 
-.requirement-list li i {
-    margin-right: 8px;
-    font-size: 0.8rem;
+.color-swatch:hover {
+    transform: scale(1.2);
 }
 
-.requirement-list li.valid i {
-    color: var(--success-color);
+.color-swatch.active {
+    border-color: #fff;
+    box-shadow: 0 0 0 2px var(--primary-color);
 }
 
-.requirement-list li.invalid i {
-    color: var(--danger-color);
+/* Tab Transitions */
+.tab-pane {
+    animation: fadeIn 0.4s ease;
 }
 
-/* Password Toggle Buttons */
-#toggleCurrentPassword,
-#toggleNewPassword,
-#toggleConfirmPassword {
-    border-left: none;
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-#toggleCurrentPassword:hover,
-#toggleNewPassword:hover,
-#toggleConfirmPassword:hover {
-    background-color: #e9ecef;
+/* Responsive Adjustments */
+@media (max-width: 991px) {
+    .settings-sidebar-card {
+        position: static;
+        margin-bottom: 2rem;
+    }
+    
+    .settings-sidebar-card .nav {
+        flex-direction: row !important;
+        flex-wrap: wrap;
+    }
+    
+    .settings-sidebar-card .nav-link {
+        flex: 1 1 auto;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        text-align: center;
+    }
+    
+    .settings-sidebar-card .nav-link.active {
+        border-bottom-color: var(--primary-color);
+    }
 }
 
-/* Password Change Form */
-#changePasswordForm .form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem rgba(255, 107, 53, 0.25);
+/* Dark Mode Overrides (if body has .dark-mode) */
+body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+body.dark-mode .card,
+body.dark-mode .top-nav,
+body.dark-mode .settings-sidebar-card {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #333;
+}
+
+body.dark-mode .card-header {
+    background-color: #252525;
+    border-bottom-color: #333;
+}
+
+body.dark-mode .card-title {
+    color: #fff;
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background-color: #2c2c2c;
+    border-color: #444;
+    color: #fff;
+}
+
+body.dark-mode .settings-sidebar-card .nav-link {
+    color: #aaa;
+}
+
+body.dark-mode .settings-sidebar-card .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+body.dark-mode .settings-sidebar-card .nav-link.active {
+    background-color: rgba(191, 49, 49, 0.2);
+    color: var(--primary-color);
+}
+
+body.dark-mode .list-group-item {
+    background-color: transparent;
+    border-color: #333;
+    color: #e0e0e0;
+}
+
+body.dark-mode .text-muted {
+    color: #888 !important;
 }
