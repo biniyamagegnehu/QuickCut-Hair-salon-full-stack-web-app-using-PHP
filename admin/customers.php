@@ -155,8 +155,6 @@
                                     <th>Name</th>
                                     <th>Phone</th>
                                     <th>Email</th>
-                                    <th>Appointments</th>
-                                    <th>Total Spent (ETB)</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>

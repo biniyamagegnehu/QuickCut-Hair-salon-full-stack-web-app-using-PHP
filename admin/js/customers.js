@@ -23,7 +23,7 @@ function loadCustomers() {
             if (fetchedCustomers.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="text-center py-4">
+                        <td colspan="6" class="text-center py-4">
                             <div class="empty-state">
                                 <i class="fas fa-users"></i>
                                 <h4>No Customers Found</h4>
@@ -50,21 +50,13 @@ function loadCustomers() {
                     </td>
                     <td><span class="phone-display">${customer.phone || '-'}</span></td>
                     <td>${customer.email || '-'}</td>
-                    <td><span class="appointments-count">-</span></td>
-                    <td><span class="total-spent">-</span></td>
                     <td>
                         <span class="customer-status ${statusClass}">${statusText}</span>
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <button class="action-btn view" onclick="window.location.href='customer_profile.php?id=${customer.id}'" title="View Profile">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="action-btn edit" disabled>
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="action-btn delete" disabled>
-                                <i class="fas fa-trash"></i>
+                            <button class="btn btn-sm btn-outline-primary" onclick="window.location.href='customer_profile.php?id=${customer.id}'" title="View Profile">
+                                <i class="fas fa-eye me-1"></i> View Profile
                             </button>
                         </div>
                     </td>
