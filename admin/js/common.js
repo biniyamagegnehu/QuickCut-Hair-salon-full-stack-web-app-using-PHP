@@ -485,23 +485,19 @@ function setupLogoutButton() {
 
 // Mark active navigation link
 function markActiveNavLink() {
-    const navLinks = document.querySelectorAll('.nav-link');
-    const currentPage = window.location.pathname.split('/').pop();
+    const navLinks = document.querySelectorAll('.sidebar .nav-link');
+    const path = window.location.pathname;
+    const currentPage = path.split('/').pop();
     
     navLinks.forEach(link => {
         const href = link.getAttribute('href');
+        if (!href) return;
+        
         link.classList.remove('active');
         
         // Check if this link matches current page
-        if (href === currentPage) {
+        if (href === currentPage || (currentPage === '' && href === 'dashboard.php')) {
             link.classList.add('active');
-        }
-        
-        // Special case for dashboard
-        if (currentPage === '' || currentPage === 'admin' || currentPage === 'admin/') {
-            if (href === 'dashboard.php') {
-                link.classList.add('active');
-            }
         }
     });
 }
