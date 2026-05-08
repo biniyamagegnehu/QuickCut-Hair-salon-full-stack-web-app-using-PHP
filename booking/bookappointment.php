@@ -23,7 +23,7 @@ if ($user) {
 }
 
 // Fetch services
-$stmt = $pdo->query("SELECT id, name, duration, price FROM services ORDER BY name ASC");
+$stmt = $pdo->query("SELECT id, name, duration, price, image_path, description FROM services WHERE status = 'active' ORDER BY name ASC");
 $services = $stmt->fetchAll();
 
 // Fetch active barbers
@@ -186,12 +186,18 @@ $barbers = $stmt->fetchAll();
                                     <div class="service-option" id="service-option-<?php echo $service['id']; ?>">
                                         <input type="radio" name="service" id="service<?php echo $service['id']; ?>" value="<?php echo htmlspecialchars($service['name']); ?>" data-price="<?php echo $service['price']; ?> Birr" required>
                                         <label for="service<?php echo $service['id']; ?>">
-                                            <div class="service-icon <?php echo $icon_class; ?>">
-                                                <i class="fas <?php echo $icon_fa; ?>"></i>
+                                            <div class="service-icon-wrapper">
+                                                <?php if ($service['image_path']): ?>
+                                                <img src="../<?php echo htmlspecialchars($service['image_path']); ?>" class="service-option-img" alt="<?php echo htmlspecialchars($service['name']); ?>">
+                                                <?php else: ?>
+                                                <div class="service-icon <?php echo $icon_class; ?>">
+                                                    <i class="fas <?php echo $icon_fa; ?>"></i>
+                                                </div>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="service-info">
                                                 <h4 id="service-<?php echo $service['id']; ?>-title"><?php echo htmlspecialchars($service['name']); ?></h4>
-                                                <p id="service-<?php echo $service['id']; ?>-desc">Professional salon service</p>
+                                                <p id="service-<?php echo $service['id']; ?>-desc"><?php echo htmlspecialchars($service['description'] ?: 'Professional salon service'); ?></p>
                                                 <div class="service-price">
                                                     <span class="price" id="service-<?php echo $service['id']; ?>-price"><?php echo $service['price']; ?> Birr</span>
                                                     <span class="duration" id="service-<?php echo $service['id']; ?>-duration"><?php echo $service['duration']; ?> min</span>

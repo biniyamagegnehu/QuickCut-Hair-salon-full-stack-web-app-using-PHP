@@ -62,7 +62,11 @@ include 'includes/header.php';
                 <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="<?php echo $index * 100; ?>">
                     <div class="service-card h-100">
                         <div class="service-img">
-                            <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800" alt="<?php echo $service['name']; ?>">
+                            <?php if ($service['image_path']): ?>
+                            <img src="<?php echo htmlspecialchars($service['image_path']); ?>" alt="<?php echo htmlspecialchars($service['name']); ?>">
+                            <?php else: ?>
+                            <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800" alt="<?php echo htmlspecialchars($service['name']); ?>">
+                            <?php endif; ?>
                         </div>
                         <div class="service-body text-center">
                             <h4 class="fw-bold mb-3"><?php echo htmlspecialchars($service['name']); ?></h4>
