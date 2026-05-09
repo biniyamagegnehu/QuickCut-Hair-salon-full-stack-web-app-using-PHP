@@ -70,7 +70,7 @@ include 'includes/header.php';
                         </div>
                         <div class="service-body text-center">
                             <h4 class="fw-bold mb-3"><?php echo htmlspecialchars($service['name']); ?></h4>
-                            <p class="text-muted small mb-4">Our master barbers provide premium treatment using high-end tools and products for a perfect look.</p>
+                            <p class="text-muted small mb-4"><?php echo htmlspecialchars($service['description']); ?></p>
                             <div class="service-price">ETB <?php echo number_format($service['price'], 2); ?></div>
                             <a href="<?php echo $is_logged_in ? 'booking/bookappointment.php' : 'auth/login.php'; ?>" class="btn-premium btn-primary-cut btn-sm py-2 px-4">
                                 Book Now
