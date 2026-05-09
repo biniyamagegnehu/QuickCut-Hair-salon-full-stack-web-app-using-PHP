@@ -21,12 +21,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($user && ($user['auth_provider'] === 'local' || empty($user['auth_provider']))) {
                 // Generate reset token
                 $reset_token = bin2hex(random_bytes(32));
-                // Set expiry for 30 minutes
-                $reset_token_expiry = date('Y-m-d H:i:s', strtotime('+30 minutes'));
                 
-                $update = $pdo->prepare("UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE id = ?");
+                $update = $pdo->prepare("UPDATE users SET reset_token = ?, reset_token_expiry = DATE_ADD(NOW(), INTERVAL 30 MINUTE) WHERE id = ?");
                 
-                if ($update->execute([$reset_token, $reset_token_expiry, $user['id']])) {
+                if ($update->execute([$reset_token, $user['id']])) {
                     // Send Reset Email
                     $reset_link = "http://" . $_SERVER['HTTP_HOST'] . "/QuickCut/auth/reset-password.php?token=" . $reset_token;
                     $subject = "Password Reset Request";
