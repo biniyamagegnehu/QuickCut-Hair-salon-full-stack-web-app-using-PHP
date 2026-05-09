@@ -172,6 +172,9 @@ check_admin_page();
                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAppointmentModal">
                             <i class="fas fa-plus me-2"></i>Add Appointment
                         </button>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addWalkinModal">
+                            <i class="fas fa-walking me-2"></i>Add Walk-In
+                        </button>
                         <button class="btn btn-outline-secondary" id="export-appointments">
                             <i class="fas fa-download me-2"></i>Export
                         </button>
@@ -184,6 +187,7 @@ check_admin_page();
                             <thead class="table-light">
                                 <tr>
                                     <th>ID</th>
+                                    <th>Source</th>
                                     <th>Customer</th>
                                     <th>Phone</th>
                                     <th>Service</th>
@@ -256,6 +260,56 @@ check_admin_page();
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary">Save Appointment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Walk-In Modal -->
+    <div class="modal fade" id="addWalkinModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Walk-In Customer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addWalkinForm">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Customer Name *</label>
+                                <input type="text" class="form-control" id="walkin-name" required placeholder="Enter name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Phone Number (Optional)</label>
+                                <input type="tel" class="form-control" id="walkin-phone" placeholder="Enter phone">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Service *</label>
+                                <select class="form-select" id="walkin-service" required>
+                                    <option value="">Select Service</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Barber *</label>
+                                <select class="form-select" id="walkin-barber" required>
+                                    <option value="">Select Barber</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date *</label>
+                                <input type="date" class="form-control" id="walkin-date" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Time *</label>
+                                <input type="time" class="form-control" id="walkin-time" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">Add to Queue</button>
                     </div>
                 </form>
             </div>

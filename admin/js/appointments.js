@@ -86,8 +86,13 @@ function loadAppointments(dateFilter = '', statusFilter = '') {
                 else if (appointment.status === 'waiting') statusColorClass = 'border-warning text-dark fw-bold bg-warning bg-opacity-10';
                 else if (appointment.status === 'cancelled') statusColorClass = 'border-danger text-danger fw-bold bg-danger bg-opacity-10';
                 
+                let sourceBadge = appointment.appointment_source === 'walk_in' 
+                    ? '<span class="badge bg-info text-dark"><i class="fas fa-walking me-1"></i> Walk-In</span>'
+                    : '<span class="badge bg-primary"><i class="fas fa-globe me-1"></i> Online</span>';
+
                 row.innerHTML = `
                     <td>${appointment.id}</td>
+                    <td>${sourceBadge}</td>
                     <td><strong>${appointment.customer_name}</strong></td>
                     <td>${appointment.customer_phone || '-'}</td>
                     <td>${appointment.service_name}</td>
@@ -163,10 +168,16 @@ function setupAppointmentEventListeners() {
     const addAppointmentForm = document.getElementById('addAppointmentForm');
     if (addAppointmentForm) {
         addAppointmentForm.addEventListener('submit', addNewAppointment);
-        
-        // Populate dropdowns
-        populateAppointmentDropdowns();
     }
+    
+    // Walk-in appointment form
+    const addWalkinForm = document.getElementById('addWalkinForm');
+    if (addWalkinForm) {
+        addWalkinForm.addEventListener('submit', handleAddWalkin);
+    }
+    
+    // Populate dropdowns for both modals when they open or initially
+    populateAppointmentDropdowns();
 }
 
 // Filter appointments
@@ -189,53 +200,100 @@ function clearFilters() {
 
 // Populate appointment dropdowns
 function populateAppointmentDropdowns() {
-    // Populate customer dropdown
-    const customerSelect = document.getElementById('appointment-customer');
-    if (customerSelect) {
-        customerSelect.innerHTML = '<option value="">Select Customer</option>';
-        customers.forEach(customer => {
-            customerSelect.innerHTML += `<option value="${customer.id}">${customer.firstName} ${customer.lastName} (${customer.phone})</option>`;
-        });
-    }
-    
-    // Populate service dropdown
-    const serviceSelect = document.getElementById('appointment-service');
-    if (serviceSelect) {
-        serviceSelect.innerHTML = '<option value="">Select Service</option>';
-        services.forEach(service => {
-            if (service.status === 'active') {
-                serviceSelect.innerHTML += `<option value="${service.id}" data-price="${service.price}">${service.name} - ETB ${service.price}</option>`;
-            }
-        });
-    }
-    
-    // Populate barber dropdown
-    const barberSelect = document.getElementById('appointment-barber');
-    if (barberSelect) {
-        barberSelect.innerHTML = '<option value="">Select Barber</option>';
-        barbers.forEach(barber => {
-            if (barber.status === 'active') {
-                barberSelect.innerHTML += `<option value="${barber.id}">${barber.firstName} ${barber.lastName}</option>`;
-            }
-        });
-    }
-    
-    // Set default date to today
-    const dateInput = document.getElementById('appointment-date');
-    if (dateInput) {
+    try {
+        // Populate customer dropdown
+        const customerSelect = document.getElementById('appointment-customer');
+        if (customerSelect && Array.isArray(window.customers)) {
+            let custHtml = '<option value="">Select Customer</option>';
+            window.customers.forEach(customer => {
+                if (!customer) return;
+                const customerName = customer.name || (`${customer.firstName || ''} ${customer.lastName || ''}`).trim() || 'Unknown';
+                custHtml += `<option value="${customer.id}">${customerName} (${customer.phone || 'No phone'})</option>`;
+            });
+            customerSelect.innerHTML = custHtml;
+        }
+        
+        // Populate service dropdown
+        const serviceSelect = document.getElementById('appointment-service');
+        if (serviceSelect && Array.isArray(window.services)) {
+            let srvHtml = '<option value="">Select Service</option>';
+            window.services.forEach(service => {
+                if (!service) return;
+                if (service.status === 'active') {
+                    srvHtml += `<option value="${service.id}" data-price="${service.price}">${service.name} - ETB ${service.price}</option>`;
+                }
+            });
+            serviceSelect.innerHTML = srvHtml;
+        }
+        
+        // Populate barber dropdown
+        const barberSelect = document.getElementById('appointment-barber');
+        if (barberSelect && Array.isArray(window.barbers)) {
+            let brbHtml = '<option value="">Select Barber</option>';
+            window.barbers.forEach(barber => {
+                if (!barber) return;
+                if (barber.status === 'active') {
+                    brbHtml += `<option value="${barber.id}">${barber.firstName || ''} ${barber.lastName || ''}</option>`;
+                }
+            });
+            barberSelect.innerHTML = brbHtml;
+        }
+
+        // Populate Walk-In service and barber dropdowns
+        const walkinServiceSelect = document.getElementById('walkin-service');
+        if (walkinServiceSelect && Array.isArray(window.services)) {
+            let wSrvHtml = '<option value="">Select Service</option>';
+            window.services.forEach(service => {
+                if (!service) return;
+                if (service.status === 'active') {
+                    wSrvHtml += `<option value="${service.id}" data-price="${service.price}">${service.name} - ETB ${service.price}</option>`;
+                }
+            });
+            walkinServiceSelect.innerHTML = wSrvHtml;
+        }
+
+        const walkinBarberSelect = document.getElementById('walkin-barber');
+        if (walkinBarberSelect && Array.isArray(window.barbers)) {
+            let wBrbHtml = '<option value="">Select Barber</option>';
+            window.barbers.forEach(barber => {
+                if (!barber) return;
+                if (barber.status === 'active') {
+                    wBrbHtml += `<option value="${barber.id}">${barber.firstName || ''} ${barber.lastName || ''}</option>`;
+                }
+            });
+            walkinBarberSelect.innerHTML = wBrbHtml;
+        }
+        
+        // Set default date to today for both forms
         const today = new Date().toISOString().split('T')[0];
-        dateInput.value = today;
-        dateInput.min = today;
-    }
-    
-    // Set default time to next hour
-    const timeInput = document.getElementById('appointment-time');
-    if (timeInput) {
+        const dateInput = document.getElementById('appointment-date');
+        if (dateInput) {
+            dateInput.value = today;
+            dateInput.min = today;
+        }
+        const walkinDateInput = document.getElementById('walkin-date');
+        if (walkinDateInput) {
+            walkinDateInput.value = today;
+            walkinDateInput.min = today;
+        }
+        
+        // Set default time to next hour for both forms
         const now = new Date();
         const nextHour = new Date(now.getTime() + 60 * 60 * 1000);
         const hours = nextHour.getHours().toString().padStart(2, '0');
         const minutes = '00';
-        timeInput.value = `${hours}:${minutes}`;
+        const timeVal = `${hours}:${minutes}`;
+
+        const timeInput = document.getElementById('appointment-time');
+        if (timeInput) {
+            timeInput.value = timeVal;
+        }
+        const walkinTimeInput = document.getElementById('walkin-time');
+        if (walkinTimeInput) {
+            walkinTimeInput.value = timeVal;
+        }
+    } catch (error) {
+        console.error("Error populating dropdowns:", error);
     }
 }
 
@@ -300,6 +358,47 @@ function addNewAppointment(e) {
     loadAppointments();
     
     showNotification('New appointment scheduled successfully!', 'success');
+}
+
+// Handle Walk-In Form Submission
+function handleAddWalkin(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('walkin-name').value;
+    const phone = document.getElementById('walkin-phone').value;
+    const service_id = document.getElementById('walkin-service').value;
+    const barber_id = document.getElementById('walkin-barber').value;
+    const date = document.getElementById('walkin-date').value;
+    const time = document.getElementById('walkin-time').value;
+
+    fetch('add_walkin_appointment.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone, service_id, barber_id, date, time })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addWalkinModal'));
+            modal.hide();
+            
+            // Reset form
+            document.getElementById('addWalkinForm').reset();
+            populateAppointmentDropdowns(); // Re-populate defaults
+            
+            // Reload appointments
+            loadAppointments();
+        } else {
+            showNotification(data.message, 'danger');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showNotification('An error occurred while adding the walk-in customer.', 'danger');
+    });
 }
 
 // Edit appointment
