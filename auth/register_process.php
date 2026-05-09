@@ -53,10 +53,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Hash password
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
+        // Generate verification token
+        $verification_token = bin2hex(random_bytes(32));
+
         // Insert user
-        $stmt = $pdo->prepare("INSERT INTO users (name, email, phone, password, role) VALUES (?, ?, ?, ?, 'customer')");
-        if ($stmt->execute([$name, $email, $phone, $hashed_password])) {
-            echo json_encode(["success" => true, "message" => "Registration successful."]);
+        $stmt = $pdo->prepare("INSERT INTO users (name, email, phone, password, role, is_verified, verification_token) VALUES (?, ?, ?, ?, 'customer', 0, ?)");
+        if ($stmt->execute([$name, $email, $phone, $hashed_password, $verification_token])) {
+            
+            // Send Verification Email
+            require_once '../helpers/mail_helper.php';
+            $verify_link = "http://" . $_SERVER['HTTP_HOST'] . "/QuickCut/auth/verify-email.php?token=" . $verification_token;
+            $subject = "Verify Your QuickCut Account";
+            $body = "<h2>Welcome to QuickCut, $name!</h2>
+                     <p>Please click the link below to verify your email address:</p>
+                     <p><a href='$verify_link'>$verify_link</a></p>
+                     <p>If you did not register for this account, please ignore this email.</p>";
+            
+            sendMail($email, $subject, $body);
+
+            echo json_encode(["success" => true, "message" => "Registration successful. Please verify your email."]);
         } else {
             echo json_encode(["success" => false, "message" => "Registration failed. Try again later."]);
         }

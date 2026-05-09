@@ -162,14 +162,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ========== FORGOT PASSWORD LINK ==========
-    const forgotPasswordLink = document.getElementById('forgot-password-link');
-    
-    if (forgotPasswordLink) {
-        forgotPasswordLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            showForgotPasswordModal();
-        });
-    }
+    // We now use a dedicated forgot-password.php page instead of a modal
+
     
     // ========== SIMULATE LOGIN PROCESS ==========
     function simulateLogin(email) {
@@ -385,96 +379,8 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.replace(BASE_URL + 'welcome.php');
     }
     
-    // ========== FORGOT PASSWORD MODAL ==========
-    function showForgotPasswordModal() {
-        // Create modal if it doesn't exist
-        let modal = document.getElementById('forgot-password-modal');
-        
-        if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'forgot-password-modal';
-            modal.className = 'modal fade';
-            modal.innerHTML = `
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Reset Password</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="alert alert-info mb-3">
-                                <i class="fas fa-info-circle me-2"></i>
-                                Enter your email address and we'll send you a link to reset your password.
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="reset-email" class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="reset-email" placeholder="your@email.com">
-                                <div class="invalid-feedback" id="reset-email-error"></div>
-                            </div>
-                            
-                            <div class="alert alert-success d-none" id="reset-success">
-                                <i class="fas fa-check-circle me-2"></i>
-                                Reset link sent! Check your email.
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-primary" id="send-reset-link">Send Reset Link</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-            
-            // Add functionality to send reset link
-            const sendBtn = modal.querySelector('#send-reset-link');
-            const resetEmailInput = modal.querySelector('#reset-email');
-            const resetEmailError = modal.querySelector('#reset-email-error');
-            const resetSuccess = modal.querySelector('#reset-success');
-            
-            sendBtn.addEventListener('click', function() {
-                const email = resetEmailInput.value.trim();
-                
-                // Basic email validation
-                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                    resetEmailInput.classList.add('is-invalid');
-                    resetEmailError.textContent = 'Please enter a valid email address';
-                    return;
-                }
-                
-                // Simulate sending reset link
-                sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
-                sendBtn.disabled = true;
-                
-                setTimeout(() => {
-                    resetEmailInput.classList.remove('is-invalid');
-                    resetEmailError.textContent = '';
-                    resetSuccess.classList.remove('d-none');
-                    sendBtn.classList.add('d-none');
-                    
-                    // Auto-close after 3 seconds
-                    setTimeout(() => {
-                        const bsModal = bootstrap.Modal.getInstance(modal);
-                        bsModal.hide();
-                        
-                        // Reset modal state
-                        setTimeout(() => {
-                            resetEmailInput.value = '';
-                            resetSuccess.classList.add('d-none');
-                            sendBtn.classList.remove('d-none');
-                            sendBtn.innerHTML = 'Send Reset Link';
-                            sendBtn.disabled = false;
-                        }, 300);
-                    }, 3000);
-                }, 1500);
-            });
-        }
-        
-        // Initialize Bootstrap modal
-        const bsModal = new bootstrap.Modal(modal);
-        bsModal.show();
-    }
+    // ========== FORGOT PASSWORD MODAL (REMOVED) ==========
+    // Handled by forgot-password.php
     
     // ========== BACK TO TOP BUTTON ==========
     const backToTopBtn = document.getElementById('back-to-top');
