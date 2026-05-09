@@ -122,10 +122,14 @@ function renderTodayAppointments(appointments) {
         // Format time to 12h if needed, or use as is
         const timeStr = app.appointment_time;
         
+        let sourceBadge = app.appointment_source === 'walk_in' 
+            ? '<span class="badge bg-info text-dark"><i class="fas fa-walking me-1"></i></span>'
+            : '<span class="badge bg-primary"><i class="fas fa-globe me-1"></i></span>';
+
         row.innerHTML = `
             <td><strong>${timeStr}</strong></td>
-            <td>${app.customer_name}</td>
-            <td><span class="phone-display">${app.customer_phone}</span></td>
+            <td>${sourceBadge} ${app.customer_name}</td>
+            <td><span class="phone-display">${app.customer_phone || '-'}</span></td>
             <td>${app.service_name}</td>
             <td>${app.barber_name || 'Unassigned'}</td>
             <td>
