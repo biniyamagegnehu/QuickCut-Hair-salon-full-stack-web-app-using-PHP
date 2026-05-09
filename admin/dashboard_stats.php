@@ -21,9 +21,9 @@ try {
     $completed = $stmt->fetchColumn();
 
     $stmt = $pdo->prepare("
-        SELECT u.name, a.id 
+        SELECT COALESCE(a.walk_in_name, u.name) as name, a.id 
         FROM appointments a 
-        JOIN users u ON a.user_id = u.id 
+        LEFT JOIN users u ON a.user_id = u.id 
         WHERE a.appointment_date = ? AND a.status = 'in_progress' 
         LIMIT 1
     ");

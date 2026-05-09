@@ -14,11 +14,13 @@ try {
     // Get appointment with basic details
     $stmt = $pdo->prepare("
         SELECT a.*, 
-               u.name as customer_name, u.phone as customer_phone, u.id as customer_id,
+               COALESCE(a.walk_in_name, u.name) as customer_name, 
+               COALESCE(a.walk_in_phone, u.phone) as customer_phone, 
+               u.id as customer_id, a.appointment_source,
                s.name as service_name, s.price as service_price, s.duration as service_duration,
                b.first_name as barber_first, b.last_name as barber_last
         FROM appointments a
-        JOIN users u ON a.user_id = u.id
+        LEFT JOIN users u ON a.user_id = u.id
         JOIN services s ON a.service_id = s.id
         LEFT JOIN barbers b ON a.barber_id = b.id
         WHERE a.id = ?

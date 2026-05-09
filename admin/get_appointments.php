@@ -11,8 +11,9 @@ $status_filter = $_GET['status'] ?? null;
 try {
     $sql = "SELECT 
                 a.id,
-                u.name  AS customer_name,
-                u.phone AS customer_phone,
+                a.appointment_source,
+                COALESCE(a.walk_in_name, u.name)  AS customer_name,
+                COALESCE(a.walk_in_phone, u.phone) AS customer_phone,
                 s.name  AS service_name,
                 s.price AS service_price,
                 CONCAT(b.first_name, ' ', b.last_name) AS barber_name,
@@ -25,7 +26,7 @@ try {
                 p.transaction_ref AS tx_ref,
                 (s.price - COALESCE(p.amount, 0)) AS remaining_balance
             FROM appointments a
-            JOIN users u    ON a.user_id    = u.id
+            LEFT JOIN users u    ON a.user_id    = u.id
             JOIN services s ON a.service_id = s.id
             LEFT JOIN barbers  b ON a.barber_id  = b.id
             LEFT JOIN payments p ON a.id        = p.appointment_id
