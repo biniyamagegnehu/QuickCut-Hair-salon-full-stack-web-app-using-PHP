@@ -36,11 +36,11 @@ if (isset($_GET['code'])) {
 
             if ($user) {
                 // Link Google ID to existing account
-                $stmt = $pdo->prepare("UPDATE users SET google_id = ?, auth_provider = 'google' WHERE id = ?");
+                $stmt = $pdo->prepare("UPDATE users SET google_id = ?, auth_provider = 'google', is_verified = 1 WHERE id = ?");
                 $stmt->execute([$google_id, $user['id']]);
             } else {
                 // 3. Create new user
-                $stmt = $pdo->prepare("INSERT INTO users (name, email, google_id, auth_provider, role) VALUES (?, ?, ?, 'google', 'customer')");
+                $stmt = $pdo->prepare("INSERT INTO users (name, email, google_id, auth_provider, role, is_verified) VALUES (?, ?, ?, 'google', 'customer', 1)");
                 $stmt->execute([$name, $email, $google_id]);
                 
                 $user_id = $pdo->lastInsertId();

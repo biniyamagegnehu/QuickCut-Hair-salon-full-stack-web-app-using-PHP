@@ -22,11 +22,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     
     try {
-        $stmt = $pdo->prepare("SELECT id, name, password, role, auth_provider FROM users WHERE email = ?");
+        $stmt = $pdo->prepare("SELECT id, name, password, role, auth_provider, is_verified FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
         
         if ($user && password_verify($password, $user['password'])) {
+            if (($user['auth_provider'] === 'local' || empty($user['auth_provider'])) && $user['is_verified'] == 0) {
+                echo json_encode(["success" => false, "message" => "Please verify your email before logging in."]);
+                exit;
+            }
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
             $_SESSION['name'] = $user['name'];
@@ -94,7 +98,7 @@ include '../includes/header.php';
                                     </button>
                                 </div>
                                 <div class="text-center mt-2">
-                                    <a href="#" class="text-decoration-none text-primary forgot-password" id="forgot-password-link">
+                                    <a href="forgot-password.php" class="text-decoration-none text-primary forgot-password" id="forgot-password-link">
                                         Forgot Password?
                                     </a>
                                 </div>
@@ -115,6 +119,15 @@ include '../includes/header.php';
                             </a>
                             
                             <div class="text-center mt-3" id="login-message">
+                                <?php if (isset($_SESSION['login_success'])): ?>
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        <?php 
+                                            echo $_SESSION['login_success']; 
+                                            unset($_SESSION['login_success']);
+                                        ?>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                <?php endif; ?>
                                 <?php if (isset($_SESSION['login_error'])): ?>
                                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                         <?php 
