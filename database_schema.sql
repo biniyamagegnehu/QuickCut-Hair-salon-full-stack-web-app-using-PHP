@@ -292,7 +292,7 @@ GROUP BY b.id, b.first_name, b.last_name, b.specialty;
 -- View: Daily revenue
 CREATE OR REPLACE VIEW `v_daily_revenue` AS
 SELECT 
-  p.created_at::date AS payment_date,
+  DATE(p.created_at) AS payment_date,
   COUNT(p.id) AS total_payments,
   SUM(p.amount) AS total_revenue,
   SUM(CASE WHEN p.status = 'paid' THEN p.amount ELSE 0 END) AS completed_revenue
