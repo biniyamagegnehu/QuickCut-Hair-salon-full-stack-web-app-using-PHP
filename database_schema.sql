@@ -199,12 +199,38 @@ CREATE TABLE `notifications` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='User notifications table';
 
 -- ============================================================================
+-- TABLE: salon_settings
+-- Description: General settings for the salon
+-- ============================================================================
+CREATE TABLE `salon_settings` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique settings identifier',
+  `salon_name` VARCHAR(255) NOT NULL COMMENT 'Name of the salon',
+  `tagline` VARCHAR(255) DEFAULT NULL COMMENT 'Salon tagline',
+  `address` TEXT DEFAULT NULL COMMENT 'Physical address of the salon',
+  `phone` VARCHAR(50) DEFAULT NULL COMMENT 'Contact phone number',
+  `email` VARCHAR(255) DEFAULT NULL COMMENT 'Contact email address',
+  `facebook_link` VARCHAR(255) DEFAULT NULL COMMENT 'Facebook profile link',
+  `instagram_link` VARCHAR(255) DEFAULT NULL COMMENT 'Instagram profile link',
+  `telegram_link` VARCHAR(255) DEFAULT NULL COMMENT 'Telegram channel link',
+  `map_link` TEXT DEFAULT NULL COMMENT 'Google Maps URL/embed link',
+  `logo` VARCHAR(255) DEFAULT NULL COMMENT 'Path to salon logo image',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update time'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Salon settings table';
+
+-- ============================================================================
 -- TABLE: about_content
 -- Description: About Us page content
 -- ============================================================================
 CREATE TABLE `about_content` (
   `id` INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Unique content identifier',
-  `content` LONGTEXT NOT NULL COMMENT 'About page HTML content',
+  `about_title` VARCHAR(255) NOT NULL DEFAULT 'About QuickCut' COMMENT 'About section title',
+  `about_description` TEXT DEFAULT NULL COMMENT 'About section description',
+  `story` TEXT DEFAULT NULL COMMENT 'Salon history/story text',
+  `mission` TEXT DEFAULT NULL COMMENT 'Salon mission text',
+  `vision` TEXT DEFAULT NULL COMMENT 'Salon vision text',
+  `about_image` VARCHAR(255) DEFAULT NULL COMMENT 'About section image path',
+  `content` LONGTEXT DEFAULT NULL COMMENT 'Legacy/about page HTML content',
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Content creation time',
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last update time'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='About page content table';
@@ -234,15 +260,19 @@ INSERT INTO `services` (`name`, `description`, `duration`, `price`, `status`) VA
 
 -- Insert sample admin user (password: admin@123)
 INSERT INTO `users` (`name`, `email`, `phone`, `password`, `role`, `is_verified`) VALUES
-('Admin User', 'admin@quickcut.com', '1234567890', '$2y$10$zr.MUdqxHlqYvzGfQV8aCeG6j3j5xJ5A5J5A5J5A5J5A5J5A5J5A5', 'admin', 1);
+('Admin User', 'admin@quickcut.com', '1234567890', '$2y$10$jqzqZvLCkft9b686AO8N7ua4fmE60GfDDwD8OXIjIjqUZn6swrEYa', 'admin', 1);
 
 -- Insert sample barber
 INSERT INTO `barbers` (`first_name`, `last_name`, `email`, `phone`, `specialty`, `rate`, `status`, `bio`, `experience_years`) VALUES
 ('John', 'Smith', 'john@quickcut.com', '9876543210', 'Fades, Modern Cuts', 2000.00, 'active', 'Expert barber with 10 years of experience', 10);
 
+-- Insert sample salon settings
+INSERT INTO `salon_settings` (`id`, `salon_name`, `tagline`, `address`, `phone`, `email`, `facebook_link`, `instagram_link`, `telegram_link`, `map_link`, `logo`) 
+VALUES (1, 'QuickCut', 'Skip the wait. Get the cut. QuickCut makes hair appointments fast, easy, and convenient.', '123 Main Street, Downtown', '(+251) 921456765', 'quickcut@gmail.com', '', '', '', '', '');
+
 -- Insert sample about content
-INSERT INTO `about_content` (`content`) VALUES
-('<h2>About QuickCut Hair Salon</h2><p>Welcome to QuickCut, your premier destination for professional hair styling and grooming services. With years of experience and a team of skilled barbers, we ensure every client leaves our salon feeling their best.</p>');
+INSERT INTO `about_content` (`id`, `about_title`, `about_description`, `story`, `mission`, `vision`) VALUES
+(1, 'About QuickCut', 'Your premier destination for modern men\'s grooming', 'Welcome to QuickCut, your premier destination for professional hair styling and grooming services. With years of experience and a team of skilled barbers, we ensure every client leaves our salon feeling their best.', 'To provide high-quality, convenient, and modern grooming services to every man who walks through our doors.', 'To become the leading men\'s hair salon brand known for innovation, style, and unmatched customer service.');
 
 -- ============================================================================
 -- VIEWS FOR COMMON QUERIES

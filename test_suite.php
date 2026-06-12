@@ -29,7 +29,7 @@ function ok($label, $cond, $detail = '') {
 // ── PHASE 1: Database Tables ───────────────────────────────────────────────
 echo "\n=== PHASE 1: Database Table & Column Validation ===\n";
 
-$required_tables = ['users','barbers','services','appointments','payments','barber_ratings','notifications','working_hours','about_content'];
+$required_tables = ['users','barbers','services','appointments','payments','barber_ratings','notifications','working_hours','about_content','salon_settings'];
 foreach ($required_tables as $tbl) {
     $stmt = $pdo->query("SHOW TABLES LIKE '$tbl'");
     ok("Table `$tbl` exists", $stmt->rowCount() > 0);
@@ -47,6 +47,18 @@ $col_checks = [
     ['payments', 'transaction_ref'],
     ['appointments', 'queue_number'],
     ['appointments', 'appointment_source'],
+    ['about_content', 'about_title'],
+    ['about_content', 'about_description'],
+    ['about_content', 'story'],
+    ['about_content', 'mission'],
+    ['about_content', 'vision'],
+    ['about_content', 'about_image'],
+    ['salon_settings', 'salon_name'],
+    ['salon_settings', 'tagline'],
+    ['salon_settings', 'address'],
+    ['salon_settings', 'phone'],
+    ['salon_settings', 'email'],
+    ['salon_settings', 'logo'],
 ];
 foreach ($col_checks as [$tbl, $col]) {
     $stmt = $pdo->query("SHOW COLUMNS FROM `$tbl` LIKE '$col'");
